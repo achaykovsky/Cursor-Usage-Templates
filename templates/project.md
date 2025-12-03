@@ -1,68 +1,58 @@
-# Project Template
+# PROJECT-SPECIFIC RULES
 
-Use this template to describe the intent, guardrails, and workflows for a specific initiative within a workspace.
+Project-specific configuration that complements global `user.md` and `AGENTS.md`.
 
-## Snapshot
-- `Project name`:
-- `Repository / path`:
-- `Primary owner(s)`:
-- `Stakeholders`:
-- `Status`:
-- `Last updated`:
+**Note**: This file extends global rules. Do not duplicate or override global standards.
 
-## Objectives
-- Primary goal:
-- Supporting goals:
-- Success metrics:
+## PROJECT CONTEXT
+- **Name**: 
+- **Tech Stack**: 
+- **Primary Language(s)**: 
+- **Framework(s)**: 
 
-## Deliverables & timeline
-| Deliverable | Owner | Due date | Notes |
-|-------------|-------|----------|-------|
-|             |       |          |       |
-|             |       |          |       |
+## PROJECT-SPECIFIC STANDARDS
 
-## Scope boundaries
-### In scope
-- 
+### Code Organization
+- Directory structure conventions:
+- Module/package naming patterns:
+- File naming conventions:
 
-### Out of scope
-- 
+### Architecture Patterns
+- Preferred design patterns for this project:
+- Domain-specific conventions:
+- Integration patterns:
 
-## Guardrails & constraints
-- Architectural or security constraints:
-- Performance/reliability expectations:
-- Compliance or review requirements:
-- Dependencies to track:
+### Dependencies & Tools
+- Project-specific tooling (beyond global `poetry`/`pytest`):
+- Required external services:
+- Environment setup notes:
 
-## Workflow
-1. Setup steps
-2. Daily development loop (build/test/verify)
-3. Review + merge strategy
-4. Deployment / release checklist
+## AGENT USAGE
 
-## Tooling & automation
-- Required CLIs or services:
-- Environment variables or secrets:
-- Helpful scripts:
-- CI/CD expectations:
+Preferred agents for this project (see `AGENTS.md` for full list):
+- Primary: 
+- Secondary: 
 
-## Quality gates
-- Testing requirements before merge:
-- Static analysis / linting rules:
-- Documentation updates needed:
-- Sign-off requirements:
+Example: `@Reviewer` for all PRs, `@Database` for schema changes
 
-## Communication plan
-- Sync cadence:
-- Preferred channel(s):
-- Demo / milestone expectations:
+## PROJECT CONSTRAINTS
 
-## Risk log
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-|      |        |             |            |
+### Technical Constraints
+- Performance requirements:
+- Scalability considerations:
+- Integration limitations:
 
-## Notes & decisions
-- Open questions:
-- Pending decisions:
-- Links to specs or diagrams:
+### Compliance & Security
+- Project-specific compliance needs (beyond global HIPAA/GDPR):
+- Security requirements:
+- Data handling rules:
+
+## WORKFLOW NOTES
+- Project-specific development steps:
+- Testing approach (extends global pytest standards):
+- Review process:
+
+## REFERENCES
+- Related documentation:
+- Architecture diagrams:
+- External specs:
