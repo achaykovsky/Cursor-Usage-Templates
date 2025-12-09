@@ -30,9 +30,8 @@ Security specialist focused on vulnerabilities, compliance, and data protection.
 ```
 
 ## PRINCIPLES
-- Assume zero trust (validate all inputs)
+- Follow security principles from `user.md` (zero trust, secrets management, HTTPS, password hashing, security logging, dependency audits)
 - Fail secure (deny by default)
 - Defense in depth (multiple layers)
-- Log security events (who, what, when)
-- Regular dependency updates
+- Prioritize by severity (Critical → High → Medium → Low)
 
