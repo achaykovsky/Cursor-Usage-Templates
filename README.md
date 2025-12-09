@@ -48,6 +48,9 @@ Specialized agent roles stored in `templates/agents/` for focused tasks.
 | `agent.devops.md` | @DevOps | Infrastructure, CI/CD, monitoring |
 | `agent.database.md` | @Database | Schema design, query optimization |
 | `agent.frontend.md` | @Frontend | React/TypeScript, UX, performance |
+| `agent.backend-go.md` | @BackendGo | Go backend: security, idiomatic code, testing |
+| `agent.backend-python.md` | @BackendPython | Python backend: type safety, async, FastAPI/Django |
+| `agent.performance.md` | @Performance | Bottleneck detection, profiling, optimization |
 
 See `templates/agents/AGENTS.md` for full agent descriptions.
 
@@ -113,7 +116,10 @@ templates/
     ├── agent.architect.md # Architecture Advisor
     ├── agent.devops.md   # DevOps Engineer
     ├── agent.database.md # Database Specialist
-    └── agent.frontend.md # Frontend Expert
+    ├── agent.frontend.md # Frontend Expert
+    ├── agent.backend-go.md # Backend Engineer (Go)
+    ├── agent.backend-python.md # Backend Engineer (Python)
+    └── agent.performance.md # Performance Engineer
 ```
 
 ## Troubleshooting
