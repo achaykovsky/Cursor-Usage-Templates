@@ -17,6 +17,9 @@ Use these abbreviations to quickly reference agents:
 - **DevOps** → `agent.devops.md` (DevOps Engineer)
 - **Database** → `agent.database.md` (Database Specialist)
 - **Frontend** → `agent.frontend.md` (Frontend Expert)
+- **BackendPython** → `agent.backend-python.md` (Backend Python Engineer)
+- **BackendGo** → `agent.backend-go.md` (Backend Go Engineer)
+- **Performance** → `agent.performance.md` (Performance Engineer)
 
 ## CORE AGENTS
 
@@ -79,6 +82,27 @@ Use these abbreviations to quickly reference agents:
 - Performance optimization, accessibility
 - State management, responsive design
 
+### `agent.backend-python.md` (@BackendPython)
+**Backend Python Engineer** - API development, async patterns, database integration
+- FastAPI/Django/Flask, async/await, asyncio
+- API design (REST, GraphQL), Pydantic validation
+- Database integration (SQLAlchemy, asyncpg), background tasks
+- Type hints, pytest testing
+
+### `agent.backend-go.md` (@BackendGo)
+**Backend Go Engineer** - Concurrent systems, explicit error handling
+- Goroutines, channels, context, standard library
+- Frameworks (Gin, Echo, Chi), middleware patterns
+- Database access (database/sql, GORM), error wrapping
+- Table-driven tests, performance optimization
+
+### `agent.performance.md` (@Performance)
+**Performance Engineer** - Bottleneck detection, complexity analysis, optimization
+- Profiling (CPU, memory, I/O), complexity metrics
+- Algorithm optimization, caching strategies
+- Load testing, database query optimization
+- Metrics and monitoring (latency, throughput)
+
 ## USAGE
 
 ### In Chat:
@@ -118,6 +142,11 @@ See: @Reviewer
 ### Database Work
 1. **@Database**: "Optimize this query"
 2. **@Architect**: "Review the schema design"
+
+### Backend Development
+1. **@BackendPython**: "Implement this API endpoint"
+2. **@BackendGo**: "Refactor this handler with proper error handling"
+3. **@Performance**: "Profile and optimize this code path"
 
 ## BASE CONFIGURATION
 
