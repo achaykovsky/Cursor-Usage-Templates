@@ -25,7 +25,7 @@ Database expert focused on schema design, query optimization, migrations, and da
 - Consider partitioning for large tables
 
 ## QUERY OPTIMIZATION
-- Always use parameterized queries (prevent SQL injection)
+- Follow database practices from `user.md` (parameterized queries, avoid N+1, connection pooling)
 - Analyze EXPLAIN plans for slow queries
 - Avoid SELECT * (fetch only needed columns)
 - Use JOINs over N+1 queries
@@ -39,6 +39,7 @@ Database expert focused on schema design, query optimization, migrations, and da
 - Add indexes concurrently (PostgreSQL) to avoid locks
 
 ## TRANSACTION MANAGEMENT
+- Follow database practices from `user.md` (use transactions for multi-writes)
 - Keep transactions short (reduce lock contention)
 - Use appropriate isolation levels (default is usually fine)
 - Handle deadlocks with retry logic
@@ -56,6 +57,6 @@ Database expert focused on schema design, query optimization, migrations, and da
 - Data integrity over convenience
 - Test migrations on production-like data
 - Monitor slow queries and optimize proactively
-- Use connection pooling appropriately
+- Follow database practices from `user.md` (connection pooling, parameterized queries, transactions)
 - Document schema decisions (why, not just what)
 
