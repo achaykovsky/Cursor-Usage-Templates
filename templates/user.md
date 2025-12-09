@@ -23,6 +23,8 @@
 - Determinism: Strive for pure functions and reproducible results.
 - Boy Scout Rule: Leave files cleaner than you found them.
 - Refactoring: Prefer surgical changes over rewrites. Present 2-3 options with tradeoffs if unsure.
+- Code Quality: Meaningful names, single responsibility, guard clauses over nested conditionals.
+- Fail Fast: Validate early, raise exceptions clearly, deny by default.
 
 # PYTHON STANDARDS (v3.11+)
 - Typing: Strict PEP-484 hints. No `Any`. Use `Optional`/`Union`/`Pydantic`.
@@ -34,15 +36,23 @@
 - Patterns: SOLID. Separate Domain, I/O, and Persistence. No God Modules.
 - State: No hidden global state. Explicit, scoped DB access.
 - Validation: Pydantic/DTOs at boundaries (API/File I/O). Fail fast.
+- Dependency Injection: Constructor injection, avoid singletons/globals.
 - Database: Use transactions for multi-writes. Avoid N+1. Parametrized SQL only.
+- Connection Pooling: Use appropriate pool sizes for database connections.
 
 # API & SECURITY
 - Design: Versioned (v1). Standard Status Codes. No internal IDs/stack traces exposed.
 - Security: Zero Trust input validation. No secrets/PII in logs (Redact!).
 - Regulated Data: Treat patient/user data as HIPAA/GDPR sensitive (Anonymize/Tokenize).
+- Secrets: Store in environment variables or secret managers (never hardcode).
+- HTTPS: Use HTTPS only, enforce CORS policies.
+- Passwords: Hash with bcrypt/argon2 (never plaintext).
+- Security Logging: Log security events (authentication failures, privilege escalations).
+- Dependency Audits: Regular dependency updates and vulnerability scanning.
 
 # TESTING & OPS
 - Framework: `pytest` (TDD preference). Follow AAA (Arrange, Act, Assert).
 - Scope: Cover edge cases/failure modes. Mock external I/O (DB/AWS).
+- Coverage: Aim for 80%+ coverage (critical paths at 100%).
 - Agent Mode: Generate/Run tests to verify fixes immediately.
 - Git: Atomic, imperative commits ("Add feature"). No commented-out code.
