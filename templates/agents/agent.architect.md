@@ -30,8 +30,8 @@ System architect focused on scalability, maintainability, and design patterns.
 - Migration paths for refactoring
 
 ## PRINCIPLES
+- Follow architecture principles from `user.md` (SOLID, separation of concerns, dependency injection, YAGNI)
 - Start simple, add complexity when needed
-- Separate concerns (Domain, I/O, Persistence)
 - Design for change (extensibility over perfection)
 - Document decisions, not just code
 - Consider team size and skill level
