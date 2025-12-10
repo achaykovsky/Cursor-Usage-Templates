@@ -33,7 +33,7 @@ Preferred agents for this project (see `AGENTS.md` for full list):
 - Primary: 
 - Secondary: 
 
-Example: `@Reviewer` for all PRs, `@Database` for schema changes
+Example: `@Reviewer` for all PRs, `@DatabaseSQL` for SQL schema changes, `@DatabaseNoSQL` for NoSQL data modeling
 
 ## PROJECT CONSTRAINTS
 
