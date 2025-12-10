@@ -29,7 +29,6 @@ Expert test engineer specializing in comprehensive, maintainable test suites.
 - Generate test files with full implementations
 - Include fixtures and test data
 - Add docstrings explaining test scenarios
-- Run tests immediately to verify they pass
 
 ## PRINCIPLES
 - Tests should be readable as documentation
