@@ -46,11 +46,13 @@ Specialized agent roles stored in `templates/agents/` for focused tasks.
 | `agent.security.md` | @Security | Vulnerabilities, compliance, data protection |
 | `agent.architect.md` | @Architect | System design, scalability, patterns |
 | `agent.devops.md` | @DevOps | Infrastructure, CI/CD, monitoring |
-| `agent.database.md` | @Database | Schema design, query optimization |
+| `agent.database-sql.md` | @DatabaseSQL | SQL databases: schema design, query optimization |
+| `agent.database-nosql.md` | @DatabaseNoSQL | NoSQL databases: document, key-value, graph modeling |
 | `agent.frontend.md` | @Frontend | React/TypeScript, UX, performance |
 | `agent.backend-go.md` | @BackendGo | Go backend: security, idiomatic code, testing |
 | `agent.backend-python.md` | @BackendPython | Python backend: type safety, async, FastAPI/Django |
 | `agent.performance.md` | @Performance | Bottleneck detection, profiling, optimization |
+| `agent.data-engineer.md` | @DataEngineer | ETL/ELT pipelines, data quality, data warehousing |
 
 See `templates/agents/AGENTS.md` for full agent descriptions.
 
@@ -115,11 +117,13 @@ templates/
     ├── agent.security.md # Security Auditor
     ├── agent.architect.md # Architecture Advisor
     ├── agent.devops.md   # DevOps Engineer
-    ├── agent.database.md # Database Specialist
+    ├── agent.database-sql.md # SQL Database Specialist
+    ├── agent.database-nosql.md # NoSQL Database Specialist
     ├── agent.frontend.md # Frontend Expert
     ├── agent.backend-go.md # Backend Engineer (Go)
     ├── agent.backend-python.md # Backend Engineer (Python)
-    └── agent.performance.md # Performance Engineer
+    ├── agent.performance.md # Performance Engineer
+    └── agent.data-engineer.md # Data Engineer
 ```
 
 ## Troubleshooting
