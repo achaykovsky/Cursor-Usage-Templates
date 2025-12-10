@@ -15,11 +15,13 @@ Use these abbreviations to quickly reference agents:
 - **Security** → `agent.security.md` (Security Auditor)
 - **Architect** → `agent.architect.md` (Architecture Advisor)
 - **DevOps** → `agent.devops.md` (DevOps Engineer)
-- **Database** → `agent.database.md` (Database Specialist)
+- **DatabaseSQL** → `agent.database-sql.md` (SQL Database Specialist)
+- **DatabaseNoSQL** → `agent.database-nosql.md` (NoSQL Database Specialist)
 - **Frontend** → `agent.frontend.md` (Frontend Expert)
 - **BackendPython** → `agent.backend-python.md` (Backend Python Engineer)
 - **BackendGo** → `agent.backend-go.md` (Backend Go Engineer)
 - **Performance** → `agent.performance.md` (Performance Engineer)
+- **DataEngineer** → `agent.data-engineer.md` (Data Engineer)
 
 ## CORE AGENTS
 
@@ -70,11 +72,19 @@ Use these abbreviations to quickly reference agents:
 - Monitoring, alerting, deployment strategies
 - Automation and observability
 
-### `agent.database.md` (@Database)
-**Database Specialist** - Schema design, query optimization
-- PostgreSQL expertise, migrations, transactions
-- Query optimization, indexing strategies
+### `agent.database-sql.md` (@DatabaseSQL)
+**SQL Database Specialist** - Relational database design, query optimization
+- PostgreSQL, MySQL, SQL Server expertise
+- Schema design, normalization, migrations, transactions
+- Query optimization, indexing strategies, EXPLAIN plans
 - Data integrity and ACID compliance
+
+### `agent.database-nosql.md` (@DatabaseNoSQL)
+**NoSQL Database Specialist** - Document, key-value, column-family, graph databases
+- MongoDB, DynamoDB, Cassandra, Redis, Neo4j
+- Access pattern-driven data modeling
+- Partition keys, sharding, eventual consistency
+- Denormalization strategies, query optimization
 
 ### `agent.frontend.md` (@Frontend)
 **Frontend Expert** - Modern web development, UX, performance
@@ -103,6 +113,14 @@ Use these abbreviations to quickly reference agents:
 - Load testing, database query optimization
 - Metrics and monitoring (latency, throughput)
 
+### `agent.data-engineer.md` (@DataEngineer)
+**Data Engineer** - ETL/ELT pipelines, data quality, data infrastructure
+- Pipeline design (idempotent, incremental, error handling)
+- Data quality validation, schema enforcement, lineage tracking
+- Data warehousing (star schemas, dimensional modeling)
+- Big data processing (Spark, distributed systems)
+- Orchestration (Airflow, Prefect, Dagster)
+
 ## USAGE
 
 ### In Chat:
@@ -121,7 +139,7 @@ See: @Reviewer
 
 ### In Composer:
 - Mention agent role at start: "As the database specialist, optimize this query..."
-- Or use abbreviation: "@Database optimize this query..."
+- Or use abbreviation: "@DatabaseSQL optimize this query..." or "@DatabaseNoSQL design this data model..."
 
 ## COMMON WORKFLOWS
 
@@ -140,8 +158,9 @@ See: @Reviewer
 2. **@PM**: "Create API documentation spec"
 
 ### Database Work
-1. **@Database**: "Optimize this query"
-2. **@Architect**: "Review the schema design"
+1. **@DatabaseSQL**: "Optimize this SQL query"
+2. **@DatabaseNoSQL**: "Design this MongoDB schema"
+3. **@Architect**: "Review the schema design"
 
 ### Backend Development
 1. **@BackendPython**: "Implement this API endpoint"
