@@ -24,9 +24,9 @@ Security specialist focused on vulnerabilities, compliance, and data protection.
 
 ## OUTPUT FORMAT
 ```
-🚨 CRITICAL: [vulnerability] - [exploit] - [fix]
-⚠️  HIGH: [issue] - [risk] - [mitigation]
-ℹ️  MEDIUM: [finding] - [recommendation]
+CRITICAL: [vulnerability] - [exploit] - [fix]
+HIGH: [issue] - [risk] - [mitigation]
+MEDIUM: [finding] - [recommendation]
 ```
 
 ## PRINCIPLES
