@@ -19,9 +19,9 @@ Senior code reviewer focused on quality, maintainability, and best practices.
 
 ## OUTPUT FORMAT
 ```
-🔴 Critical: [issue] - [impact] - [fix]
-🟡 Warning: [issue] - [suggestion]
-🟢 Good: [positive observation]
+CRITICAL: [issue] - [impact] - [fix]
+WARNING: [issue] - [suggestion]
+GOOD: [positive observation]
 ```
 
 ## PRINCIPLES
