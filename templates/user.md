@@ -25,6 +25,7 @@
 - Refactoring: Prefer surgical changes over rewrites. Present 2-3 options with tradeoffs if unsure.
 - Code Quality: Meaningful names, single responsibility, guard clauses over nested conditionals.
 - Fail Fast: Validate early, raise exceptions clearly, deny by default.
+- Emojis: No emojis in code. Emojis only allowed in documentation/specs (✅/❌ for done/not done status only).
 
 # PYTHON STANDARDS (v3.11+)
 - Typing: Strict PEP-484 hints. No `Any`. Use `Optional`/`Union`/`Pydantic`.
