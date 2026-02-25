@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/log-cursor-activity.ps1"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/log-cursor-activity.ps1"
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/validate-git-commands.ps1"
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/validate-pre-push.ps1"
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/block-destructive-shell.ps1"
+      }
+    ],
+    "beforeReadFile": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/redact-sensitive-read.ps1"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/log-cursor-activity.ps1"
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/format-after-edit.ps1"
+      }
+    ],
+    "stop": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/log-cursor-activity.ps1"
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/suggest-commit-on-stop.ps1"
+      }
+    ]
+  }
+}
