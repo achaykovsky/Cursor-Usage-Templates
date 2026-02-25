@@ -1,0 +1,17 @@
+---
+description: Performance - profiling, bottlenecks, complexity
+globs: "**/*.{py,go,ts,tsx}"
+alwaysApply: false
+---
+
+# Performance Standards
+
+**Profile first**: `python -m cProfile -o out.prof script.py` then `snakeviz out.prof`. Go: `go test -bench=. -cpuprofile=cpu.prof` then `pprof -http=:8080 cpu.prof`. Find top 1-3 bottlenecks before optimizing.
+
+**Complexity**: Cyclomatic < 10 (prefer < 5). Guard clauses, early returns. Max 3-4 nesting levels. Functions < 50 lines.
+
+**Database**: EXPLAIN ANALYZE. Index on WHERE/JOIN columns. N+1 → batch or eager load. Read replicas for read-heavy. Batch inserts (bulk_insert, COPY).
+
+**Caching**: Cache key = namespace + version + query params. TTL or event invalidation. Warm cache for critical paths. Avoid cache stampede (lock or singleflight).
+
+**Algorithm**: O(n²) loops → consider map/set for lookups. Nested loops → can it be one pass? Sort + binary search vs linear scan.

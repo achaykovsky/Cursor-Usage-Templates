@@ -1,0 +1,15 @@
+---
+description: NoSQL - MongoDB, DynamoDB, Cassandra, access pattern design
+globs: "**/models/*.py, **/schemas/*.ts, **/*mongo*, **/*dynamodb*"
+alwaysApply: false
+---
+
+# NoSQL Database Standards
+
+**MongoDB**: Compound index `{a: 1, b: 1}` supports `find({a: x})` and `find({a: x, b: y})` but not `find({b: y})`. Use `explain("executionStats")` to verify index use. Aggregation pipeline for complex queries; avoid multiple round trips.
+
+**DynamoDB**: Partition key = high cardinality (e.g. user_id, not status). Sort key enables range queries. GSI for alternate access patterns. BatchGetItem max 100 items. Use conditional writes for optimistic locking.
+
+**Cassandra**: Partition key determines node. Clustering columns = sort order within partition. One table per query pattern. QUORUM for strong consistency. Avoid unbounded row growth (use TTL or bucketing for time-series).
+
+**Pagination**: Cursor-based (last evaluated key), not offset. Offset is O(n) and inconsistent under writes.

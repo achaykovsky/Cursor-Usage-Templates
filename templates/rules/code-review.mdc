@@ -1,0 +1,15 @@
+---
+description: Code review - quality, maintainability, security
+globs: "**/*.{py,ts,tsx,go,js,jsx,vue,rs,java}"
+alwaysApply: false
+---
+
+# Code Review Standards
+
+**Format when flagging**:
+```
+CRITICAL: [issue] - [impact] - [fix]
+WARNING: [issue] - [suggestion]
+```
+
+**Checklist**: Type safety (Any, missing hints). Security (injection, secrets, validation). Performance (N+1, blocking I/O). Architecture (god modules, coupling). Tests (edge cases, error paths). Include code snippet for fix when suggesting change.

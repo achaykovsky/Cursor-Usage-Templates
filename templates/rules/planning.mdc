@@ -1,0 +1,15 @@
+---
+description: Specs and task planning - breakdown, acceptance criteria
+globs: "**/specs/**"
+alwaysApply: false
+---
+
+# Planning Standards
+
+**Spec files**: `specs/feature-[name].md`, `specs/api-[name].md`, `specs/requirements-[name].md`. One concern per file.
+
+**Task format**: Title (verb + object), description, acceptance criteria (testable), dependencies, effort (T-shirt or hours), type (feature/bug/refactor/test/docs/infra).
+
+**Acceptance criteria**: Given/when/then or bullet list. Each item verifiable. No "works correctly" without definition.
+
+**Prioritization**: P0 blockers, P1 core, P2 nice-to-have, P3 polish. Order by value and risk. Unblock dependencies first.

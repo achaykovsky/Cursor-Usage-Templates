@@ -1,0 +1,19 @@
+---
+description: Architecture - scalability, patterns, tradeoffs, ADRs
+globs: "**/*.{py,go,ts,tsx,js,jsx,vue}"
+alwaysApply: false
+---
+
+# Architecture Standards
+
+**Layered structure**: Domain (entities, value objects) → Application (use cases, services) → Infrastructure (DB, HTTP, external APIs) → Presentation (controllers, DTOs).
+
+**Repository pattern**: Abstract data access behind interface. Return domain objects, not ORM models. Enables testing with in-memory impl.
+
+**Service layer**: Business logic in services, not controllers. Services orchestrate repositories. One service per use case or aggregate.
+
+**DTOs at boundaries**: Pydantic/structs at API edges. Never expose ORM models or internal IDs. Version APIs (v1/, v2/).
+
+**Dependency injection**: Constructor injection. No singletons or global state. Pass dependencies explicitly for testability.
+
+**ADR format**: Context, Decision, Consequences. Store in `docs/adr/` or `docs/decisions/`.

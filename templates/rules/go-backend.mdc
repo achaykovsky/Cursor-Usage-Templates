@@ -1,0 +1,38 @@
+---
+description: Go backend - idiomatic Go, security, table-driven tests
+globs: "**/*.go"
+alwaysApply: false
+---
+
+# Go Backend Standards
+
+**Error handling** (never ignore):
+```go
+// ❌ BAD
+result, _ := doThing()
+
+// ✅ GOOD
+result, err := doThing()
+if err != nil {
+    return fmt.Errorf("doThing: %w", err)
+}
+```
+
+**Parameterized queries**: `db.Query("SELECT ... WHERE id = ?", id)`. Never `fmt.Sprintf` for SQL. Use `sqlx.Named` for named params.
+
+**Context**: Pass `context.Context` as first arg. Use for cancellation, timeouts. `context.WithTimeout`, `context.WithCancel`.
+
+**Table-driven tests**:
+```go
+for _, tc := range []struct{ name string; input int; want int }{
+    {"zero", 0, 0},
+    {"positive", 1, 1},
+} {
+    t.Run(tc.name, func(t *testing.T) {
+        got := fn(tc.input)
+        if got != tc.want { t.Errorf("got %d", got) }
+    })
+}
+```
+
+**Profiling**: `go test -bench=. -cpuprofile=cpu.prof`. `pprof -http=:8080 cpu.prof`. Check goroutine leaks with `-trace`.

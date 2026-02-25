@@ -1,0 +1,27 @@
+---
+description: Python backend - FastAPI, security, typing, pytest
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Python Backend Standards
+
+**Parameterized queries** (never f-strings):
+```python
+# ❌ BAD
+query = f"SELECT * FROM users WHERE id = {user_id}"
+
+# ✅ GOOD
+cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+# SQLAlchemy: session.execute(select(User).where(User.id == user_id))
+```
+
+**Pydantic**: `Field(..., max_length=255)`, validators for business rules. `model_config` for extra="forbid". Use for API request/response.
+
+**Alembic**: Versioned migrations. `alembic revision -m "add_x"`. Wrap DDL in transactions. `CREATE INDEX CONCURRENTLY` outside transaction (PostgreSQL).
+
+**Async**: `asyncpg` for DB, `httpx` for HTTP. No `requests` or `psycopg2` in async handlers. Use `asyncio.to_thread()` for blocking calls.
+
+**N+1 fix**: `selectinload()`, `joinedload()`, or `select_related()` for relations. Avoid loops that trigger lazy loads.
+
+**Tests**: `pytest -x` fail fast. `@pytest.fixture` for DB session. `factory_boy` for model factories. `responses` or `respx` for HTTP mocks.

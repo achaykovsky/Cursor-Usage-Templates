@@ -1,0 +1,17 @@
+---
+description: Frontend - React, TypeScript, UX, accessibility, performance
+globs: "**/*.{tsx,jsx,vue,css,scss}"
+alwaysApply: false
+---
+
+# Frontend Standards
+
+**React**: `React.lazy()` + `Suspense` for code splitting. `useMemo`/`useCallback` only when profiling shows need. Keys on list items = stable unique id.
+
+**Accessibility**: `role`, `aria-label` when semantic HTML insufficient. `tabIndex` for focus order. `:focus-visible` for focus styles. Test with keyboard only, screen reader.
+
+**Bundle**: `import()` for route-level splitting. Dynamic imports for heavy libs. Tree-shake: use named imports, not default. Check bundle analyzer output.
+
+**State**: Server state → React Query/SWR. Local UI state → useState. Avoid prop drilling → context or composition. Derive state when possible.
+
+**TypeScript**: `strict: true`. No `any`. `unknown` for untyped input. Discriminated unions for reducer/state. `satisfies` for inference with constraints.

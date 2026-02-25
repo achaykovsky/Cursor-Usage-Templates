@@ -1,0 +1,17 @@
+---
+description: Data pipelines - ETL/ELT, idempotency, orchestration
+globs: "**/dags/**, **/pipelines/**, **/etl/**, **/data/**"
+alwaysApply: false
+---
+
+# Data Pipeline Standards
+
+**Idempotency**: Same input → same output. Use upsert (ON CONFLICT), not insert. Dedupe by business key. Safe to rerun.
+
+**Incremental**: Process only new/changed. Watermarks, CDC, `updated_at > last_run`. Avoid full table scans.
+
+**Error handling**: Retry with backoff (exponential). Dead letter queue for failed records. Don't fail entire run on single record. Log failed keys for replay.
+
+**Schema**: Validate at ingestion (Pydantic, Great Expectations). Version schemas. Additive changes only (new columns nullable or with default).
+
+**Orchestration**: Airflow DAGs - task dependencies via `>>`. Idempotent tasks. Retries in task def. XCom for small data only; use external store for large payloads.

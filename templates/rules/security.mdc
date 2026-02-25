@@ -1,0 +1,18 @@
+---
+description: Security - vulnerabilities, compliance, OWASP, HIPAA/GDPR
+alwaysApply: true
+---
+
+# Security Standards
+
+**SQL injection**: Parameterized queries only. Never string concat or f-strings with user input. Use ORM or `cursor.execute(sql, params)`.
+
+**XSS**: Escape output. Use framework templating (auto-escape). `Content-Security-Policy` header. Avoid `dangerouslySetInnerHTML` / `innerHTML` with user data.
+
+**Secrets**: No hardcoded keys. Use env vars or secret manager. Rotate credentials. `crypto/rand` for tokens (never `math/rand`).
+
+**Auth**: bcrypt/argon2 for passwords. Session tokens in httpOnly cookies. CSRF tokens for state-changing requests. MFA for sensitive ops.
+
+**Input validation**: Validate at boundaries. Pydantic/struct validation. Max lengths, allowlists. Reject invalid early.
+
+**Dependencies**: `pip-audit`, `go list -m -u`, `npm audit`. Pin versions. Track CVEs.

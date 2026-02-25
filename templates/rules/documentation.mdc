@@ -1,0 +1,15 @@
+---
+description: Documentation - API docs, README, architecture
+globs: "**/*.md, README*, docs/**"
+alwaysApply: false
+---
+
+# Documentation Standards
+
+**README**: Quick start in first 50 lines. Prerequisites, install, run. Link to detailed docs. No implementation details.
+
+**API docs**: Method, path, request/response schema, status codes, errors. Example request/response. Auth requirements. OpenAPI/Swagger for machine-readable.
+
+**Code comments**: Explain why, not what. Document invariants, non-obvious constraints. TODO with ticket ref.
+
+**ADR**: Context (what prompted), Decision (what we chose), Consequences (tradeoffs). One decision per file. `docs/adr/0001-use-postgres.md`.

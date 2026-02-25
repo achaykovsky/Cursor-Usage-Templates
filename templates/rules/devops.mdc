@@ -1,0 +1,17 @@
+---
+description: DevOps - Docker, CI/CD, infrastructure, monitoring
+globs: "Dockerfile*, docker-compose*, .github/**/*.yml, .gitlab-ci.yml, **/*.tf"
+alwaysApply: false
+---
+
+# DevOps Standards
+
+**Dockerfile**: Multi-stage. Final stage FROM scratch or alpine. `COPY --chown` for non-root. `HEALTHCHECK`. Order layers by change frequency (deps before app code).
+
+**CI**: Run tests before build. Cache deps (poetry, go mod, npm). Fail fast. Matrix for multi-version (e.g. Python 3.11, 3.12). Security scan (Trivy, Snyk) in pipeline.
+
+**Terraform**: `terraform plan` in CI. State in remote backend. Use modules. `count`/`for_each` for multiple resources. Pin provider versions.
+
+**Logging**: Structured JSON. Include `timestamp`, `level`, `message`, `trace_id`. No PII. Redact secrets.
+
+**Metrics**: Latency (p50, p95, p99), error rate, throughput. Alert on SLO breach, not individual errors. Use RED (rate, errors, duration) for services.

@@ -1,0 +1,19 @@
+---
+description: SQL database - schema design, migrations, query optimization
+globs: "**/*.sql, **/migrations/**, **/alembic/**"
+alwaysApply: false
+---
+
+# SQL Database Standards
+
+**Parameterized queries** (application layer). Never interpolate user input into SQL.
+
+**Indexes**: B-tree for equality/range. GIN for JSONB, full-text. Composite index column order matters (leftmost prefix). `CREATE INDEX CONCURRENTLY` to avoid locks (PostgreSQL).
+
+**EXPLAIN ANALYZE**: Run before optimizing. Check Seq Scan vs Index Scan. Look for high "rows" estimates. `EXPLAIN (ANALYZE, BUFFERS)` for cache hits.
+
+**N+1**: Use JOINs or batch `WHERE id IN (...)`. Eager load in ORM. Avoid loop-per-row queries.
+
+**Migrations**: Timestamp or sequential. Reversible up/down. `ALTER TABLE ADD COLUMN` is fast; `ADD NOT NULL` with default may rewrite (PostgreSQL). Add nullable first, backfill, then add NOT NULL.
+
+**Transactions**: Keep short. Use savepoints for nested logic. Default isolation usually fine; use `READ COMMITTED` or `REPEATABLE READ` when needed.

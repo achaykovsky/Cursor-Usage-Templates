@@ -1,0 +1,22 @@
+---
+description: Test standards - pytest, AAA, coverage, organization
+globs: "**/test*.py, **/*_test.go, **/*.test.{ts,tsx}, **/__tests__/**"
+alwaysApply: false
+---
+
+# Testing Standards
+
+**AAA**: Arrange (setup), Act (call), Assert (verify). One logical assertion per test. Clear test name = behavior under condition.
+
+**Fixtures**: pytest `@pytest.fixture` for shared setup. `factory_boy` for model creation. Isolate: each test gets fresh DB/state. No shared mutable state.
+
+**Mocking**: Mock at boundaries (HTTP, DB, file I/O). Don't mock internals. Use `responses`/`respx` for HTTP, `unittest.mock.patch` for modules.
+
+**Coverage**: Aim 80%+ on critical paths. Cover error branches, validation failures, edge cases (empty, null, boundary). `pytest-cov`, `go test -cover`.
+
+```python
+# ✅ Clear, one concern
+def test_create_user_with_invalid_email_raises_validation_error():
+    with pytest.raises(ValidationError, match="invalid email"):
+        create_user(email="not-an-email")
+```
