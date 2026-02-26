@@ -2,7 +2,7 @@
 
 **Subagents** (Settings > Subagents) - In `.cursor/agents/`. Invoke via `@agent(ARCHITECT)`, `// @agent(REVIEWER)` in code.
 
-**Rules** - Technical standards in `.cursor/rules/*.mdc`. Domain-named, apply via globs. Source: `templates/rules/`. Run `.\templates\commands\sync-agents.ps1` to sync.
+**Rules** - Technical standards in `.cursor/rules/*.mdc`. Domain-named, apply via globs. Source: `templates/rules/`. Run `.\templates\commands\sync-cursor.ps1` to sync.
 
 | Rule file | Globs / scope |
 |-----------|----------------|
@@ -40,7 +40,7 @@
 | Performance | PERFORMANCE | `@agent(PERFORMANCE)` |
 | DataEngineer | DATA_ENGINEER | `@agent(DATA_ENGINEER)` |
 
-**Global sync**: Copy subagents to `%USERPROFILE%\.cursor\agents\` then run `.\templates\commands\sync-agents.ps1` in each project.
+**Global sync**: Copy subagents to `%USERPROFILE%\.cursor\agents\` then run `.\templates\commands\sync-cursor.ps1` in each project.
 
 ## AGENT ABBREVIATIONS (Rules)
 
@@ -216,5 +216,5 @@ All agents inherit from `user.md` (global preferences):
 ## SOURCE
 
 - **Subagents**: `.cursor/agents/` (Settings > Subagents). Source: `templates/agents/subagents/` or `%USERPROFILE%\.cursor\agents\`.
-- **Rules**: `.cursor/rules/*.mdc` (proper rules with globs). Source: `templates/rules/`. Run `.\templates\commands\sync-agents.ps1` to sync.
+- **Rules**: `.cursor/rules/*.mdc` (proper rules with globs). Source: `templates/rules/`. Run `.\templates\commands\sync-cursor.ps1` to sync.
 
