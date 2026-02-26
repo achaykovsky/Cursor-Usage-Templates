@@ -1,143 +1,113 @@
 # Cursor Usage Templates
 
-Centralized Markdown templates for defining Cursor instructions at multiple scopes, plus specialized agent roles for different tasks.
+Centralized Markdown templates for Cursor instructions at multiple scopes: base templates, subagents, rules, hooks, and skills. Sync into `.cursor/` for any project.
 
 ## Quick Start
 
-1. **Copy base templates** into your Cursor instructions panel:
-   - `templates/workspace.md` – baseline rules for the entire workspace
-   - `templates/project.md` – project-specific objectives and constraints
-   - `templates/user.md` – personal preferences for individual collaborators
-
-2. **Use agents** in Chat or Composer:
+1. **Sync Cursor config** into your project:
+   ```powershell
+   .\templates\commands\sync-cursor.ps1
    ```
-   Act as the code reviewer and review this function
+   Copies agents, rules, hooks, and skills from `templates/` to `.cursor/`.
+
+2. **Copy base templates** into your Cursor instructions panel:
+   - `templates/workspace.md` – organization-wide rules
+   - `templates/project.md` – project-specific objectives
+   - `templates/user.md` – personal preferences
+
+3. **Invoke subagents** in Chat or Composer via `@agent(NAME)`:
    ```
+   @agent(REVIEWER) review this function
+   @agent(PM) break down this feature into tasks
    ```
-   As the PM, break down this feature into tasks
-   ```
 
-3. **Replace placeholders** in templates with concrete details.
+4. **Replace placeholders** in templates with concrete details.
 
-4. **Keep templates under version control** so the team can iterate together.
+## What Gets Synced
 
-## Template Scopes
+| Source | Destination |
+|--------|-------------|
+| `templates/agents/subagents/*.md` | `.cursor/agents/` |
+| `templates/rules/*.mdc` | `.cursor/rules/` |
+| `templates/hooks/hooks.json` | `.cursor/hooks.json` |
+| `templates/hooks/scripts/*.ps1` | `.cursor/hooks/scripts/` |
+| `templates/skills/**/SKILL.md` | `.cursor/skills/**/` |
 
-### Base Templates
+See `templates/commands/README.md` for global use (submodule, symlink, `-ProjectRoot`).
 
-- **`templates/workspace.md`** – Organization-wide rules, tooling, automation, testing policy
-- **`templates/project.md`** – Project-specific standards, architecture patterns, constraints
-- **`templates/user.md`** – Personal coding style, tool preferences, global principles
+## Base Templates
 
-These templates intentionally avoid language- or framework-specific guidance; add technical details only when a project demands them.
+- **`templates/workspace.md`** – Organization-wide rules, tooling, testing policy
+- **`templates/project.md`** – Project-specific standards, architecture patterns
+- **`templates/user.md`** – Personal coding style, tool preferences
 
-## Agent System
+## Subagents
 
-Specialized agent roles stored in `templates/agents/` for focused tasks.
+Subagents live in `templates/agents/subagents/` and sync to `.cursor/agents/`. They appear in **Settings > Subagents**. Invoke via `@agent(NAME)`.
 
-### Available Agents
+| Invoke | File | Purpose |
+|--------|------|---------|
+| PM | product_manager.md | Task breakdown, planning, specs |
+| REVIEWER | code_reviewer.md | Code quality, maintainability |
+| TESTER | test_engineer.md | Test generation, pytest |
+| DOCS | documentation_writer.md | API docs, README, architecture |
+| SECURITY | security_engineer.md | Vulnerabilities, compliance |
+| ARCHITECT | architecture_advisor.md | System design, scalability |
+| DEVOPS | devops_engineer.md | CI/CD, Docker, monitoring |
+| DATABASE_SQL | sql_database_engineer.md | Schema, migrations, queries |
+| DATABASE_NOSQL | nosql_database_engineer.md | MongoDB, DynamoDB, Cassandra |
+| FRONTEND | frontend_engineer.md | React/TypeScript, UX |
+| BACKEND_GO | backend_go_engineer.md | Go backend |
+| BACKEND_PYTHON | backend_python_engineer.md | FastAPI/Django, async |
+| PERFORMANCE | performance_engineer.md | Profiling, optimization |
+| DATA_ENGINEER | data_engineer.md | ETL/ELT, pipelines |
 
-| Agent | Abbreviation | Purpose |
-|-------|-------------|---------|
-| `agent.pm.md` | @PM | Task breakdown, planning, spec generation |
-| `agent.reviewer.md` | @Reviewer | Code quality, maintainability, best practices |
-| `agent.tester.md` | @Tester | Test generation, TDD, pytest suites |
-| `agent.docs.md` | @Docs | API docs, README, architecture diagrams |
-| `agent.security.md` | @Security | Vulnerabilities, compliance, data protection |
-| `agent.architect.md` | @Architect | System design, scalability, patterns |
-| `agent.devops.md` | @DevOps | Infrastructure, CI/CD, monitoring |
-| `agent.database-sql.md` | @DatabaseSQL | SQL databases: schema design, query optimization |
-| `agent.database-nosql.md` | @DatabaseNoSQL | NoSQL databases: document, key-value, graph modeling |
-| `agent.frontend.md` | @Frontend | React/TypeScript, UX, performance |
-| `agent.backend-go.md` | @BackendGo | Go backend: security, idiomatic code, testing |
-| `agent.backend-python.md` | @BackendPython | Python backend: type safety, async, FastAPI/Django |
-| `agent.performance.md` | @Performance | Bottleneck detection, profiling, optimization |
-| `agent.data-engineer.md` | @DataEngineer | ETL/ELT pipelines, data quality, data warehousing |
+See `templates/agents/subagents/AGENTS.md` for full descriptions and `AGENTS_USAGE.md` for examples.
 
-See `templates/agents/AGENTS.md` for full agent descriptions.
+## Rules
 
-### Using Agents
+Rules in `templates/rules/*.mdc` sync to `.cursor/rules/` and apply via globs (e.g. `**/*.py` → `python-backend.mdc`). `security.mdc` is always applied.
 
-**In Chat:**
-```
-Act as the code reviewer
-Use agent.pm.md to break down this feature
-@Security check this endpoint for vulnerabilities
-```
+## Hooks
 
-**In Composer:**
-```
-As the PM, parse this PDF and create spec files in specs/
-As the database specialist, optimize this query
-```
+`templates/hooks/` provides lifecycle hooks (format-after-edit, block-destructive-shell, etc.). See `templates/prompts/plan-cursor-hooks.md` for setup.
 
-**In `.cursorrules`:**
-```markdown
-# Use code reviewer agent for all PR reviews
-See: agent.reviewer.md
-```
+## Skills
 
-**Direct file reference:**
-```
-Review this code following agent.reviewer.md guidelines
-```
-
-### Common Workflows
-
-**Starting a new feature:**
-1. `@PM` – Break down into tasks
-2. `@Architect` – Review design approach
-3. `@DevOps` – Set up deployment pipeline
-
-**Code review:**
-1. `@Reviewer` – Review PR
-2. `@Security` – Check vulnerabilities
-3. `@Tester` – Verify test coverage
-
-**Documentation:**
-1. `@Docs` – Update README
-2. `@PM` – Create API documentation spec
-
-See `templates/agents/AGENTS_USAGE.md` for detailed usage examples.
+Skills in `templates/skills/**/SKILL.md` sync to `.cursor/skills/`. The agent uses them when relevant workflows are triggered (e.g. "update the docs" → keep-docs-in-sync-with-code).
 
 ## Project Structure
 
 ```
 templates/
-├── workspace.md          # Organization-wide rules
-├── project.md            # Project-specific config
-├── user.md               # Personal preferences
-└── agents/               # Specialized agent roles
-    ├── AGENTS.md         # Agent overview and descriptions
-    ├── AGENTS_USAGE.md   # Usage guide with examples
-    ├── agent.pm.md       # Product/Project Manager
-    ├── agent.reviewer.md # Code Reviewer
-    ├── agent.tester.md   # Test Generator
-    ├── agent.docs.md     # Documentation Writer
-    ├── agent.security.md # Security Auditor
-    ├── agent.architect.md # Architecture Advisor
-    ├── agent.devops.md   # DevOps Engineer
-    ├── agent.database-sql.md # SQL Database Specialist
-    ├── agent.database-nosql.md # NoSQL Database Specialist
-    ├── agent.frontend.md # Frontend Expert
-    ├── agent.backend-go.md # Backend Engineer (Go)
-    ├── agent.backend-python.md # Backend Engineer (Python)
-    ├── agent.performance.md # Performance Engineer
-    └── agent.data-engineer.md # Data Engineer
+├── workspace.md
+├── project.md
+├── user.md
+├── commands/
+│   ├── README.md
+│   └── sync-cursor.ps1
+├── agents/
+│   └── subagents/           # .cursor/agents/
+│       ├── AGENTS.md
+│       ├── AGENTS_USAGE.md
+│       ├── product_manager.md
+│       └── ...
+├── rules/                   # .cursor/rules/
+│   ├── security.mdc
+│   ├── python-backend.mdc
+│   └── ...
+├── hooks/                   # .cursor/hooks.json + hooks/scripts/
+│   ├── hooks.json
+│   └── scripts/*.ps1
+├── skills/                  # .cursor/skills/
+│   └── **/SKILL.md
+└── prompts/
+    ├── plan-cursor-hooks.md
+    └── plan-cursor-activity-logging.md
 ```
 
 ## Troubleshooting
 
-**Agents not recognized:**
-- Reference agents by full filename: `agent.reviewer.md`
-- Or use abbreviations: `@Reviewer`
-- Ensure agent files exist in `templates/agents/`
+**Subagents not recognized:** Run `sync-cursor.ps1`. Ensure files exist in `templates/agents/subagents/` or `%USERPROFILE%\.cursor\agents\`.
 
-**Template conflicts:**
-- `user.md` sets global preferences (applies to all projects)
-- `project.md` extends global rules (project-specific only)
-- `workspace.md` defines organization-wide standards
-
-**Agent inheritance:**
-- All agents inherit from `user.md` (global preferences)
-- Agents can be referenced in `project.md` for project-specific usage
+**Template conflicts:** `user.md` = global; `project.md` = project-only; `workspace.md` = org-wide.
