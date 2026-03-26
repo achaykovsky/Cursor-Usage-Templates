@@ -1,0 +1,18 @@
+---
+description: Minimize context and reply size — concise I/O, references over pastes, no redundant code dumps
+alwaysApply: true
+---
+
+# Token Efficiency
+
+**Inputs**: Ask one focused question per turn when possible. Use `@file` / `@folder` / symbols instead of pasting large code. Point to paths and line ranges instead of quoting whole files.
+
+**Tool use**: Batch related reads/searches. Do not re-read files already in context unless they changed. Prefer grep/codebase_search for "where is X" over opening many files.
+
+**Replies**: No filler, no repeating the user prompt. Lead with the answer or plan. Lists over long prose when enumerating steps or options.
+
+**Code in chat**: Do not paste unchanged files. For existing code, use editor line-range citations. For new code, only the diff or the minimal complete block.
+
+**Scope**: Match depth to request — a one-line fix does not need architecture essays. Defer edge cases unless asked.
+
+**Session hygiene**: Close obsolete topics explicitly if switching tasks to avoid carrying stale assumptions.
