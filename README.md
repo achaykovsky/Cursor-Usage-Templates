@@ -61,6 +61,7 @@ Subagents live in `templates/agents/subagents/` and sync to `.cursor/agents/`. T
 | BACKEND_PYTHON | backend_python_engineer.md | FastAPI/Django, async |
 | PERFORMANCE | performance_engineer.md | Profiling, optimization |
 | DATA_ENGINEER | data_engineer.md | ETL/ELT, pipelines |
+| INCIDENT | incident_responder.md | Debugging, incidents, RCA |
 
 See `templates/agents/subagents/AGENTS.md` for full descriptions and `AGENTS_USAGE.md` for examples.
 
