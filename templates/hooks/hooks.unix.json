@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "command": "bash .cursor/hooks/scripts/log-cursor-activity.sh"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "bash .cursor/hooks/scripts/log-cursor-activity.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/validate-git-commands.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/validate-pre-push.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/block-destructive-shell.sh"
+      }
+    ],
+    "beforeReadFile": [
+      {
+        "command": "bash .cursor/hooks/scripts/redact-sensitive-read.sh"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "bash .cursor/hooks/scripts/log-cursor-activity.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/format-after-edit.sh"
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash .cursor/hooks/scripts/log-cursor-activity.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/suggest-commit-on-stop.sh"
+      }
+    ]
+  }
+}
