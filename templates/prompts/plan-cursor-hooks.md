@@ -120,6 +120,7 @@ If the project has Cursor skills in `.cursor/skills/`, map them to hooks. When a
 | **beforeSubmitPrompt** (onboarding/explain) | `explain-codebase-structure` |
 | **beforeSubmitPrompt** (bug/error in prompt) | `reproduce-and-document-failure`, `fix-bug-systematically` |
 | **beforeSubmitPrompt** (API/spec keywords) | `validate-api-contract`, `implement-or-extend-api-surface` |
+| **beforeSubmitPrompt** (API evolution / breaking change) | `check-api-backward-compatibility`, `review-openapi-diff`, `manage-request-response-schema-changes`, `api-versioning-guidance`, `analyze-api-consumer-impact`, `handle-breaking-change` |
 | **beforeSubmitPrompt** (migration keywords) | `plan-and-execute-migration`, `handle-breaking-change` |
 | **beforeSubmitPrompt** (release/deploy) | `prepare-release`, `validate-pre-deploy` |
 | **beforeSubmitPrompt** (cleanup/audit) | `audit-codebase-cleanup` |
