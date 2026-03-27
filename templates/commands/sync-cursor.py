@@ -5,6 +5,10 @@ Modes:
   TemplatesToLocal (default) — templates/* → project .cursor/
   ToGlobal          — project .cursor/ → ~/.cursor/
   FromGlobal        — ~/.cursor/ → project .cursor/
+
+Hook scripts are organized under templates/hooks/windows/ (*.ps1) and templates/hooks/unix/ (*.sh).
+Installed .cursor/hooks/scripts/ is always flat; only scripts for the active OS variant are copied.
+ToGlobal/FromGlobal copy hooks.json plus only *.ps1 (Windows) or *.sh (Unix) matching --hooks-variant auto.
 """
 
 from __future__ import annotations
@@ -27,6 +31,36 @@ def _clear_matching(dir_path: Path, patterns: tuple[str, ...]) -> None:
         for f in dir_path.glob(p):
             if f.is_file():
                 f.unlink()
+
+
+def platform_hooks_variant(variant: str) -> str:
+    """Return 'windows' or 'unix' for hook script selection."""
+    if variant == "windows":
+        return "windows"
+    if variant == "unix":
+        return "unix"
+    return "windows" if sys.platform == "win32" else "unix"
+
+
+def hook_script_suffix_for_platform(pk: str) -> str:
+    return ".ps1" if pk == "windows" else ".sh"
+
+
+def iter_template_hook_scripts(templates_hooks: Path, variant: str) -> list[Path]:
+    """Scripts from templates/hooks/windows|unix/, with legacy templates/hooks/scripts/ fallback."""
+    pk = platform_hooks_variant(variant)
+    sub = templates_hooks / pk
+    ext = hook_script_suffix_for_platform(pk)
+    if sub.is_dir():
+        files = sorted(p for p in sub.iterdir() if p.is_file() and p.suffix == ext)
+        if files:
+            return files
+    legacy = templates_hooks / "scripts"
+    if legacy.is_dir():
+        return sorted(
+            p for p in legacy.iterdir() if p.is_file() and p.suffix in (".ps1", ".sh") and p.suffix == ext
+        )
+    return []
 
 
 def sync_agents_dir(source_cursor: Path, dest_cursor: Path) -> int:
@@ -65,31 +99,74 @@ def sync_rules_dir(source_cursor: Path, dest_cursor: Path) -> int:
     return n
 
 
-def sync_hooks_tree(source_cursor: Path, dest_cursor: Path) -> int:
+def sync_hooks_tree(
+    source_cursor: Path,
+    dest_cursor: Path,
+    hooks_variant: str,
+    project_root: Path | None = None,
+) -> int:
+    """Copy hooks.json and only hook scripts for the resolved OS (ps1 or sh).
+
+    For ToGlobal/FromGlobal: if the source has no scripts matching this OS (e.g. global was
+    populated on another OS), fall back to templates/hooks/windows|unix/ when project_root is set.
+    When falling back to template scripts, hooks.json is taken from the same templates variant
+    so commands stay consistent. If hooks.json is missing on the source and we are not using
+    template scripts, fall back to templates hooks json for this variant.
+    """
+    pk = platform_hooks_variant(hooks_variant)
+    want_suffix = hook_script_suffix_for_platform(pk)
+
     n = 0
+    dest_cursor.mkdir(parents=True, exist_ok=True)
     src_json = source_cursor / "hooks.json"
-    if src_json.is_file():
-        dest_cursor.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src_json, dest_cursor / "hooks.json")
-        _write_sync_line("hooks.json")
-        n += 1
-
     src_scripts = source_cursor / "hooks" / "scripts"
-    if not src_scripts.is_dir():
-        return n
 
-    script_files = sorted(
-        [p for p in src_scripts.iterdir() if p.is_file() and p.suffix in (".ps1", ".sh")]
-    )
-    if not script_files:
-        return n
+    script_files: list[Path] = []
+    if src_scripts.is_dir():
+        script_files = sorted(
+            p for p in src_scripts.iterdir() if p.is_file() and p.suffix == want_suffix
+        )
+
+    template_fallback = False
+    th: Path | None = None
+    if not script_files and project_root is not None:
+        th = project_root / "templates" / "hooks"
+        script_files = iter_template_hook_scripts(th, hooks_variant)
+        template_fallback = bool(script_files)
+
+    if template_fallback and th is not None:
+        t = resolve_hooks_json_template(th, hooks_variant)
+        if t is not None:
+            shutil.copy2(t, dest_cursor / "hooks.json")
+            _write_sync_line(f"hooks.json (from templates/{t.name})")
+            n += 1
+        elif src_json.is_file():
+            shutil.copy2(src_json, dest_cursor / "hooks.json")
+            _write_sync_line("hooks.json")
+            n += 1
+    else:
+        if src_json.is_file():
+            shutil.copy2(src_json, dest_cursor / "hooks.json")
+            _write_sync_line("hooks.json")
+            n += 1
+        elif project_root is not None:
+            th = project_root / "templates" / "hooks"
+            t = resolve_hooks_json_template(th, hooks_variant)
+            if t is not None:
+                shutil.copy2(t, dest_cursor / "hooks.json")
+                _write_sync_line(f"hooks.json (from templates/{t.name})")
+                n += 1
 
     dest_scripts = dest_cursor / "hooks" / "scripts"
     dest_scripts.mkdir(parents=True, exist_ok=True)
     _clear_matching(dest_scripts, ("*.ps1", "*.sh"))
+
     for f in script_files:
         shutil.copy2(f, dest_scripts / f.name)
-        _write_sync_line(f"hooks/scripts/{f.name}")
+        if template_fallback:
+            _write_sync_line(f"hooks/scripts/{f.name} (from templates/hooks/{pk}/)")
+        else:
+            _write_sync_line(f"hooks/scripts/{f.name}")
         n += 1
     return n
 
@@ -146,7 +223,7 @@ def main() -> int:
         "--hooks-variant",
         choices=("auto", "windows", "unix"),
         default="auto",
-        help="Which hooks.json to install: auto (OS default), windows (PowerShell), or unix (bash).",
+        help="OS hook set: auto (this OS), windows (*.ps1), or unix (*.sh). Used for templates and ToGlobal/FromGlobal.",
     )
     args = parser.parse_args()
 
@@ -165,18 +242,22 @@ def main() -> int:
 
     if mode == "ToGlobal":
         print(f"Mode: project .cursor/ -> {global_cursor}")
+        print(f"Hooks: {platform_hooks_variant(args.hooks_variant)} scripts only")
         copied += sync_agents_dir(local_cursor, global_cursor)
         copied += sync_rules_dir(local_cursor, global_cursor)
-        copied += sync_hooks_tree(local_cursor, global_cursor)
+        copied += sync_hooks_tree(local_cursor, global_cursor, args.hooks_variant, project_root)
         copied += sync_skills_tree(local_cursor / "skills", global_cursor / "skills")
     elif mode == "FromGlobal":
         print(f"Mode: {global_cursor} -> project .cursor/")
+        print(f"Hooks: {platform_hooks_variant(args.hooks_variant)} scripts only")
         copied += sync_agents_dir(global_cursor, local_cursor)
         copied += sync_rules_dir(global_cursor, local_cursor)
-        copied += sync_hooks_tree(global_cursor, local_cursor)
+        copied += sync_hooks_tree(global_cursor, local_cursor, args.hooks_variant, project_root)
         copied += sync_skills_tree(global_cursor / "skills", local_cursor / "skills")
     else:
         print("Mode: templates/ (+ agent fallback) -> project .cursor/")
+        pk = platform_hooks_variant(args.hooks_variant)
+        print(f"Hooks: {pk} (from templates/hooks/{pk}/)")
 
         agents_source_global = global_cursor / "agents"
         templates_subagents = project_root / "templates" / "agents" / "subagents"
@@ -208,7 +289,6 @@ def main() -> int:
                     copied += 1
 
         templates_hooks = project_root / "templates" / "hooks"
-        templates_scripts = templates_hooks / "scripts"
         if templates_hooks.is_dir():
             dest_hooks = local_cursor / "hooks"
             scripts_dest = dest_hooks / "scripts"
@@ -222,15 +302,12 @@ def main() -> int:
                 _write_sync_line(label)
                 copied += 1
 
-            if templates_scripts.is_dir():
-                hook_scripts = sorted(
-                    p for p in templates_scripts.iterdir() if p.suffix in (".ps1", ".sh") and p.is_file()
-                )
-                _clear_matching(scripts_dest, ("*.ps1", "*.sh"))
-                for f in hook_scripts:
-                    shutil.copy2(f, scripts_dest / f.name)
-                    _write_sync_line(f"hooks/scripts/{f.name}")
-                    copied += 1
+            hook_scripts = iter_template_hook_scripts(templates_hooks, args.hooks_variant)
+            _clear_matching(scripts_dest, ("*.ps1", "*.sh"))
+            for f in hook_scripts:
+                shutil.copy2(f, scripts_dest / f.name)
+                _write_sync_line(f"hooks/scripts/{f.name}")
+                copied += 1
 
         templates_skills = project_root / "templates" / "skills"
         if templates_skills.is_dir():
