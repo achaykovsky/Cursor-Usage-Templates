@@ -50,15 +50,15 @@ python templates/commands/sync-cursor.py --mode FromGlobal
 
 ## Hooks variant (`--hooks-variant` / `-HooksVariant`)
 
-Controls which **`hooks.json` source** is copied to **`.cursor/hooks.json`** in **`TemplatesToLocal`** mode:
+Controls which **OS hook set** is used (`windows` → `*.ps1`, `unix` → `*.sh`):
 
 | Value | Behavior |
 |-------|----------|
-| **`auto`** (default) | **Windows:** `templates/hooks/hooks.json` (PowerShell). **macOS/Linux:** `templates/hooks/hooks.unix.json` (bash). |
-| **`windows`** | Always use `templates/hooks/hooks.json` (PowerShell commands). |
-| **`unix`** | Use `templates/hooks/hooks.unix.json` if present; otherwise fall back to `hooks.json`. |
+| **`auto`** (default) | **Windows:** `templates/hooks/hooks.json` + `templates/hooks/windows/*.ps1`. **macOS/Linux:** `hooks.unix.json` + `templates/hooks/unix/*.sh`. |
+| **`windows`** | `templates/hooks/hooks.json` + `templates/hooks/windows/*.ps1`. |
+| **`unix`** | `hooks.unix.json` (if present) + `templates/hooks/unix/*.sh`. |
 
-`ToGlobal` / `FromGlobal` copy whatever **`hooks.json`** and hook scripts already exist under the source tree (they are not rewritten by this flag).
+**`ToGlobal` / `FromGlobal`:** Scripts are filtered by this variant (only `*.ps1` or `*.sh` from `hooks/scripts/`). If the source has no scripts for the current OS (e.g. global was filled on another OS), the sync copies **`hooks.json` from `templates/hooks/`** (when missing on the source) and **`hooks/scripts` from `templates/hooks/windows/` or `unix/`** so the destination still works. Run from the repo root so `templates/` is found.
 
 ## What Each Mode Syncs
 
@@ -69,7 +69,7 @@ Controls which **`hooks.json` source** is copied to **`.cursor/hooks.json`** in 
 | `templates/agents/subagents/*.md` or (fallback) `~/.cursor/agents/*.md` | `.cursor/agents/` |
 | `templates/rules/*.mdc` | `.cursor/rules/` |
 | `templates/hooks/hooks.json` or `hooks.unix.json` (see variant above) | `.cursor/hooks.json` |
-| `templates/hooks/scripts/*.{ps1,sh}` | `.cursor/hooks/scripts/` |
+| `templates/hooks/windows/*.ps1` or `templates/hooks/unix/*.sh` | `.cursor/hooks/scripts/` (flat; OS only) |
 | `templates/skills/**/SKILL.md` | `.cursor/skills/**/` |
 
 **Agent fallback:** If `templates/agents/subagents/` is missing or empty, agents are taken from `~/.cursor/agents/` when that folder has `*.md` files.
@@ -85,7 +85,7 @@ Copies between project **`.cursor/`** and **`~/.cursor/`**:
 | Hooks | `hooks.json` at the Cursor root, plus `hooks/scripts/*.{ps1,sh}` |
 | Skills | `skills/**/SKILL.md` (tree preserved) |
 
-For **`ToGlobal`** and **`FromGlobal`**, existing `*.md` in `agents/`, `*.mdc` in `rules/`, and `*.{ps1,sh}` in `hooks/scripts/` at the **destination** are removed before copy so the destination matches the source set. **`hooks.json`** is overwritten only when the **source** has that file.
+For **`ToGlobal`** and **`FromGlobal`**, existing `*.md` in `agents/`, `*.mdc` in `rules/`, and **all** `*.ps1` and `*.sh` in `hooks/scripts/` at the **destination** are cleared, then only scripts matching **`--hooks-variant`** (`*.ps1` or `*.sh`) are copied from the source. If none match, the sync falls back to **`templates/hooks/windows/`** or **`templates/hooks/unix/`** when the command is run from a project that contains `templates/` (see **Hooks variant** above). **`hooks.json`** is copied from the source when present; otherwise from `templates/hooks/` for the variant.
 
 ## Safety: Empty Sources
 
@@ -97,7 +97,7 @@ If a category has **no files** on the source side (missing folder, or folder wit
 |-----------|---------|-------------|
 | `--project-root` / `-ProjectRoot` | Parent of `templates/` (inferred from script path) | Root of the project whose `.cursor/` is read or written. |
 | `--mode` / `-Mode` | `TemplatesToLocal` | One of `TemplatesToLocal`, `ToGlobal`, `FromGlobal`. |
-| `--hooks-variant` / `-HooksVariant` | `auto` | `auto`, `windows`, or `unix` (see above). |
+| `--hooks-variant` / `-HooksVariant` | `auto` | `auto`, `windows`, or `unix` — selects which script extension and hooks JSON to use (`TemplatesToLocal` and `ToGlobal` / `FromGlobal`). |
 
 **`-ProjectRoot`:** When you pass it explicitly, use the full project path you intend (the script does not resolve relative paths with `Resolve-Path`).
 
