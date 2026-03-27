@@ -10,7 +10,7 @@ Use this prompt in Cursor Chat or Composer to generate a structured implementati
 
 ## Implemented Hooks (Scripts)
 
-This repo includes `templates/hooks/` with ready-to-use scripts. Run `.\templates\commands\sync-cursor.ps1` to copy to `.cursor/`. Scripts live in `templates/hooks/scripts/` → `.cursor/hooks/scripts/`.
+This repo includes `templates/hooks/` with ready-to-use scripts. Run `python templates/commands/sync-cursor.py` (or `.\templates\commands\sync-cursor.ps1` on Windows) to copy to `.cursor/`. Scripts live in `templates/hooks/scripts/` → `.cursor/hooks/scripts/` (PowerShell `*.ps1` on Windows, bash `*.sh` on macOS/Linux; see `templates/commands/README.md`).
 
 | Hook | Script | Skill mapping | Purpose |
 |------|--------|---------------|---------|
@@ -182,7 +182,7 @@ Produce a structured implementation plan with:
 2. **Full hook specifications** – One section per hook, using the table format above. Include the **Skills** column: which skill(s) to invoke when the hook runs.
 3. **Skill–hook matrix** – For each skill in `.cursor/skills/`, which hook(s) trigger it and under what conditions.
 4. **Trigger matrix** – Which lifecycle events are used and for what.
-5. **Dependencies** – Scripts or tools each hook assumes (e.g. `jq`, `pwsh`, `black`).
+5. **Dependencies** – Scripts or tools each hook assumes (e.g. `jq`, `pwsh` / `bash`, `python3`, `black`).
 6. **Rollout order** – Suggested implementation order (safety first, then quality, then convenience).
 7. **Caveats** – Limitations, false-positive risks, and when to prefer manual review.
 
