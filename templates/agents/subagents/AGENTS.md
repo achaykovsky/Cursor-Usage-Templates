@@ -20,6 +20,7 @@ Subagents live in `.cursor/agents/` and appear in **Settings > Subagents**. Invo
 | BACKEND_GO | backend_go_engineer.md | composer-1.5 |
 | PERFORMANCE | performance_engineer.md | claude-4.6-sonnet |
 | DATA_ENGINEER | data_engineer.md | composer-1.5 |
+| INCIDENT | incident_responder.md | claude-4.6-sonnet |
 
 ## CORE SUBAGENTS
 
@@ -66,6 +67,9 @@ Profiling, bottlenecks, complexity. Measure before optimize. Database, API, cach
 
 ### DATA_ENGINEER (data_engineer.md)
 ETL/ELT, pipelines, data quality. Idempotent, incremental, Airflow/Prefect/Dagster.
+
+### INCIDENT (incident_responder.md)
+Debugging and production incidents. Reproduce, isolate, evidence-driven RCA. Mitigation vs remediation. Logs, metrics, traces; minimal repro; postmortem structure. Redact secrets in evidence.
 
 ## RULES (TECHNICAL STANDARDS)
 
