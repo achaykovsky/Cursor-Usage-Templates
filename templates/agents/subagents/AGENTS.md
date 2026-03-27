@@ -94,4 +94,4 @@ Rules in `.cursor/rules/*.mdc` add technical depth and apply via globs. Source: 
 
 ## SYNC
 
-Run `.\templates\commands\sync-cursor.ps1` to copy subagents from `templates/agents/subagents/` (or `%USERPROFILE%\.cursor\agents\`) to `.cursor/agents/` and rules to `.cursor/rules/`. The sync clears `.cursor/agents/` before copying so renamed files don't persist.
+Run `python templates/commands/sync-cursor.py` (or `.\templates\commands\sync-cursor.ps1` on Windows) to copy subagents from `templates/agents/subagents/` (or `~/.cursor/agents/`) to `.cursor/agents/` and rules to `.cursor/rules/`. The sync clears `.cursor/agents/` before copying so renamed files don't persist.

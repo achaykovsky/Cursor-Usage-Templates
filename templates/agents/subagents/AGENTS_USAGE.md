@@ -100,4 +100,4 @@ Use multiple subagents in sequence:
 
 - **Be specific**: "@agent(REVIEWER) Review this auth function for SQL injection" is better than "review this"
 - **Subagent + Rules**: Subagents provide role/prompt; rules (`.cursor/rules/*.mdc`) add technical standards when editing matching files
-- **Sync**: Run `.\templates\commands\sync-cursor.ps1` to update `.cursor/agents/` and `.cursor/rules/`
+- **Sync**: Run `python templates/commands/sync-cursor.py` to update `.cursor/agents/` and `.cursor/rules/`
