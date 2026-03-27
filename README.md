@@ -4,11 +4,11 @@ Centralized Markdown templates for Cursor instructions at multiple scopes: base 
 
 ## Quick Start
 
-1. **Sync Cursor config** into your project:
-   ```powershell
-   .\templates\commands\sync-cursor.ps1
+1. **Sync Cursor config** into your project (requires **Python 3.7+** on `PATH`):
+   ```bash
+   python templates/commands/sync-cursor.py
    ```
-   Copies agents, rules, hooks, and skills from `templates/` to `.cursor/`.
+   On Windows you can also run `.\templates\commands\sync-cursor.ps1` (it calls the same script). Copies agents, rules, hooks, and skills from `templates/` to `.cursor/`. **Hooks:** default sync uses PowerShell on Windows and bash on macOS/Linux (`--hooks-variant auto`). See `templates/commands/README.md` for OS prerequisites (`pwsh`, `jq`, etc.).
 
 2. **Copy base templates** into your Cursor instructions panel:
    - `templates/workspace.md` – organization-wide rules
@@ -29,11 +29,11 @@ Centralized Markdown templates for Cursor instructions at multiple scopes: base 
 |--------|-------------|
 | `templates/agents/subagents/*.md` | `.cursor/agents/` |
 | `templates/rules/*.mdc` | `.cursor/rules/` |
-| `templates/hooks/hooks.json` | `.cursor/hooks.json` |
-| `templates/hooks/scripts/*.ps1` | `.cursor/hooks/scripts/` |
+| `templates/hooks/hooks.json` or `hooks.unix.json` (see sync `--hooks-variant`) | `.cursor/hooks.json` |
+| `templates/hooks/windows/*.ps1` or `templates/hooks/unix/*.sh` | `.cursor/hooks/scripts/` (flat; OS only) |
 | `templates/skills/**/SKILL.md` | `.cursor/skills/**/` |
 
-See `templates/commands/README.md` for global use (submodule, symlink, `-ProjectRoot`).
+See `templates/commands/README.md` for global use (submodule, symlink, `--project-root`) and OS-specific hook dependencies.
 
 ## Base Templates
 
@@ -86,6 +86,7 @@ templates/
 ├── user.md
 ├── commands/
 │   ├── README.md
+│   ├── sync-cursor.py
 │   └── sync-cursor.ps1
 ├── agents/
 │   └── subagents/           # .cursor/agents/
@@ -99,7 +100,9 @@ templates/
 │   └── ...
 ├── hooks/                   # .cursor/hooks.json + hooks/scripts/
 │   ├── hooks.json
-│   └── scripts/*.ps1
+│   ├── hooks.unix.json
+│   ├── windows/*.ps1
+│   └── unix/*.sh
 ├── skills/                  # .cursor/skills/
 │   └── **/SKILL.md
 └── prompts/
@@ -109,6 +112,6 @@ templates/
 
 ## Troubleshooting
 
-**Subagents not recognized:** Run `sync-cursor.ps1`. Ensure files exist in `templates/agents/subagents/` or `%USERPROFILE%\.cursor\agents\`.
+**Subagents not recognized:** Run `python templates/commands/sync-cursor.py`. Ensure files exist in `templates/agents/subagents/` or `~/.cursor/agents/` (Windows: `%USERPROFILE%\.cursor\agents\`).
 
 **Template conflicts:** `user.md` = global; `project.md` = project-only; `workspace.md` = org-wide.
