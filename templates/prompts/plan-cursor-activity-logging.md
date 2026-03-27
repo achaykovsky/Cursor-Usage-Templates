@@ -159,7 +159,7 @@ Generation gen1 (2026-02-25 20:11:35)
 
 | File | Changes |
 |------|---------|
-| `templates/hooks/scripts/log-cursor-activity.ps1` | Event normalization, structured output per event, edit summary, truncation |
+| `templates/hooks/windows/log-cursor-activity.ps1` | Event normalization, structured output per event, edit summary, truncation |
 | `.cursor/hooks/scripts/log-cursor-activity.ps1` | Same (after sync) |
 | `templates/commands/query-cursor-logs.ps1` | New: read JSONL, group by generation_id, output prompt → files |
 | `templates/prompts/plan-cursor-hooks.md` | Update log hook description |

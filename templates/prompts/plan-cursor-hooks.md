@@ -10,7 +10,7 @@ Use this prompt in Cursor Chat or Composer to generate a structured implementati
 
 ## Implemented Hooks (Scripts)
 
-This repo includes `templates/hooks/` with ready-to-use scripts. Run `python templates/commands/sync-cursor.py` (or `.\templates\commands\sync-cursor.ps1` on Windows) to copy to `.cursor/`. Scripts live in `templates/hooks/scripts/` → `.cursor/hooks/scripts/` (PowerShell `*.ps1` on Windows, bash `*.sh` on macOS/Linux; see `templates/commands/README.md`).
+This repo includes `templates/hooks/` with ready-to-use scripts. Run `python templates/commands/sync-cursor.py` (or `.\templates\commands\sync-cursor.ps1` on Windows) to copy to `.cursor/`. Scripts live in **`templates/hooks/windows/`** (`*.ps1`) and **`templates/hooks/unix/`** (`*.sh`); sync copies only the OS-appropriate set into flat `.cursor/hooks/scripts/` (see `templates/commands/README.md`).
 
 | Hook | Script | Skill mapping | Purpose |
 |------|--------|---------------|---------|
