@@ -13,7 +13,7 @@ description: From spec, OpenAPI, or contract: implements or extends endpoints, r
 
 2. **Implement or extend**
    - Add or update the route/handler. Implement request parsing, validation (against types or schema), and response serialization.
-   - Use existing patterns: error handling, auth middleware, and status codes (e.g. 400 for validation, 404 for not found, 500 for server error). Do not expose internal errors or stack traces in responses. For logs and docs, apply **redact-sensitive-in-output** (shared-practices).
+   - Use existing patterns: error handling, auth middleware, and status codes (e.g. contract-defined validation status, commonly 400 or 422, plus 404 for not found, 500 for server error). Validation error status must follow the project's API contract; if unspecified, use framework default and document it explicitly. Do not expose internal errors or stack traces in responses. For logs and docs, apply **redact-sensitive-in-output** (shared-practices).
 
 3. **Align with project**
    - Follow existing conventions: URL style, versioning, and DTOs or response types. Add or update types/interfaces so the API is consistent.

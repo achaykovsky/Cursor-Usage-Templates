@@ -21,7 +21,7 @@ description: Evaluates whether an API change is backward compatible for existing
    - List each delta with a **compat verdict** (safe / risky / breaking) and **why**.
 
 4. **Recommend**
-   - If breaking: default path is **versioning** + migration window, or **deprecation** with overlap (see **api-versioning-guidance**, **handle-breaking-change**). If additive-only: still document new fields and optional semantics.
+   - If breaking: default path is **versioning** + migration window, or **deprecation** with overlap (see **api-versioning-guidance**). Use **handle-breaking-change** for migration execution details. If additive-only: still document new fields and optional semantics.
 
 ## Notes
 

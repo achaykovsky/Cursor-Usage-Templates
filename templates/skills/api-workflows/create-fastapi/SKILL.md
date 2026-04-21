@@ -193,8 +193,8 @@ dev = ["pytest", "httpx"]
 ## Conventions
 
 - **Versioning**: Use `/api/v1/` prefix. Add new routers under `v1` or create `v2` when breaking.
-- **Validation**: Pydantic models for request/response. FastAPI validates automatically; return 422 for validation errors.
-- **Status codes**: 200/201 for success, 400 bad request, 404 not found, 422 validation error, 500 server error. Never expose stack traces.
+- **Validation**: Pydantic models for request/response. Validation error status must follow the project's API contract; if unspecified, use framework default and document it explicitly.
+- **Status codes**: 200/201 for success, contract-defined validation status, 400 bad request, 404 not found, 500 server error. Never expose stack traces.
 - **Secrets**: Load via pydantic-settings from env. Use `.env.example` with placeholders. No hardcoded keys.
 - **Thin handlers**: Delegate business logic to services; keep route handlers as thin glue.
 - **Dependencies**: Use `Depends()` for shared logic (DB session, auth, pagination).

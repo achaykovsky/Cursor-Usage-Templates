@@ -76,7 +76,7 @@ import os
 from typing import Dict, Type
 
 class BaseConfig:
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-in-prod")
+    SECRET_KEY = os.environ["SECRET_KEY"]  # required; no insecure default
     DEBUG = False
     TESTING = False
 
@@ -176,9 +176,10 @@ dev = ["pytest", "pytest-flask"]
 ## Conventions
 
 - **Versioning**: Use `/api/v1/` prefix. Add new blueprints under `v1` or create `v2` when breaking.
-- **Validation**: Use Pydantic or marshmallow at boundaries. Return 400 with clear error payload.
-- **Status codes**: 200/201 for success, 400 validation, 404 not found, 500 server error. Never expose stack traces.
+- **Validation**: Use Pydantic or marshmallow at boundaries. Validation error status must follow the project's API contract; if unspecified, use framework default and document it explicitly.
+- **Status codes**: 200/201 for success, contract-defined validation status, 404 not found, 500 server error. Never expose stack traces.
 - **Secrets**: Load from env. Use `.env.example` with placeholders. No hardcoded keys.
+- **Startup safety**: Fail startup if required secrets are missing.
 - **Thin handlers**: Delegate business logic to services; keep route handlers as thin glue.
 
 ---
