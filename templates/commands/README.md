@@ -7,7 +7,7 @@ Syncs Cursor config (agents, rules, hooks, skills) between **`templates/`**, the
 | Platform | Command |
 |----------|---------|
 | Any (recommended) | `python templates/commands/sync-cursor.py` |
-| Windows PowerShell | `.\templates\commands\sync-cursor.ps1` (delegates to the Python script; requires Python on `PATH`) |
+| Windows PowerShell | `.\templates\commands\sync-cursor.ps1` (delegates to the Python script; requires Python on `PATH`. Defaults `-ProjectRoot` to the current working directory.) |
 
 ## Prerequisites by OS
 
@@ -95,7 +95,7 @@ If a category has **no files** on the source side (missing folder, or folder wit
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `--project-root` / `-ProjectRoot` | Parent of `templates/` (inferred from script path) | Root of the project whose `.cursor/` is read or written. |
+| `--project-root` / `-ProjectRoot` | Current working directory in `sync-cursor.ps1`; parent of `templates/` in `sync-cursor.py` | Root of the project whose `.cursor/` is read or written. |
 | `--mode` / `-Mode` | `TemplatesToLocal` | One of `TemplatesToLocal`, `ToGlobal`, `FromGlobal`. |
 | `--hooks-variant` / `-HooksVariant` | `auto` | `auto`, `windows`, or `unix` — selects which script extension and hooks JSON to use (`TemplatesToLocal` and `ToGlobal` / `FromGlobal`). |
 
@@ -113,7 +113,7 @@ python templates/commands/sync-cursor.py
 .\templates\commands\sync-cursor.ps1
 ```
 
-The script infers project root as the parent of `templates/` (`templates/commands/` → two levels up).
+`sync-cursor.py` infers project root as the parent of `templates/` (`templates/commands/` → two levels up). `sync-cursor.ps1` now defaults to the current working directory unless `-ProjectRoot` is provided.
 
 **Push project Cursor config to global:**
 
@@ -141,11 +141,11 @@ Use this script from a central templates repo so any project can sync Cursor con
 
 ### Option B: Global Script with `--project-root`
 
-1. Clone this repo to e.g. `~/.cursor/Cursor-Usage-Templates`.
+1. Clone this repo to e.g. `%USERPROFILE%\cursor\Cursor-Usage-Templates` (Windows) or `~/cursor/Cursor-Usage-Templates` (macOS/Linux).
 2. From any project directory:
 
    ```bash
-   python ~/.cursor/Cursor-Usage-Templates/templates/commands/sync-cursor.py --project-root "$(pwd)"
+   python ~/cursor/Cursor-Usage-Templates/templates/commands/sync-cursor.py --project-root "$(pwd)"
    ```
 
 3. Add `--mode ToGlobal` or `--mode FromGlobal` when syncing with `~/.cursor/` instead of templates.
