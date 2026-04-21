@@ -9,6 +9,8 @@ Centralized Markdown templates for Cursor instructions at multiple scopes: base 
    python templates/commands/sync-cursor.py
    ```
    On Windows you can also run `.\templates\commands\sync-cursor.ps1` (it calls the same script). Copies agents, rules, hooks, and skills from `templates/` to `.cursor/`. **Hooks:** default sync uses PowerShell on Windows and bash on macOS/Linux (`--hooks-variant auto`). See `templates/commands/README.md` for OS prerequisites (`pwsh`, `jq`, etc.).
+   If you run sync from a central templates repo in another project, use the global path:
+   `& "$env:USERPROFILE\cursor\Cursor-Usage-Templates\templates\commands\sync-cursor.ps1" -Mode FromGlobal`
 
 2. **Copy base templates** into your Cursor instructions panel:
    - `templates/workspace.md` – organization-wide rules
