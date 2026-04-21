@@ -86,9 +86,16 @@ Frontend agents are FE-prefixed (`FE_*`) and backend agents are BE/domain-prefix
 
 Rules in `templates/rules/*.mdc` sync to `.cursor/rules/` and apply via globs (e.g. `**/*.py` → `python-backend.mdc`). `security.mdc` is always applied.
 
+Recent additions:
+- `api-contract.mdc` for API validation/status/versioning consistency
+- `skills-consistency.mdc` for `templates/skills/**/SKILL.md` structure/terminology consistency
+
 ## Hooks
 
 `templates/hooks/` provides lifecycle hooks (format-after-edit, block-destructive-shell, etc.). See `templates/prompts/plan-cursor-hooks.md` for setup.
+
+Recent additions:
+- `validate-template-consistency` hook (Windows + Unix) runs on `beforeSubmitPrompt` and `afterFileEdit` to catch stale terminology/policy drift in templates.
 
 ## Skills
 
