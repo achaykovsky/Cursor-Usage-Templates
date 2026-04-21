@@ -1,6 +1,6 @@
 # AVAILABLE SUBAGENTS
 
-Subagents live in `.cursor/agents/` and appear in **Settings > Subagents**. Invoke via `@agent(NAME)` in chat or `// @agent(NAME)` in code comments.
+Subagents live in `.cursor/agents/` and appear in **Settings > Subagents**. Invoke via `@agent(NAME)` in chat or using the language's comment syntax with `@agent(NAME)` in code comments.
 
 **Short names** (for invocation) vs **file names** (descriptive). Models chosen for cost vs quality: Opus only for critical reasoning (SECURITY, ARCHITECT); Sonnet for structured analysis; Composer for code-heavy tasks.
 
@@ -15,7 +15,13 @@ Subagents live in `.cursor/agents/` and appear in **Settings > Subagents**. Invo
 | DEVOPS | devops_engineer.md | composer-1.5 |
 | DATABASE_SQL | sql_database_engineer.md | composer-1.5 |
 | DATABASE_NOSQL | nosql_database_engineer.md | composer-1.5 |
-| FRONTEND | frontend_engineer.md | composer-1.5 |
+| FE_UI_ENGINEER | fe_ui_engineer.md | composer-1.5 |
+| FE_UX_DESIGN | fe_ux_design.md | claude-4.6-sonnet |
+| FE_DESIGN_SYSTEM | fe_design_system.md | claude-4.6-sonnet |
+| FE_STATE_ENGINEER | fe_state_engineer.md | composer-1.5 |
+| FE_TEST_ENGINEER | fe_test_engineer.md | composer-1.5 |
+| FE_ACCESSIBILITY_ENGINEER | fe_accessibility_engineer.md | claude-4.6-sonnet |
+| FE_PERFORMANCE_ENGINEER | fe_performance_engineer.md | claude-4.6-sonnet |
 | BACKEND_PYTHON | backend_python_engineer.md | composer-1.5 |
 | BACKEND_GO | backend_go_engineer.md | composer-1.5 |
 | PERFORMANCE | performance_engineer.md | claude-4.6-sonnet |
@@ -53,8 +59,28 @@ Relational DB. Schema design, migrations, query optimization, EXPLAIN plans.
 ### DATABASE_NOSQL (nosql_database_engineer.md)
 MongoDB, DynamoDB, Cassandra. Access pattern design, partition keys, denormalization.
 
-### FRONTEND (frontend_engineer.md)
-React/TypeScript, UX, accessibility, performance. Component design, Core Web Vitals.
+### FE_UI_ENGINEER (fe_ui_engineer.md)
+Frontend component/page implementation. React/TypeScript UI, responsive layout, semantic structure.
+
+### FE_UX_DESIGN (fe_ux_design.md)
+Frontend UX design. User flows, interaction behavior, edge states, implementation-ready criteria.
+
+### FE_DESIGN_SYSTEM (fe_design_system.md)
+Frontend design system. Tokens, reusable component contracts, visual consistency and theming constraints.
+
+### FE_STATE_ENGINEER (fe_state_engineer.md)
+Frontend state management. Client/server state boundaries, caching policy, invalidation, optimistic updates.
+
+### FE_TEST_ENGINEER (fe_test_engineer.md)
+Frontend testing. RTL/Vitest/Playwright coverage, regression protection, flake reduction.
+
+### FE_ACCESSIBILITY_ENGINEER (fe_accessibility_engineer.md)
+Frontend accessibility. Keyboard/focus behavior, semantic structure, ARIA correctness, WCAG-oriented remediation.
+
+### FE_PERFORMANCE_ENGINEER (fe_performance_engineer.md)
+Frontend performance. Core Web Vitals, bundle/render profiling, code-splitting and loading-path optimization.
+
+## BACKEND SPECIALIZED SUBAGENTS
 
 ### BACKEND_PYTHON (backend_python_engineer.md)
 FastAPI/Django, async, Pydantic, SQLAlchemy. Security-first, type hints, pytest.
@@ -91,6 +117,22 @@ Rules in `.cursor/rules/*.mdc` add technical depth and apply via globs. Source: 
 | testing.mdc | Test files |
 | performance.mdc | Code files |
 | data-pipelines.mdc | DAGs, pipelines |
+
+## POLICY PRECEDENCE
+
+When guidance conflicts, apply this order:
+
+1. **Security and safety constraints first** (never override these).
+2. **Scoped rules** in `.cursor/rules/*.mdc` for matching files.
+3. **Workflow skills** (`templates/skills/**/SKILL.md`) for task execution steps.
+4. **Subagent prompt** (`templates/agents/subagents/*.md`) for domain ownership and output style.
+5. **Examples/docs** (`README`, usage snippets) as non-authoritative guidance.
+
+Tie-breaks:
+
+- Prefer the more specific scope over generic guidance.
+- Prefer explicit project contract/policy over framework default.
+- For frontend-local work, prefer `FE_*`; escalate cross-stack/system-wide to generic specialists (`TESTER`, `PERFORMANCE`, `SECURITY`, etc.).
 
 ## SYNC
 
