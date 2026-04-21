@@ -47,6 +47,8 @@ See `templates/commands/README.md` for global use (submodule, symlink, `--projec
 
 Subagents live in `templates/agents/subagents/` and sync to `.cursor/agents/`. They appear in **Settings > Subagents**. Invoke via `@agent(NAME)`.
 
+### Core + Platform Agents
+
 | Invoke | File | Purpose |
 |--------|------|---------|
 | PM | product_manager.md | Task breakdown, planning, specs |
@@ -58,14 +60,27 @@ Subagents live in `templates/agents/subagents/` and sync to `.cursor/agents/`. T
 | DEVOPS | devops_engineer.md | CI/CD, Docker, monitoring |
 | DATABASE_SQL | sql_database_engineer.md | Schema, migrations, queries |
 | DATABASE_NOSQL | nosql_database_engineer.md | MongoDB, DynamoDB, Cassandra |
-| FRONTEND | frontend_engineer.md | React/TypeScript, UX |
 | BACKEND_GO | backend_go_engineer.md | Go backend |
 | BACKEND_PYTHON | backend_python_engineer.md | FastAPI/Django, async |
 | PERFORMANCE | performance_engineer.md | Profiling, optimization |
 | DATA_ENGINEER | data_engineer.md | ETL/ELT, pipelines |
 | INCIDENT | incident_responder.md | Debugging, incidents, RCA |
 
+### Frontend Agents
+
+| Invoke | File | Purpose |
+|--------|------|---------|
+| FE_UI_ENGINEER | fe_ui_engineer.md | Frontend UI implementation |
+| FE_UX_DESIGN | fe_ux_design.md | Frontend UX flows and behavior |
+| FE_DESIGN_SYSTEM | fe_design_system.md | Frontend design system consistency |
+| FE_STATE_ENGINEER | fe_state_engineer.md | Frontend state and caching strategy |
+| FE_TEST_ENGINEER | fe_test_engineer.md | Frontend test coverage and regressions |
+| FE_ACCESSIBILITY_ENGINEER | fe_accessibility_engineer.md | Frontend accessibility and WCAG checks |
+| FE_PERFORMANCE_ENGINEER | fe_performance_engineer.md | Frontend Core Web Vitals and runtime performance |
+
 See `templates/agents/subagents/AGENTS.md` for full descriptions and `AGENTS_USAGE.md` for examples.
+
+Frontend agents are FE-prefixed (`FE_*`) and backend agents are BE/domain-prefixed (`BACKEND_*`, `DATABASE_*`) to keep boundaries explicit.
 
 ## Rules
 
@@ -78,6 +93,26 @@ Rules in `templates/rules/*.mdc` sync to `.cursor/rules/` and apply via globs (e
 ## Skills
 
 Skills in `templates/skills/**/SKILL.md` sync to `.cursor/skills/`. The agent uses them when relevant workflows are triggered (e.g. "update the docs" → keep-docs-in-sync-with-code).
+
+### Skill Packs
+
+| Pack | Focus |
+|------|-------|
+| `api-workflows` | API creation, extension, compatibility, versioning |
+| `architecture-workflows` | Architecture tradeoffs, pattern selection, migration/evolution planning |
+| `frontend-workflows` | FE delivery orchestration, UI/UX, state/cache, a11y, FE perf/testing |
+| `code-workflows` | Feature design, refactoring, logging, PR/code review |
+| `testing-workflows` | Test creation and failure reproduction |
+| `performance-workflows` | Bottleneck investigation and observability instrumentation |
+| `security-workflows` | Change-focused security scans and sensitive-data handling |
+| `docs-workflows` | ADR writing and docs/code sync |
+| `migration-workflows` | Breaking-change handling and migration execution |
+| `dependency-workflows` | Dependency audit and environment reproduction |
+| `navigation-workflows` | Codebase structure and data-flow tracing |
+| `release-workflows` | Release preparation and pre-deploy validation |
+| `shared-practices` | Redaction, token efficiency, and safe command behavior |
+
+Policy precedence for conflicting guidance is defined in `templates/agents/subagents/AGENTS.md` under `POLICY PRECEDENCE`.
 
 ## Project Structure
 
