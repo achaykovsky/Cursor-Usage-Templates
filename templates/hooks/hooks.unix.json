@@ -4,6 +4,9 @@
     "beforeSubmitPrompt": [
       {
         "command": "bash .cursor/hooks/scripts/log-cursor-activity.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/validate-template-consistency.sh"
       }
     ],
     "beforeShellExecution": [
@@ -31,6 +34,9 @@
       },
       {
         "command": "bash .cursor/hooks/scripts/format-after-edit.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/validate-template-consistency.sh"
       }
     ],
     "stop": [

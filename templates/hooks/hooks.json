@@ -4,6 +4,9 @@
     "beforeSubmitPrompt": [
       {
         "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/log-cursor-activity.ps1"
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/validate-template-consistency.ps1"
       }
     ],
     "beforeShellExecution": [
@@ -31,6 +34,9 @@
       },
       {
         "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/format-after-edit.ps1"
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/validate-template-consistency.ps1"
       }
     ],
     "stop": [
