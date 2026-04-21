@@ -1,6 +1,6 @@
 ---
 name: handle-breaking-change
-description: Identifies callers or consumers of a changed interface; proposes a compatibility path (deprecation, adapter, versioning) and updates or documents callers. Use when the user says "this is a breaking change," "we're changing the API," or removes/changes a public contract.
+description: Identifies callers or consumers of a changed interface; proposes a compatibility path (deprecation, adapter, versioning) and updates or documents callers. Use when the user says "this is a breaking change," changes any public contract (API, SDK, config, file format), or removes/changes a public interface.
 ---
 
 # Handle Breaking Change
@@ -29,3 +29,4 @@ description: Identifies callers or consumers of a changed interface; proposes a 
 
 - Do not remove or break existing callers without a clear path and user agreement. Prefer deprecation over hard break when possible.
 - Summarize who is affected and what they need to do (one-line per consumer type if many).
+- For API compatibility classification, run **check-api-backward-compatibility** first.
