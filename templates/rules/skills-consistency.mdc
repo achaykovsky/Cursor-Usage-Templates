@@ -1,0 +1,17 @@
+---
+description: Skills consistency - structure, terminology, routing boundaries
+globs: "templates/skills/**/SKILL.md"
+alwaysApply: false
+---
+
+# Skills Consistency Standards
+
+**Structure**: Use concise sections with stable ordering: `Workflow`, `Output Contract` (when applicable), `Notes` and/or `Routing` guidance.
+
+**Terminology**: Use canonical severity terms (`CRITICAL`, `WARNING`, `GOOD`) when severity is needed.
+
+**Boundaries**: Prefer explicit routing lines when skill overlap exists (e.g., FE-local vs cross-stack/system-wide).
+
+**Contracts over defaults**: For API behavior, prefer explicit project contract/policy over framework defaults.
+
+**No contradictory examples**: Do not include snippets that violate security/rule guidance (e.g., hardcoded secrets, unsafe defaults).

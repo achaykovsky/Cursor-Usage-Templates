@@ -1,0 +1,17 @@
+---
+description: API contract consistency - validation status, errors, versioning
+globs: "**/api/**, **/*openapi*, **/*swagger*, **/*endpoint*, **/*router*"
+alwaysApply: false
+---
+
+# API Contract Standards
+
+**Validation status**: Validation error status must follow the project API contract. If unspecified, use framework default and document it explicitly.
+
+**Error payloads**: Keep error shape consistent across endpoints (code/message/details or project equivalent). Never expose stack traces or internal exception data.
+
+**Versioning**: Prefer explicit API versioning for breaking changes (`/v1`, `/v2` or documented equivalent). Deprecate with overlap and migration guidance.
+
+**Compatibility**: Classify changes as compatible/risky/breaking before shipping contract updates. For breaking changes, include migration path and consumer impact.
+
+**Documentation sync**: Update OpenAPI/spec and docs when route shape, status codes, or validation behavior changes.

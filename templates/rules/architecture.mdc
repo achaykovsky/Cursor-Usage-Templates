@@ -17,3 +17,5 @@ alwaysApply: false
 **Dependency injection**: Constructor injection. No singletons or global state. Pass dependencies explicitly for testability.
 
 **ADR format**: Context, Decision, Consequences. Store in `docs/adr/` or `docs/decisions/`.
+
+**Precedence**: When guidance conflicts, prioritize security/safety first, then scoped rules, then workflow skills, then agent prompts, then examples/docs.

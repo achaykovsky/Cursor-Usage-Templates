@@ -14,6 +14,8 @@ alwaysApply: false
 
 **Coverage**: Aim 80%+ on critical paths. Cover error branches, validation failures, edge cases (empty, null, boundary). `pytest-cov`, `go test -cover`.
 
+**Scope routing**: Frontend-local UI/state/E2E coverage stays with FE testing workflows/agents. Cross-stack/system-wide strategy and mixed backend/frontend integration test policy escalate to generic `TESTER`.
+
 ```python
 # ✅ Clear, one concern
 def test_create_user_with_invalid_email_raises_validation_error():
