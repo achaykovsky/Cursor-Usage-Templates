@@ -9,6 +9,7 @@ description: For a given change or PR, checks for obvious issues (injection, har
 
 1. **Scope the change**
    - Obtain the diff or list of changed files. Identify touchpoints: user input, auth/authz, persistence, external calls, serialization, and config/secrets.
+   - When invoked from a generic PR review, treat this as the primary in-template security review step.
 
 2. **Check for common issues**
    - **Injection:** User input concatenated into SQL, commands, or HTML without parameterization or encoding. Suggest parameterized queries, prepared statements, or output encoding.
@@ -19,7 +20,7 @@ description: For a given change or PR, checks for obvious issues (injection, har
 
 3. **Suggest mitigations**
    - For each finding: concrete fix (e.g. use parameterized query, move secret to env). Reference OWASP or project security docs when helpful.
-   - Prioritize: critical (must fix) vs suggestion (should consider).
+   - Prioritize: **CRITICAL** (must fix) vs **WARNING** (should consider).
 
 4. **Summarize**
    - Short summary: scope reviewed, number and severity of findings, and top actions. If nothing obvious, state that and recommend broader review for high-risk areas.
