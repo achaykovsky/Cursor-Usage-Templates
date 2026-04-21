@@ -16,7 +16,7 @@ description: Identifies code paths touched by a change, finds test gaps, adds or
    - For each touched path: is there a test that covers the new or changed behavior? Flag missing coverage for success and failure cases.
 
 3. **Add or update tests**
-   - Prefer the project's existing test style and framework (e.g. pytest, Jest).
+   - Prefer the project's existing test style and framework (in this template ecosystem default to `pytest` unless repo conventions differ).
    - Add tests for: happy path, explicit failure/error paths, and important edge cases.
    - Keep tests focused: one behavior per test; descriptive names (test_what_under_what_condition).
    - Avoid testing implementation details; test observable behavior and contracts.
@@ -33,3 +33,4 @@ description: Identifies code paths touched by a change, finds test gaps, adds or
 
 - Prefer the project's patterns: fixtures, parametrization, mocks. Match naming and layout.
 - When the framework is unclear, infer from existing test files in the repo.
+- Frontend UI/state/regression testing should route to FE testing workflows/agents; use this skill for backend or cross-stack coverage.
