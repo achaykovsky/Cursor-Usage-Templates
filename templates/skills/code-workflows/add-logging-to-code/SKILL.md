@@ -1,6 +1,6 @@
 ---
 name: add-logging-to-code
-description: Adds structured logging to code paths (entry/exit, errors, key decisions); applies log levels, follows project patterns, and redacts sensitive data. Use when the user asks to "add logging," "log this," "instrument with logs," or "make this debuggable."
+description: Adds structured code-path logging (entry/exit, errors, key decisions); applies log levels, follows project patterns, and redacts sensitive data. Use when the user asks to "add logging," "log this," or make a code path debuggable through logs.
 ---
 
 # Add Logging to Code
@@ -43,5 +43,5 @@ description: Adds structured logging to code paths (entry/exit, errors, key deci
 
 ## Notes
 
-- For broader observability (metrics, traces), use **add-observability-for-debugging** (performance-workflows).
+- For broader observability (metrics, traces, production telemetry), use **add-observability-for-debugging** (performance-workflows).
 - Document what was added: "Search logs for `request_id=X` to trace this flow."

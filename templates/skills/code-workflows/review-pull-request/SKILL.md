@@ -1,6 +1,6 @@
 ---
 name: review-pull-request
-description: Performs end-to-end PR review: diff analysis, checklist against project or team standards, structured feedback (critical, suggestion, nice-to-have), and follow-up verification. Use when the user asks for a PR or code review, says "review this change," or when context includes staged or diff content.
+description: Performs end-to-end PR review: diff analysis, checklist against project or team standards, structured feedback (CRITICAL, WARNING, GOOD), and follow-up verification. Use when the user asks for a PR or code review, says "review this change," or when context includes staged or diff content.
 ---
 
 # Review Pull Request
@@ -19,9 +19,9 @@ description: Performs end-to-end PR review: diff analysis, checklist against pro
    - Tests: changes have corresponding tests; existing tests still pass.
 
 3. **Produce structured feedback**
-   - **Critical:** Must fix before merge (bugs, security, contract breaks).
-   - **Suggestion:** Should consider (readability, performance, robustness).
-   - **Nice to have:** Optional improvement.
+   - **CRITICAL:** Must fix before merge (bugs, security, contract breaks).
+   - **WARNING:** Should consider (readability, performance, robustness).
+   - **GOOD:** Optional improvement.
    - Cite file and line or snippet; be specific and actionable.
 
 4. **Summarize**
@@ -31,3 +31,8 @@ description: Performs end-to-end PR review: diff analysis, checklist against pro
 ## Output format
 
 Use clear headings and bullet lists. Group feedback by severity. Do not repeat the diff; reference it by file/region.
+
+## Routing boundaries
+
+- If findings are primarily security-sensitive, run `security-scan-changes` as the primary in-template security review step.
+- For frontend-only deep quality checks, route execution to FE agents and keep this skill focused on cross-stack PR hygiene.
