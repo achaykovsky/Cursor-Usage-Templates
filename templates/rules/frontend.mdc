@@ -8,7 +8,7 @@ alwaysApply: false
 
 **React**: `React.lazy()` + `Suspense` for code splitting. `useMemo`/`useCallback` only when profiling shows need. Keys on list items = stable unique id.
 
-**Accessibility**: `role`, `aria-label` when semantic HTML insufficient. `tabIndex` for focus order. `:focus-visible` for focus styles. Test with keyboard only, screen reader.
+**Accessibility**: `role`, `aria-label` when semantic HTML insufficient. Prefer semantic DOM order; avoid positive `tabIndex`. Use `tabIndex={0}` only for custom interactive elements that cannot be native controls. `:focus-visible` for focus styles. Test with keyboard only, screen reader.
 
 **Bundle**: `import()` for route-level splitting. Dynamic imports for heavy libs. Tree-shake: use named imports, not default. Check bundle analyzer output.
 
