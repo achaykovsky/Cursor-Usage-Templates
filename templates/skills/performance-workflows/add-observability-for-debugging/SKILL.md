@@ -1,6 +1,6 @@
 ---
 name: add-observability-for-debugging
-description: Identifies what to instrument (logs, metrics, traces) for a feature or failure mode; adds minimal instrumentation and documents how to use it. Use when the user asks to "add logging," "how do I debug this in prod," or "instrument this."
+description: Identifies production observability instrumentation (metrics, traces, and targeted logs) for a feature or failure mode; adds minimal instrumentation and documents how to use it. Use when the user asks how to debug in production, instrument a service, or add monitoring-oriented telemetry.
 ---
 
 # Add Observability for Debugging
@@ -25,5 +25,6 @@ description: Identifies what to instrument (logs, metrics, traces) for a feature
 
 ## Notes
 
+- For local code-path logging only, use **add-logging-to-code** (code-workflows).
 - Apply **redact-sensitive-in-output** (shared-practices) for logs, metrics, and traces.
 - If the project has no existing observability stack, suggest minimal logging first and note that metrics/tracing may require infrastructure.

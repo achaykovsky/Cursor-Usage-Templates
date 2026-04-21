@@ -10,6 +10,7 @@ description: Defines metrics or baseline, locates the bottleneck (profiling, log
 1. **Define metrics or baseline**
    - What is slow? (e.g. request latency, throughput, memory, CPU.) Get a measurable baseline (current value and how it was measured).
    - If the user reports "regression," identify when it started (commit range, deploy) and what changed.
+   - If the issue is frontend UX metrics (LCP/INP/CLS, bundle/render bottlenecks), route to FE performance workflow/agent first.
 
 2. **Locate the bottleneck**
    - Use profiling, logs, or code review as appropriate: hot paths, N+1 queries, large allocations, blocking I/O, or inefficient algorithms.
@@ -26,3 +27,4 @@ description: Defines metrics or baseline, locates the bottleneck (profiling, log
 
 - Prefer measuring over guessing. If profiling is not possible, state assumptions and suggest adding metrics or a profile run.
 - Document the root cause and fix briefly so future changes do not regress it.
+- Use this skill for backend, database, infra, or cross-layer/systemic bottlenecks.
