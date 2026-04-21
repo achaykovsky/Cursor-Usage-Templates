@@ -40,7 +40,9 @@
 | Performance | PERFORMANCE | `@agent(PERFORMANCE)` |
 | DataEngineer | DATA_ENGINEER | `@agent(DATA_ENGINEER)` |
 
-**Global sync**: Copy subagents to `%USERPROFILE%\.cursor\agents\` then run `.\templates\commands\sync-cursor.ps1` in each project.
+**Global sync**: Copy subagents to `%USERPROFILE%\.cursor\agents\` then run one of:
+- project-local path: `.\templates\commands\sync-cursor.ps1`
+- central repo path (from any project): `& "$env:USERPROFILE\cursor\Cursor-Usage-Templates\templates\commands\sync-cursor.ps1"`
 
 ## AGENT ABBREVIATIONS (Rules)
 
