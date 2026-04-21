@@ -11,6 +11,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# When called from a central templates repo, default the target project to the
+# caller's current directory so the command works globally in any project.
+if (-not $ProjectRoot) {
+    $ProjectRoot = (Get-Location).Path
+}
+
 $python = $null
 foreach ($name in @("python", "python3")) {
     $cmd = Get-Command $name -ErrorAction SilentlyContinue
