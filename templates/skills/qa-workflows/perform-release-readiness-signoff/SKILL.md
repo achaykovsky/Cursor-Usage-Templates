@@ -10,6 +10,7 @@ description: Produces QA release readiness signoff based on test execution, open
 1. **Collect readiness evidence**
    - Gather latest test cycle results, defect status, and pre-deploy validation outcomes.
    - Confirm build/version and deployment scope under review.
+   - If Linear/Jira MCP is configured, collect linked ticket states, release blockers, and explicit owner/status for critical defects.
 
 2. **Assess release blockers**
    - Identify unresolved CRITICAL/HIGH defects and workaround quality.
@@ -26,6 +27,7 @@ description: Produces QA release readiness signoff based on test execution, open
 5. **Publish signoff record**
    - Provide concise release decision summary with traceable evidence references.
    - Include explicit assumptions and residual risk acceptance.
+   - If tracker MCP is configured, write back a signoff note/status only when the user explicitly requests state updates.
 
 ## Output Contract
 
