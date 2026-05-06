@@ -118,6 +118,7 @@ Rules in `.cursor/rules/*.mdc` add technical depth and apply via globs. Source: 
 | performance.mdc | Code files |
 | data-pipelines.mdc | DAGs, pipelines |
 | api-contract.mdc | API/endpoint/spec files |
+| mcp-integrations.mdc | alwaysApply |
 | skills-consistency.mdc | `templates/skills/**/SKILL.md` |
 
 ## POLICY PRECEDENCE
