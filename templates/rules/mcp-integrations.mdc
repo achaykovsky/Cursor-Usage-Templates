@@ -1,0 +1,23 @@
+---
+description: MCP integration policy - data sources, safety boundaries, and fallback behavior
+alwaysApply: true
+---
+
+# MCP Integration Standards
+
+**Recommended MCP servers**: Prefer adding MCP integrations that map to real workflows:
+- GitHub MCP for PR/issues/checks/release metadata.
+- Linear or Jira MCP for planning, QA status, and release tracking.
+- Sentry MCP for incident/performance debugging evidence.
+- Docs KB MCP (Confluence/Notion/internal docs) for ADR/spec/doc sync.
+- Database MCP in read-only mode for schema/data validation and diagnostics.
+
+**Read-only by default**: Treat MCP operations as read-only unless the user explicitly requests state changes (create/update/delete/deploy/publish/migrations).
+
+**Approval on risky tools**: If MCP tool name implies write/deploy/destructive behavior, require explicit user confirmation before execution.
+
+**Evidence first**: When MCP data exists, use it as primary evidence for review/signoff/incidents instead of guessing.
+
+**Fallback behavior**: If MCP is unavailable/auth fails, continue with local repo evidence and clearly state the gap.
+
+**Data handling**: Never expose secrets, tokens, internal IDs, or PII from MCP responses in user-facing output. Redact aggressively.
