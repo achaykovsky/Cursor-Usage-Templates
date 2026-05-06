@@ -15,7 +15,8 @@ description: Uses README, Dockerfile, docker-compose, or package manifests to de
    - If steps are missing or ambiguous, state assumptions and suggest the user confirm (e.g. "Assuming Node 18; if not, install from ...").
 
 3. **Run and verify**
-   - Execute the steps in order. Use the project's preferred commands (e.g. `npm install`, `poetry install`, `docker-compose up -d`). If a step fails, report the error and suggest a fix (e.g. missing tool, wrong version).
+   - If execution requires environment-changing commands (e.g. `npm install`, `poetry install`, `docker-compose up -d`) and the user did not explicitly ask you to run commands, switch to suggest-only mode and provide exact commands for the user to run.
+   - If the user explicitly asked you to execute, run the steps in order using the project's preferred commands. If a step fails, report the error and suggest a fix (e.g. missing tool, wrong version).
    - Verify the app or service runs (e.g. start command succeeds, health endpoint or smoke check if documented).
 
 4. **Summarize**
@@ -25,3 +26,4 @@ description: Uses README, Dockerfile, docker-compose, or package manifests to de
 
 - Do not modify the user's system beyond what is needed for this repo (e.g. avoid global installs if a venv or local tool is sufficient).
 - Apply **redact-sensitive-in-output** (shared-practices) for any output or documented steps.
+- Follow **suggest-commands-dont-run-destructive** (shared-practices) for environment-changing operations.
