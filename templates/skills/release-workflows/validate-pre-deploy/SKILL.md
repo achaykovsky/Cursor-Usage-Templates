@@ -14,6 +14,7 @@ description: Runs a pre-deploy checklist: tests, migrations, config, secrets, fe
 2. **Migrations and schema**
    - Are there pending migrations or schema changes that must run before or during deploy? List them and the order. Ensure they are backward compatible or that the deploy plan runs them correctly (e.g. before new code).
    - Flag any destructive migration (e.g. drop column) and confirm the user has a backup or rollback plan.
+   - If a DB MCP is configured, prefer read-only checks for schema/state validation (`list/get/read/query/select`). Do not run write/update migration operations via MCP unless explicitly requested.
 
 3. **Config and secrets**
    - Are required env vars or config documented and present in the target environment? Flag missing or placeholder values. Ensure no dev-only or test secrets are used in production config.
