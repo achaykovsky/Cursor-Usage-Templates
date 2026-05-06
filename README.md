@@ -89,6 +89,7 @@ Rules in `templates/rules/*.mdc` sync to `.cursor/rules/` and apply via globs (e
 Recent additions:
 - `api-contract.mdc` for API validation/status/versioning consistency
 - `skills-consistency.mdc` for `templates/skills/**/SKILL.md` structure/terminology consistency
+- `mcp-integrations.mdc` for MCP safety boundaries (read-only by default, explicit approval for state changes)
 
 ## Hooks
 
@@ -96,6 +97,20 @@ Recent additions:
 
 Recent additions:
 - `validate-template-consistency` hook (Windows + Unix) runs on `beforeSubmitPrompt` and `afterFileEdit` to catch stale terminology/policy drift in templates.
+- `validate-mcp-operations` hook (Windows + Unix) runs on `beforeMCPExecution` to require confirmation on state-changing MCP tools.
+
+## MCP Integrations
+
+Recommended MCP servers for this template set:
+- GitHub MCP (PR/issues/checks/release evidence)
+- Linear or Jira MCP (planning/release blocker tracking)
+- Sentry MCP (incident/performance traces and errors)
+- Docs MCP such as Confluence/Notion/internal KB (doc/spec synchronization)
+- Database MCP in read-only mode (schema/state validation)
+
+Policy:
+- Read-only MCP calls are default.
+- State-changing MCP actions require explicit user request/approval.
 
 ## Skills
 
@@ -115,7 +130,11 @@ Skills in `templates/skills/**/SKILL.md` sync to `.cursor/skills/`. The agent us
 | `docs-workflows` | ADR writing and docs/code sync |
 | `migration-workflows` | Breaking-change handling and migration execution |
 | `dependency-workflows` | Dependency audit and environment reproduction |
+| `config-workflows` | Config and secrets audit patterns |
+| `devops-workflows` | CI/CD pipeline design/implementation and IaC workflows (Terraform/CloudFormation) |
+| `git-workflows` | Git history analysis and atomic commit preparation |
 | `navigation-workflows` | Codebase structure and data-flow tracing |
+| `qa-workflows` | Risk-based QA planning, execution, defect triage, regression management, release signoff |
 | `release-workflows` | Release preparation and pre-deploy validation |
 | `shared-practices` | Redaction, token efficiency, and safe command behavior |
 
@@ -149,6 +168,8 @@ templates/
 │   └── unix/*.sh
 ├── skills/                  # .cursor/skills/
 │   └── **/SKILL.md
+├── mcp/
+│   └── README.md            # recommended MCP servers and safety defaults
 └── prompts/
     ├── plan-cursor-hooks.md
     └── plan-cursor-activity-logging.md
