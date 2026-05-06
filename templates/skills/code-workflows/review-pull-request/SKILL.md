@@ -10,6 +10,7 @@ description: Performs end-to-end PR review: diff analysis, checklist against pro
 1. **Gather context**
    - Obtain the full diff (staged, unstaged, or branch comparison). Use `git diff` or provided patch.
    - Identify touched files, new vs modified, and affected areas (e.g. API layer, DB, tests).
+   - If GitHub MCP is configured, pull PR metadata (title/body, checks, review comments, linked issues) and include it in review context.
 
 2. **Apply review checklist**
    - Correctness: logic, edge cases, off-by-one, null/empty handling.
@@ -27,6 +28,7 @@ description: Performs end-to-end PR review: diff analysis, checklist against pro
 4. **Summarize**
    - One short summary: overall assessment and top 1–3 items to address.
    - If applicable, note follow-up verification (e.g. "run tests," "check migration").
+   - If GitHub MCP was used, include unresolved review threads/check failures as explicit blockers.
 
 ## Output format
 
