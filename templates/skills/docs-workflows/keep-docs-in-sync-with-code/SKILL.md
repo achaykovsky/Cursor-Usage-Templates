@@ -14,6 +14,7 @@ description: After code or config changes, finds affected docs (README, ADRs, co
 2. **Find affected docs**
    - Search for references to the changed names and concepts: README, CONTRIBUTING, docs/ folder, ADRs, inline comments and docstrings, and example snippets in docs.
    - Prioritize: user-facing README and getting-started first, then API/design docs, then internal notes.
+   - If Docs MCP (Confluence/Notion/internal KB) is configured, gather linked pages/specs and include them in affected-doc scope.
 
 3. **Update or flag**
    - **Update:** If a doc describes old behavior, names, or examples, change it to match the code. Update code samples so they run (correct imports, paths, flags). Bump "last updated" or version in docs if the project uses that.
@@ -25,6 +26,7 @@ description: After code or config changes, finds affected docs (README, ADRs, co
 
 5. **Summarize**
    - List the files you changed or flagged and what was updated (e.g. "README: install command and env vars; docs/api.md: endpoint path and response example").
+   - If Docs MCP was used, list external pages reviewed and mark any out-of-sync pages for follow-up.
 
 ## Notes
 
