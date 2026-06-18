@@ -20,6 +20,7 @@ Subagents live in `.cursor/agents/` and appear in **Settings > Subagents**. Invo
 | FE_DESIGN_SYSTEM | fe_design_system.md | claude-4.6-sonnet |
 | FE_STATE_ENGINEER | fe_state_engineer.md | composer-1.5 |
 | FE_TEST_ENGINEER | fe_test_engineer.md | composer-1.5 |
+| FE_CODE_REVIEWER | fe_code_reviewer.md | claude-4.6-sonnet |
 | FE_ACCESSIBILITY_ENGINEER | fe_accessibility_engineer.md | claude-4.6-sonnet |
 | FE_PERFORMANCE_ENGINEER | fe_performance_engineer.md | claude-4.6-sonnet |
 | BACKEND_PYTHON | backend_python_engineer.md | composer-1.5 |
@@ -73,6 +74,9 @@ Frontend state management. Client/server state boundaries, caching policy, inval
 
 ### FE_TEST_ENGINEER (fe_test_engineer.md)
 Frontend testing. RTL/Vitest/Playwright coverage, regression protection, flake reduction.
+
+### FE_CODE_REVIEWER (fe_code_reviewer.md)
+Frontend code review. Correctness, state-flow regressions, accessibility/performance risks, and test sufficiency in UI changes.
 
 ### FE_ACCESSIBILITY_ENGINEER (fe_accessibility_engineer.md)
 Frontend accessibility. Keyboard/focus behavior, semantic structure, ARIA correctness, WCAG-oriented remediation.
