@@ -11,9 +11,10 @@ description: Routes frontend work across FE skills and agents with a consistent 
 2. Design-system contract and compatibility (`evolve-design-system-without-breaking-ui`)
 3. UI implementation (`implement-accessible-ui-from-spec`)
 4. State/cache orchestration (`architect-frontend-state-and-cache`)
-5. Accessibility review (`review-frontend-accessibility`)
-6. Regression tests (`add-frontend-tests-for-change`)
-7. Core Web Vitals/perf pass (`optimize-core-web-vitals`)
+5. Frontend code review gate (`review-frontend-code`)
+6. Accessibility review (`review-frontend-accessibility`)
+7. Regression tests (`add-frontend-tests-for-change`)
+8. Core Web Vitals/perf pass (`optimize-core-web-vitals`)
 
 ## Shared State Vocabulary
 
@@ -30,6 +31,7 @@ Every FE workflow should define these states when relevant.
 - Need tokens/variants/component contract migration -> `evolve-design-system-without-breaking-ui`
 - Need component/page markup and responsive behavior -> `implement-accessible-ui-from-spec`
 - Need query keys/invalidation/optimistic updates/race handling -> `architect-frontend-state-and-cache`
+- Need FE-focused code review for regressions and maintainability -> `review-frontend-code`
 - Need keyboard/focus/ARIA/WCAG validation -> `review-frontend-accessibility`
 - Need RTL/Vitest/Playwright regression coverage -> `add-frontend-tests-for-change`
 - Need LCP/INP/CLS diagnosis and optimization -> `optimize-core-web-vitals`
