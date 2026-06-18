@@ -1,0 +1,20 @@
+---
+description: Observability - logging, metrics, tracing, auditing
+alwaysApply: true
+---
+
+# Observability Standards
+
+**Signal choice**: Logs for code-path debug and incidents. Metrics for SLOs, rates, latency, errors. Traces for cross-service/request latency. Audit logs for accountability and compliance — keep audit separate from debug logging.
+
+**Logging**: Structured key-value fields (`timestamp`, `level`, `message`, `trace_id`/`request_id`). INFO at boundaries (entry/exit, key decisions); WARN for recoverable issues; ERROR for failures; DEBUG dev-only. No string concatenation for filterable data. Follow project logger/format. Document how to query new fields.
+
+**Metrics**: RED for services (rate, errors, duration). Histograms for latency (p50/p95/p99). Counters for events. Low-cardinality labels only (route, status class — not user_id or request_id). Alert on SLO breach, not individual errors. Add minimally; match existing naming.
+
+**Tracing**: Propagate W3C `traceparent` across services and async jobs. Spans at boundaries, external I/O, and slow paths. Consistent span names/attributes. Parent-child links for nested work.
+
+**Auditing**: Append-only, separate store or stream from app logs. Record actor, action, resource, timestamp, outcome (+ correlation ID). Security/compliance events (auth, permission, sensitive data access). Reference resource IDs — no secrets, tokens, or full PII payloads.
+
+**Redaction**: Never emit secrets, credentials, tokens, or raw PII in logs, metrics labels, traces, or audit exports. Hash or ID-only references.
+
+**Evidence first**: For perf/incidents, use existing telemetry (logs, metrics, traces, Sentry) before guessing. Define a baseline metric before optimizing. Document what was instrumented and how to use it.
