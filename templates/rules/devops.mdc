@@ -12,6 +12,4 @@ alwaysApply: false
 
 **Terraform**: `terraform plan` in CI. State in remote backend. Use modules. `count`/`for_each` for multiple resources. Pin provider versions.
 
-**Logging**: Structured JSON. Include `timestamp`, `level`, `message`, `trace_id`. No PII. Redact secrets.
-
-**Metrics**: Latency (p50, p95, p99), error rate, throughput. Alert on SLO breach, not individual errors. Use RED (rate, errors, duration) for services.
+**Observability plumbing**: Health checks, metrics scrape targets, log shipping, trace propagation at ingress/load balancers. App instrumentation follows observability standards.
