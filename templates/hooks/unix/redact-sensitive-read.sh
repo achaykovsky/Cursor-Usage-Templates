@@ -17,7 +17,11 @@ if not raw.strip():
     print('{"permission":"allow"}')
     raise SystemExit(0)
 
-payload = json.loads(raw)
+try:
+    payload = json.loads(raw)
+except json.JSONDecodeError:
+    print('{"permission":"allow"}')
+    raise SystemExit(0)
 path = payload.get("file_path") or ""
 content = payload.get("content") or ""
 

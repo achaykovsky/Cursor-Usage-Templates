@@ -28,6 +28,9 @@ if [[ -z "$project_root" || "$project_root" == "null" ]]; then
 fi
 
 if [[ -z "$project_root" ]]; then
+  if [[ "$event" == "beforeShellExecution" ]]; then
+    printf '%s\n' '{"continue":true,"permission":"allow"}'
+  fi
   exit 0
 fi
 
