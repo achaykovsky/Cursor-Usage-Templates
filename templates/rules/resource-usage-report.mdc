@@ -1,0 +1,46 @@
+---
+description: Prepend a Resources used report to every user-facing agent reply
+alwaysApply: true
+---
+
+# Resource Usage Report
+
+Before the main body of **every user-facing reply**, prepend a short **Resources used** section.
+
+## Before composing the reply
+
+1. **Read** `.cursor/logs/resource-ledger/active.json` when the workspace has a project root (skip in Ask/read-only mode if the read is blocked).
+2. If the file is missing, stale, or unreadable, fall back to self-reported data only (see below).
+
+## Format
+
+Use this structure (omit empty rows; do not invent entries):
+
+```markdown
+## Resources used
+
+| Kind | Used | Source |
+|------|------|--------|
+| Rules | security.mdc, token-efficiency.mdc | ledger or context |
+| Skills | create-hook (read) | ledger or Read on SKILL.md |
+| Agents | explore — "find auth flow" | ledger or Task tool |
+| Hooks | log-resource-usage, log-prompt-context | ledger only |
+
+---
+```
+
+Then continue with the normal answer after the `---` divider.
+
+## Accuracy rules
+
+- **Rules**: Prefer `rules` from the ledger. Otherwise list rules visible in the current context (always-applied + file-scoped). Do not list rules that were only "available" in the catalog but not applied.
+- **Skills**: Prefer `skills_read` from the ledger. Only list a skill if its `SKILL.md` was read this turn or you explicitly followed it. Do not list the full skills catalog.
+- **Agents / subagents**: Prefer `subagents` from the ledger. Only list subagents spawned via the Task tool this turn.
+- **Hooks**: Prefer `hooks_configured` from the ledger. Do not guess hook names. If the ledger is unavailable, write `Hooks | (unknown) | not observable to agent`.
+- **Source column**: `ledger` when taken from `active.json`; `context` / `Read on SKILL.md` / `Task tool` when self-reported.
+
+## Constraints
+
+- Keep the table compact (one line per kind when possible).
+- Do not repeat the user prompt in this section.
+- In very short replies (one sentence), a minimal table is still required.
