@@ -14,7 +14,7 @@ alwaysApply: true
 
 **Read-only by default**: Treat MCP operations as read-only unless the user explicitly requests state changes (create/update/delete/deploy/publish/migrations).
 
-**Approval on risky tools**: If MCP tool name implies write/deploy/destructive behavior, require explicit user confirmation before execution.
+**Approval on risky tools**: If MCP tool name implies write/deploy/destructive behavior, require explicit user confirmation before execution. **Uncataloged MCP tools** also require confirmation (`mcp_unknown: ask`).
 
 **Evidence first**: When MCP data exists, use it as primary evidence for review/signoff/incidents instead of guessing.
 
