@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "modes": {
+    "db_shell": "ask",
+    "mcp_write": "ask",
+    "mcp_unknown": "ask",
+    "git_commit_format": "deny",
+    "git_commit_unparsed": "allow",
+    "policy_load_error": "allow",
+    "policy_engine_error": "allow"
+  }
+}
