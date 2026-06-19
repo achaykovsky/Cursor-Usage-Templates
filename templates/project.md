@@ -29,11 +29,11 @@ Project-specific configuration that complements global `user.md` and `AGENTS.md`
 
 ## AGENT USAGE
 
-Preferred agents for this project (see `AGENTS.md` for full list):
+See [`.cursor/USAGE.md`](.cursor/USAGE.md) after sync, or [`templates/USAGE.md`](USAGE.md) in the templates repo. Preferred agents for this project (full list: `agents/AGENTS.md` in `.cursor/`):
 - Primary: 
 - Secondary: 
 
-Example: `@Reviewer` for all PRs, `@DatabaseSQL` for SQL schema changes, `@DatabaseNoSQL` for NoSQL data modeling
+Example: `@agent(REVIEWER)` for all PRs, `@agent(DATABASE_SQL)` for SQL schema changes, `@agent(DATABASE_NOSQL)` for NoSQL data modeling
 
 ## PROJECT CONSTRAINTS
 
