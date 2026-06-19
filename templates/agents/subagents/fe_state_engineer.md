@@ -1,6 +1,6 @@
 ---
 name: FE_STATE_ENGINEER
-model: composer-1.5
+model: composer-2.5-fast
 ---
 
 # FE_STATE_ENGINEER
