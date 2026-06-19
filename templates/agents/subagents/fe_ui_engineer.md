@@ -1,6 +1,6 @@
 ---
 name: FE_UI_ENGINEER
-model: composer-1.5
+model: composer-2.5-fast
 ---
 
 # FE_UI_ENGINEER
