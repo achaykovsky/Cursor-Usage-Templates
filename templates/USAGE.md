@@ -30,7 +30,7 @@
 | **Agents** | Yes — `@agent(NAME)` | Role, tone, domain ownership | Medium — one agent per turn |
 | **Hooks** | No (lifecycle scripts) | Safety, format, logging, gates | Zero in chat — side effects only |
 
-**Precedence:** security/safety → scoped **rules** → **skills** → **agents** → examples. See [agents/AGENTS.md](agents/AGENTS.md#policy-precedence).
+**Precedence:** security/safety → scoped **rules** → **skills** → **agents** → examples. See [agents/subagents/AGENTS.md](agents/subagents/AGENTS.md#policy-precedence).
 
 ---
 
