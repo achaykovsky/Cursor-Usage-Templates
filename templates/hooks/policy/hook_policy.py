@@ -1,0 +1,634 @@
+#!/usr/bin/env python3
+"""Cursor hook policy engine — classify shell/MCP/git operations.
+
+Usage:
+  python hook_policy.py shell-db   # stdin: beforeShellExecution JSON
+  python hook_policy.py shell-git
+  python hook_policy.py mcp        # stdin: beforeMCPExecution JSON
+
+Stdout: single JSON hook response (allow | ask | deny).
+Exit 0 always (hooks fail open on engine errors).
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import re
+import shlex
+import sys
+from datetime import datetime, timezone
+from functools import lru_cache
+from pathlib import Path
+from typing import Any
+
+from mcp_classify import classify_tool_name, load_mcp_heuristics
+
+_POLICY_LOAD_FAILURES_KEY = "_policy_load_failures"
+
+
+def _allow_shell() -> dict[str, Any]:
+    return {"continue": True, "permission": "allow"}
+
+
+def _ask_shell(user: str, agent: str) -> dict[str, Any]:
+    return {
+        "continue": True,
+        "permission": "ask",
+        "user_message": user,
+        "agent_message": agent,
+    }
+
+
+def _deny_shell(user: str, agent: str) -> dict[str, Any]:
+    return {
+        "continue": False,
+        "permission": "deny",
+        "user_message": user,
+        "agent_message": agent,
+    }
+
+
+def _emit_log(level: str, event: str, **fields: Any) -> None:
+    """Write structured audit events to stderr (stdout is hook JSON only)."""
+    record: dict[str, Any] = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "level": level,
+        "component": "hook_policy",
+        "event": event,
+    }
+    for key, value in fields.items():
+        if value is not None:
+            record[key] = value
+    print(json.dumps(record, separators=(",", ":")), file=sys.stderr)
+
+
+def _policy_dirs(project_root: Path | None) -> list[Path]:
+    dirs: list[Path] = []
+    script_dir = Path(__file__).resolve().parent
+    dirs.append(script_dir)
+    if project_root:
+        custom = project_root / ".cursor" / "hooks" / "policy"
+        if custom.is_dir():
+            dirs.append(custom)
+    return dirs
+
+
+def _load_json(path: Path, failures: list[dict[str, Any]]) -> dict[str, Any]:
+    if not path.is_file():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        _emit_log(
+            "error",
+            "policy_load_failed",
+            path=str(path),
+            error_type=type(exc).__name__,
+        )
+        failures.append({"path": str(path), "error_type": type(exc).__name__})
+        return {}
+    except OSError as exc:
+        _emit_log(
+            "error",
+            "policy_load_failed",
+            path=str(path),
+            error_type=type(exc).__name__,
+            message=str(exc),
+        )
+        failures.append({"path": str(path), "error_type": type(exc).__name__})
+        return {}
+
+
+def _policy_cache_key(project_root: Path | None) -> tuple[Any, ...]:
+    root_str = str(project_root.resolve()) if project_root else ""
+    parts: list[Any] = [root_str]
+    for d in _policy_dirs(project_root):
+        for name in ("default.policy.json", "mcp_tools.json", "hook-policy.json"):
+            path = d / name
+            parts.append(str(path))
+            parts.append(path.stat().st_mtime if path.is_file() else 0)
+    if project_root:
+        proj = project_root / ".cursor" / "hook-policy.json"
+        parts.append(str(proj))
+        parts.append(proj.stat().st_mtime if proj.is_file() else 0)
+    return tuple(parts)
+
+
+def clear_policy_cache() -> None:
+    """Clear cached policy loads (for tests)."""
+    _load_policy_cached.cache_clear()
+
+
+def _load_policy_impl(project_root: Path | None) -> dict[str, Any]:
+    merged: dict[str, Any] = {}
+    mcp_tools: dict[str, Any] = {}
+    load_failures: list[dict[str, Any]] = []
+    had_policy_file = False
+    for d in reversed(_policy_dirs(project_root)):
+        default_path = d / "default.policy.json"
+        if default_path.is_file():
+            had_policy_file = True
+        default = _load_json(default_path, load_failures)
+        if default:
+            merged = _deep_merge(merged, default)
+        tools_path = d / "mcp_tools.json"
+        if tools_path.is_file():
+            had_policy_file = True
+        tools = _load_json(tools_path, load_failures)
+        if tools:
+            mcp_tools = _deep_merge(mcp_tools, tools)
+        override_path = d / "hook-policy.json"
+        if override_path.is_file():
+            had_policy_file = True
+        override = _load_json(override_path, load_failures)
+        if override:
+            merged = _deep_merge(merged, override)
+    if project_root:
+        proj_override = project_root / ".cursor" / "hook-policy.json"
+        if proj_override.is_file():
+            had_policy_file = True
+            override = _load_json(proj_override, load_failures)
+            if override:
+                merged = _deep_merge(merged, override)
+    if load_failures and had_policy_file and not merged and not mcp_tools:
+        _emit_log("error", "policy_empty")
+    merged["_mcp_tools"] = mcp_tools
+    merged[_POLICY_LOAD_FAILURES_KEY] = load_failures
+    return merged
+
+
+@lru_cache(maxsize=32)
+def _load_policy_cached(cache_key: tuple[Any, ...]) -> str:
+    root_str = cache_key[0]
+    project_root = Path(root_str) if root_str else None
+    return json.dumps(_load_policy_impl(project_root), sort_keys=True)
+
+
+def load_policy(project_root: Path | None) -> dict[str, Any]:
+    raw = _load_policy_cached(_policy_cache_key(project_root))
+    return json.loads(raw)
+
+
+def _policy_load_error_response(policy: dict[str, Any]) -> dict[str, Any] | None:
+    failures = policy.get(_POLICY_LOAD_FAILURES_KEY) or []
+    if not failures:
+        return None
+    mode = (policy.get("modes") or {}).get("policy_load_error", "allow")
+    if mode == "ask":
+        return _ask_shell(
+            "Hook policy file could not be loaded. Confirm before continuing.",
+            "Policy load error: one or more policy JSON files are corrupt or unreadable. "
+            "Check stderr for policy_load_failed events.",
+        )
+    if mode == "deny":
+        return _deny_shell(
+            "Hook policy file could not be loaded.",
+            "Policy load error: fix corrupt policy JSON before retrying.",
+        )
+    return None
+
+
+def _policy_engine_error_response(policy: dict[str, Any], domain: str, exc: Exception) -> dict[str, Any]:
+    _emit_log(
+        "error",
+        "policy_engine_error",
+        domain=domain,
+        error_type=type(exc).__name__,
+    )
+    mode = (policy.get("modes") or {}).get("policy_engine_error", "allow")
+    if mode == "ask":
+        return _ask_shell(
+            "Policy engine error while classifying this hook.",
+            "Policy engine error: check stderr for policy_engine_error event.",
+        )
+    if mode == "deny":
+        return _deny_shell(
+            "Policy engine error while classifying this hook.",
+            "Policy engine error: fix the policy engine before retrying.",
+        )
+    return _allow_shell()
+
+
+def _deep_merge(base: dict[str, Any], patch: dict[str, Any]) -> dict[str, Any]:
+    out = dict(base)
+    for k, v in patch.items():
+        if k in out and isinstance(out[k], dict) and isinstance(v, dict):
+            out[k] = _deep_merge(out[k], v)
+        else:
+            out[k] = v
+    return out
+
+
+def _first(payload: dict[str, Any], keys: tuple[str, ...]) -> str:
+    for k in keys:
+        v = payload.get(k)
+        if v is not None and str(v).strip():
+            return str(v).strip()
+    return ""
+
+
+def _project_root(payload: dict[str, Any]) -> Path | None:
+    roots = payload.get("workspace_roots") or []
+    if roots:
+        return Path(str(roots[0]))
+    cwd = payload.get("cwd")
+    if cwd:
+        return Path(str(cwd))
+    return None
+
+
+def _parse_argv(cmd: str) -> list[str]:
+    if not cmd.strip():
+        return []
+    try:
+        return shlex.split(cmd, posix=os.name != "nt")
+    except ValueError:
+        return cmd.split()
+
+
+def _argv_contains(argv: list[str], tokens: list[str]) -> bool:
+    lower = [a.lower() for a in argv]
+    need = [t.lower() for t in tokens]
+    for i in range(len(lower) - len(need) + 1):
+        if lower[i : i + len(need)] == need:
+            return True
+    return False
+
+
+def _db_binaries(policy: dict[str, Any]) -> set[str]:
+    cfg = policy.get("db_shell") or {}
+    return {b.lower() for b in cfg.get("binaries", [])}
+
+
+def _has_db_context(cmd: str, argv: list[str], binaries: set[str]) -> bool:
+    if not argv:
+        return False
+    exe = Path(argv[0]).name.lower()
+    if exe in binaries:
+        return True
+    for tok in argv:
+        base = Path(tok).name.lower()
+        if base in binaries:
+            return True
+    return False
+
+
+def _sql_carrier_segments(cmd: str, argv: list[str], binaries: set[str]) -> list[str]:
+    """Return SQL text segments only when carried by a DB client (-c, -e, heredoc)."""
+    segments: list[str] = []
+    if not _has_db_context(cmd, argv, binaries):
+        return segments
+
+    for i, tok in enumerate(argv):
+        if tok in ("-c", "-e", "--command") and i + 1 < len(argv):
+            segments.append(_strip_outer_quotes(argv[i + 1]))
+        if tok.startswith("-c") and len(tok) > 2:
+            segments.append(_strip_outer_quotes(tok[2:]))
+
+    heredoc = re.search(r"<<-?\s*['\"]?(\w+)['\"]?\s*\n([\s\S]*?)\n\1", cmd)
+    if heredoc:
+        segments.append(heredoc.group(2))
+
+    return segments
+
+
+def _is_readonly_sql(sql: str, policy: dict[str, Any]) -> bool:
+    cfg = policy.get("db_shell") or {}
+    for rule in cfg.get("allow_readonly_sql", []):
+        pat = rule.get("pattern")
+        if pat and re.search(pat, sql.strip()):
+            return True
+    return False
+
+
+def classify_shell_db(payload: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any]:
+    mode = (policy.get("modes") or {}).get("db_shell", "ask")
+    if mode == "off":
+        return _allow_shell()
+
+    cmd = _first(payload, ("command",))
+    if not cmd:
+        return _allow_shell()
+
+    argv = _parse_argv(cmd)
+    binaries = _db_binaries(policy)
+    cfg = policy.get("db_shell") or {}
+
+    if cfg.get("require_db_context", True) and not _has_db_context(cmd, argv, binaries):
+        return _allow_shell()
+
+    sql_segments = _sql_carrier_segments(cmd, argv, binaries)
+
+    for rule in cfg.get("deny", []):
+        pat = rule.get("pattern")
+        if not pat:
+            continue
+        if rule.get("requires_sql_carrier") and not sql_segments:
+            continue
+        targets = sql_segments if rule.get("requires_sql_carrier") else [cmd]
+        for target in targets:
+            if re.search(pat, target):
+                return _deny_shell(
+                    "Blocked: destructive database operation detected.",
+                    f"DB policy ({rule.get('id', 'deny')}): blocked destructive command. "
+                    "Ask the user explicitly; prefer backup + rollback + scoped target.",
+                )
+
+    for rule in cfg.get("ask", []):
+        matched = False
+        if rule.get("argv_contains") and _argv_contains(argv, rule["argv_contains"]):
+            matched = True
+        pat = rule.get("pattern")
+        if pat:
+            if rule.get("requires_sql_carrier"):
+                if sql_segments and any(re.search(pat, s) for s in sql_segments):
+                    matched = True
+            elif re.search(pat, cmd):
+                matched = True
+        if matched:
+            if mode == "log":
+                _emit_log(
+                    "info",
+                    "policy_would_ask",
+                    domain="shell-db",
+                    rule_id=rule.get("id", "ask"),
+                )
+                return _allow_shell()
+            return _ask_shell(
+                "Database write/schema command detected. Confirm this action is explicitly requested "
+                "and scoped to the intended environment.",
+                f"DB policy ({rule.get('id', 'ask')}): require explicit user approval for write/schema ops.",
+            )
+
+    if sql_segments and all(_is_readonly_sql(s, policy) for s in sql_segments if s.strip()):
+        return _allow_shell()
+
+    return _allow_shell()
+
+
+def _is_git_argv(argv: list[str]) -> bool:
+    if not argv:
+        return False
+    return Path(argv[0]).stem.lower() == "git"
+
+
+def _strip_outer_quotes(value: str) -> str:
+    s = value.strip()
+    if len(s) >= 2 and s[0] == s[-1] and s[0] in ("'", '"'):
+        return s[1:-1]
+    return s
+
+
+def _extract_commit_message(cmd: str, argv: list[str]) -> str | None:
+    if not _is_git_argv(argv):
+        return None
+    if "commit" not in [a.lower() for a in argv]:
+        return None
+    messages: list[str] = []
+    i = 0
+    while i < len(argv):
+        if argv[i] == "-m" and i + 1 < len(argv):
+            messages.append(_strip_outer_quotes(argv[i + 1]))
+            i += 2
+            continue
+        if argv[i].startswith("-m") and len(argv[i]) > 2:
+            messages.append(_strip_outer_quotes(argv[i][2:]))
+        i += 1
+    if messages:
+        return "\n".join(messages)
+    if re.search(r"\bgit\s+commit\b", cmd) and "-m" not in cmd:
+        return None
+    return None
+
+
+def classify_shell_git(payload: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any]:
+    cmd = _first(payload, ("command",))
+    if not cmd:
+        return _allow_shell()
+
+    argv = _parse_argv(cmd)
+    project_root = _project_root(payload)
+    git_root = project_root
+    cwd = payload.get("cwd")
+    if cwd:
+        git_root = Path(str(cwd))
+
+    git_cfg = policy.get("git") or {}
+    modes = policy.get("modes") or {}
+
+    msg = _extract_commit_message(cmd, argv)
+    if msg is not None:
+        first_line = msg.splitlines()[0] if msg else ""
+        max_len = int(git_cfg.get("max_subject_length", 72))
+        min_len = int(git_cfg.get("min_subject_length", 10))
+        fmt_mode = modes.get("git_commit_format", "deny")
+
+        if len(first_line) > max_len:
+            if fmt_mode == "advisory":
+                return _allow_shell()
+            return _deny_shell(
+                f"Commit message first line too long ({len(first_line)} > {max_len} chars).",
+                "Use prepare-atomic-commit: keep first line <= 72 chars.",
+            )
+
+        if len(first_line) < min_len:
+            if fmt_mode == "advisory":
+                return _allow_shell()
+            return _deny_shell(
+                "Commit message too short. Use imperative mood (e.g. 'Add X', 'Fix Y').",
+                "Use prepare-atomic-commit for message format.",
+            )
+
+        skip = False
+        if git_root and (git_root / ".cursor" / "allow-non-conventional-commit").is_file():
+            skip = True
+        if not skip and git_cfg.get("conventional_commits", True):
+            pat = git_cfg.get(
+                "conventional_pattern",
+                r"^(feat|fix|chore|docs|refactor|test|style|perf|build|ci)(\([a-z0-9-]+\))?!?: .+",
+            )
+            if not re.match(pat, first_line):
+                if fmt_mode == "advisory":
+                    return _allow_shell()
+                return _deny_shell(
+                    "Commit message should follow conventional format: type(scope): description "
+                    "(e.g. feat: add login). Create .cursor/allow-non-conventional-commit to skip.",
+                    "Use prepare-atomic-commit for conventional commits.",
+                )
+    elif re.search(r"\bgit\s+commit\b", cmd):
+        unparsed = modes.get("git_commit_unparsed", "allow")
+        if unparsed == "deny":
+            return _deny_shell(
+                "Could not parse commit message for validation.",
+                "Use git commit -m \"type(scope): description\" or prepare-atomic-commit.",
+            )
+
+    if re.search(r"\bgit\s+push\b", cmd):
+        has_force = bool(
+            re.search(r"(^|\s)--force(\s|$)", cmd) and not re.search(r"--force-with-lease", cmd)
+        )
+        if has_force and git_root and (git_root / ".git").is_dir():
+            try:
+                import subprocess
+
+                branch = subprocess.check_output(
+                    ["git", "-C", str(git_root), "branch", "--show-current"],
+                    text=True,
+                    stderr=subprocess.DEVNULL,
+                ).strip()
+            except (OSError, subprocess.CalledProcessError):
+                branch = ""
+            protected = set(git_cfg.get("protected_branches", ["main", "master"]))
+            if branch in protected:
+                return _deny_shell(
+                    f"Force push to {branch} is blocked. Use --force-with-lease if you must.",
+                    "Use suggest-commands-dont-run-destructive: suggest the command for the user to run.",
+                )
+
+    return _allow_shell()
+
+
+def _mcp_risk_from_catalog(
+    server: str, tool: str, args: dict[str, Any], policy: dict[str, Any]
+) -> str:
+    catalog = policy.get("_mcp_tools") or {}
+    servers = catalog.get("servers") or {}
+    tool_args_rules = catalog.get("tool_arguments") or {}
+
+    if tool in ("mcp_auth",):
+        return "read"
+
+    server_cfg = servers.get(server) or {}
+    tools_map = server_cfg.get("tools") or {}
+    if tool in tools_map:
+        base = tools_map[tool]
+    else:
+        base = "unknown"
+
+    arg_rule = tool_args_rules.get(tool) or {}
+    for risk, cond in (("write", arg_rule.get("write_when")), ("read", arg_rule.get("read_when"))):
+        if not cond:
+            continue
+        match = True
+        for key, values in cond.items():
+            val = args.get(key)
+            if val is None or str(val) not in [str(v) for v in values]:
+                match = False
+                break
+        if match:
+            return risk
+
+    if base != "unknown":
+        return base
+
+    heuristics = load_mcp_heuristics(policy)
+    classified = classify_tool_name(tool, heuristics)
+    if classified != "unknown":
+        return classified
+
+    default_srv = server_cfg.get("default_risk")
+    if default_srv:
+        return default_srv
+
+    mcp_cfg = policy.get("mcp") or {}
+    return mcp_cfg.get("default_unknown_risk", "unknown")
+
+
+def classify_mcp(payload: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any]:
+    server = _first(payload, ("server", "server_name", "mcp_server"))
+    tool = _first(payload, ("tool_name", "toolName", "name", "mcp_tool_name"))
+    if not tool:
+        return _allow_shell()
+
+    args = payload.get("arguments") or payload.get("tool_input") or payload.get("args") or {}
+    if not isinstance(args, dict):
+        args = {}
+
+    risk = _mcp_risk_from_catalog(server, tool, args, policy)
+    modes = policy.get("modes") or {}
+    mcp_cfg = policy.get("mcp") or {}
+
+    if risk == "read":
+        return _allow_shell()
+
+    if risk == "unknown":
+        unknown_mode = modes.get("mcp_unknown", "ask")
+        if unknown_mode in ("off", "allow"):
+            return _allow_shell()
+        if unknown_mode == "log":
+            _emit_log("info", "policy_would_ask", domain="mcp", rule_id="mcp_unknown", tool=tool)
+            return _allow_shell()
+        return _ask_shell(
+            f"MCP tool '{tool}' on server '{server}' is not cataloged. Approve only if intended.",
+            "Add tool to hooks/policy/mcp_tools.json or .cursor/hook-policy.json with explicit risk.",
+        )
+
+    if risk in ("write", "admin"):
+        is_db = bool(re.search(mcp_cfg.get("db_server_pattern", ""), server, re.I))
+        risk_type = "DB-write or schema-change" if is_db else "state-changing"
+        write_mode = modes.get("mcp_write", "ask")
+        if write_mode in ("off", "allow"):
+            return _allow_shell()
+        if write_mode == "log":
+            _emit_log(
+                "info",
+                "policy_would_ask",
+                domain="mcp",
+                rule_id="mcp_write",
+                tool=tool,
+                server=server,
+            )
+            return _allow_shell()
+        return _ask_shell(
+            f"MCP tool '{tool}' on server '{server}' looks {risk_type}. "
+            "Approve only if this action is explicitly requested.",
+            "Default policy: MCP operations should be read-only unless user explicitly asks for writes.",
+        )
+
+    return _allow_shell()
+
+
+def classify(domain: str, payload: dict[str, Any], project_root: Path | None) -> dict[str, Any]:
+    policy = load_policy(project_root)
+    load_error = _policy_load_error_response(policy)
+    if load_error is not None:
+        return load_error
+    policy = {k: v for k, v in policy.items() if k != _POLICY_LOAD_FAILURES_KEY}
+    if domain == "shell-db":
+        return classify_shell_db(payload, policy)
+    if domain == "shell-git":
+        return classify_shell_git(payload, policy)
+    if domain == "mcp":
+        return classify_mcp(payload, policy)
+    return _allow_shell()
+
+
+def main() -> int:
+    if len(sys.argv) < 2:
+        print(json.dumps(_allow_shell()), end="")
+        return 0
+    domain = sys.argv[1]
+    raw = sys.stdin.read()
+    if not raw.strip():
+        print(json.dumps(_allow_shell()), end="")
+        return 0
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError:
+        _emit_log("warn", "invalid_hook_payload", domain=domain)
+        print(json.dumps(_allow_shell()), end="")
+        return 0
+    project_root = _project_root(payload)
+    try:
+        result = classify(domain, payload, project_root)
+    except Exception as exc:
+        policy = load_policy(project_root)
+        policy = {k: v for k, v in policy.items() if k != _POLICY_LOAD_FAILURES_KEY}
+        result = _policy_engine_error_response(policy, domain, exc)
+    print(json.dumps(result, separators=(",", ":")), end="")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

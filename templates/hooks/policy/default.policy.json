@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "modes": {
+    "db_shell": "ask",
+    "mcp_write": "ask",
+    "mcp_unknown": "ask",
+    "git_commit_format": "deny",
+    "git_commit_unparsed": "allow"
+  },
+  "db_shell": {
+    "require_db_context": true,
+    "binaries": [
+      "psql", "mysql", "mariadb", "sqlite3", "sqlcmd", "mongosh", "mongo",
+      "alembic", "flyway", "liquibase", "dbmate", "prisma", "typeorm", "knex", "sequelize-cli"
+    ],
+    "deny": [
+      { "id": "drop_database", "pattern": "(?i)\\bdrop\\s+database\\b" },
+      { "id": "truncate_table", "pattern": "(?i)\\btruncate\\s+table\\b" },
+      { "id": "drop_table", "pattern": "(?i)\\bdrop\\s+table\\b" },
+      { "id": "delete_all_rows", "pattern": "(?i)\\bdelete\\s+from\\s+\\w+\\s*(?:;|$)", "requires_sql_carrier": true },
+      { "id": "alembic_downgrade", "pattern": "(?i)\\balembic\\s+downgrade\\s+-1\\b" },
+      { "id": "flyway_clean", "pattern": "(?i)\\bflyway\\s+clean\\b" },
+      { "id": "liquibase_rollback", "pattern": "(?i)\\bliquibase\\s+rollback\\b" },
+      { "id": "prisma_migrate_reset", "pattern": "(?i)\\bprisma\\s+migrate\\s+reset\\b" }
+    ],
+    "ask": [
+      { "id": "sql_delete", "pattern": "(?i)\\bdelete\\s+from\\b", "requires_sql_carrier": true },
+      { "id": "sql_update", "pattern": "(?i)\\bupdate\\s+\\w+\\s+set\\b", "requires_sql_carrier": true },
+      { "id": "sql_insert", "pattern": "(?i)\\binsert\\s+into\\b", "requires_sql_carrier": true },
+      { "id": "sql_alter", "pattern": "(?i)\\balter\\s+table\\b", "requires_sql_carrier": true },
+      { "id": "sql_create_table", "pattern": "(?i)\\bcreate\\s+table\\b", "requires_sql_carrier": true },
+      { "id": "alembic_upgrade", "argv_contains": ["alembic", "upgrade"] },
+      { "id": "alembic_downgrade", "argv_contains": ["alembic", "downgrade"] },
+      { "id": "prisma_migrate", "argv_contains": ["prisma", "migrate"] },
+      { "id": "flyway_migrate", "argv_contains": ["flyway", "migrate"] },
+      { "id": "liquibase_update", "argv_contains": ["liquibase", "update"] },
+      { "id": "dbmate_up", "argv_contains": ["dbmate", "up"] }
+    ],
+    "allow_readonly_sql": [
+      { "id": "select", "pattern": "(?i)^\\s*select\\b" },
+      { "id": "explain", "pattern": "(?i)^\\s*explain\\b" },
+      { "id": "show", "pattern": "(?i)^\\s*show\\b" },
+      { "id": "describe", "pattern": "(?i)^\\s*(describe|desc)\\b" }
+    ]
+  },
+  "git": {
+    "protected_branches": ["main", "master"],
+    "conventional_commits": true,
+    "max_subject_length": 72,
+    "min_subject_length": 10,
+    "conventional_pattern": "^(feat|fix|chore|docs|refactor|test|style|perf|build|ci)(\\([a-z0-9-]+\\))?!?: .+"
+  },
+  "mcp": {
+    "default_unknown_risk": "unknown",
+    "db_server_pattern": "(sql|postgres|mysql|database|snowflake|bigquery|databricks)",
+    "global_read_prefixes": ["get_", "list_", "fetch_", "search_", "describe_", "show_", "view_"],
+    "global_read_contains": ["_get_", "_list_", "_read_", "_fetch_", "_search_", "_describe_", "_show_"],
+    "global_write_prefixes": ["create_", "update_", "delete_", "insert_", "drop_", "upsert_", "publish_", "deploy_"],
+    "global_write_exact": ["git_push", "git_add_or_commit", "issues_create", "issues_add_comment", "pull_request_create", "pull_request_create_review"],
+    "global_write_name_pattern": "(^|[_-])(push|merge|close|assign|comment|tag)($|[_-])"
+  }
+}

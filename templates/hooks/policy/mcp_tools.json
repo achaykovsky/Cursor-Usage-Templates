@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "servers": {
+    "user-eamodio.gitlens-extension-GitKraken": {
+      "tools": {
+        "git_add_or_commit": "write",
+        "git_push": "write",
+        "git_checkout": "write",
+        "git_branch": "write",
+        "git_stash": "write",
+        "git_worktree": "write",
+        "issues_create": "write",
+        "issues_add_comment": "write",
+        "pull_request_create": "write",
+        "pull_request_create_review": "write",
+        "gitlens_start_work": "write",
+        "gitlens_start_review": "write",
+        "gitlens_commit_composer": "write",
+        "git_status": "read",
+        "git_blame": "read",
+        "git_fetch": "read",
+        "git_pull": "read",
+        "git_log_or_diff": "read",
+        "git_graph": "read",
+        "gitkraken_workspace_list": "read",
+        "gitlens_launchpad": "read",
+        "pull_request_get_detail": "read",
+        "pull_request_get_comments": "read",
+        "pull_request_assigned_to_me": "read",
+        "issues_get_detail": "read",
+        "issues_assigned_to_me": "read",
+        "repository_get_file_content": "read"
+      }
+    },
+    "user-github": {
+      "prefix_read": ["get_", "list_", "search_"],
+      "prefix_write": ["create_", "update_", "delete_", "merge_", "close_"]
+    },
+    "user-jira": {
+      "prefix_read": ["get_", "list_", "search_"],
+      "prefix_write": ["create_", "update_", "delete_", "transition_", "comment_"]
+    },
+    "user-database_readonly": {
+      "default_risk": "read",
+      "prefix_write": ["insert_", "update_", "delete_", "drop_", "execute_write"]
+    },
+    "user-docs_confluence": {
+      "prefix_read": ["get_", "list_", "search_"],
+      "prefix_write": ["create_", "update_", "delete_"]
+    }
+  },
+  "tool_arguments": {
+    "git_add_or_commit": {
+      "write_when": { "action": ["commit"] },
+      "read_when": { "action": ["add"] }
+    }
+  }
+}
