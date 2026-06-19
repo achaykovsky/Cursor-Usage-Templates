@@ -1,6 +1,6 @@
 ---
 name: DATA_ENGINEER
-model: composer-1.5
+model: composer-2.5-fast
 ---
 
 # DATA_ENGINEER
