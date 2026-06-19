@@ -1,7 +1,6 @@
 ---
 description: Performance - profiling, bottlenecks, complexity
-globs: "**/*.{py,go,ts,tsx}"
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Performance Standards
