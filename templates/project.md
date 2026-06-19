@@ -29,7 +29,7 @@ Project-specific configuration that complements global `user.md` and `AGENTS.md`
 
 ## AGENT USAGE
 
-See [`.cursor/USAGE.md`](.cursor/USAGE.md) after sync, or [`templates/USAGE.md`](USAGE.md) in the templates repo. Preferred agents for this project (full list: `agents/AGENTS.md` in `.cursor/`):
+See [USAGE.md](USAGE.md) (syncs to `.cursor/USAGE.md` after sync). Preferred agents for this project (full list: [agents/subagents/AGENTS.md](agents/subagents/AGENTS.md) in templates, or `agents/AGENTS.md` in `.cursor/` after sync):
 - Primary: 
 - Secondary: 
 
