@@ -1,5 +1,7 @@
 # Cursor Prompt: Plan Cursor Hooks for a Codebase
 
+**Hub:** [USAGE.md](../USAGE.md) | **User guide:** [hooks/HOOKS_USAGE.md](../hooks/HOOKS_USAGE.md)
+
 Use this prompt in Cursor Chat or Composer to generate a structured implementation plan for Cursor Hooks. Works for any codebase—Cursor analyzes the project and proposes hooks accordingly.
 
 **Usage:** Paste this entire document into Cursor Chat or Composer. Cursor will analyze the repo and output a structured plan—no hook code, only specifications.
