@@ -2,7 +2,7 @@
 
 Centralized Markdown templates for Cursor instructions at multiple scopes: base templates, subagents, rules, hooks, and skills. Sync into `.cursor/` for any project.
 
-**Navigation:** After sync, start at **`.cursor/USAGE.md`**. Template source: [`templates/USAGE.md`](templates/USAGE.md) · [`templates/README.md`](templates/README.md).
+**Navigation:** Start at [`templates/USAGE.md`](templates/USAGE.md) (syncs to `.cursor/USAGE.md`). Templates index: [`templates/README.md`](templates/README.md).
 
 ## Quick Start
 
@@ -98,17 +98,17 @@ Subagents live in `templates/agents/subagents/` and sync to `.cursor/agents/`. T
 | FE_ACCESSIBILITY_ENGINEER | fe_accessibility_engineer.md | Frontend accessibility and WCAG checks |
 | FE_PERFORMANCE_ENGINEER | fe_performance_engineer.md | Frontend Core Web Vitals and runtime performance |
 
-See [`templates/agents/subagents/AGENTS.md`](templates/agents/subagents/AGENTS.md) and [`.cursor/USAGE.md`](.cursor/USAGE.md) for routing.
+See [`templates/agents/subagents/AGENTS.md`](templates/agents/subagents/AGENTS.md) and [`templates/USAGE.md`](templates/USAGE.md) for routing.
 
 Frontend agents are FE-prefixed (`FE_*`) and backend agents are BE/domain-prefixed (`BACKEND_*`, `DATABASE_*`) to keep boundaries explicit.
 
 ## Rules
 
-Rules sync to `.cursor/rules/`. Catalog: [`.cursor/rules/RULES.md`](.cursor/rules/RULES.md).
+Rules sync to `.cursor/rules/`. Catalog: [`templates/rules/RULES.md`](templates/rules/RULES.md).
 
 ## Hooks
 
-User guide: [`.cursor/hooks/HOOKS_USAGE.md`](.cursor/hooks/HOOKS_USAGE.md). Extend: [`.cursor/prompts/plan-cursor-hooks.md`](.cursor/prompts/plan-cursor-hooks.md).
+User guide: [`templates/hooks/HOOKS_USAGE.md`](templates/hooks/HOOKS_USAGE.md). Extend: [`templates/prompts/plan-cursor-hooks.md`](templates/prompts/plan-cursor-hooks.md).
 
 ## MCP Integrations
 
@@ -125,7 +125,7 @@ Policy:
 
 ## Skills
 
-Catalog: [`.cursor/skills/SKILLS.md`](.cursor/skills/SKILLS.md). Policy: [`.cursor/USAGE.md`](.cursor/USAGE.md).
+Catalog: [`templates/skills/SKILLS.md`](templates/skills/SKILLS.md). Policy: [`templates/USAGE.md`](templates/USAGE.md).
 
 ## Project Structure
 
@@ -160,13 +160,8 @@ templates/
 │   └── **/SKILL.md
 ├── mcp/
 │   └── README.md            # recommended MCP servers and safety defaults
-└── prompts/
-    ├── plan-cursor-session-map.md
-    ├── plan-cursor-agents-routing.md
-    ├── plan-cursor-skills-routing.md
-    ├── plan-cursor-rules-audit.md
-    ├── plan-cursor-hooks.md
-    └── plan-cursor-activity-logging.md
+└── prompts/                 # .cursor/prompts/ (planning prompts)
+    └── *.md
 ```
 
 ## Troubleshooting
