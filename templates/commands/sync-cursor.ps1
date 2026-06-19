@@ -1,9 +1,9 @@
 # Sync Cursor config — delegates to sync-cursor.py (cross-platform).
-# Requires: Python 3.7+ on PATH (python or python3).
+# Requires: Python 3.10+ on PATH (python or python3).
 
 param(
     [string] $ProjectRoot = "",
-    [ValidateSet("TemplatesToLocal", "ToGlobal", "FromGlobal")]
+    [ValidateSet("TemplatesToLocal", "TemplatesToGlobal", "ToGlobal", "FromGlobal")]
     [string] $Mode = "TemplatesToLocal",
     [ValidateSet("auto", "windows", "unix")]
     [string] $HooksVariant = "auto"
