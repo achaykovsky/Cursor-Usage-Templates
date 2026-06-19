@@ -1,6 +1,6 @@
 # Hooks Template Mapping
 
-**User guide:** [HOOKS_USAGE.md](HOOKS_USAGE.md) | **Hub:** [USAGE.md](../USAGE.md)
+**User guide:** [HOOKS_USAGE.md](HOOKS_USAGE.md) | **Hub:** [USAGE.md](../USAGE.md) | **Policy engine:** [policy/README.md](policy/README.md)
 
 `templates/hooks/hooks.json` and `templates/hooks/hooks.unix.json` intentionally reference commands under `.cursor/hooks/scripts/*`.
 
