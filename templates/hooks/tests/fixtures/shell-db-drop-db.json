@@ -1,0 +1,1 @@
+{"domain": "shell-db", "payload": {"command": "psql -c 'DROP DATABASE prod'", "workspace_roots": ["/proj"]}, "permission": "deny"}

@@ -1,0 +1,1 @@
+{"domain": "shell-git", "payload": {"command": "git commit -m \"feat: add login endpoint\"", "workspace_roots": ["/proj"]}, "permission": "allow"}

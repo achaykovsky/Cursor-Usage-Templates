@@ -1,0 +1,1 @@
+{"domain": "shell-db", "payload": {"command": "psql -c \"DELETE FROM users WHERE id = 1\"", "workspace_roots": ["/proj"]}, "permission": "ask"}

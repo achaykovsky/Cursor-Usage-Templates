@@ -1,0 +1,1 @@
+{"domain": "shell-db", "payload": {"command": "psql -c \"SELECT 1\"", "workspace_roots": ["/proj"]}, "permission": "allow"}

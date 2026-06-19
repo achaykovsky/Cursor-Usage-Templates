@@ -1,0 +1,1 @@
+{"domain": "shell-git", "payload": {"command": "git commit -m \"wip\"", "workspace_roots": ["/proj"]}, "permission": "deny"}
