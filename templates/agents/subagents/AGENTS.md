@@ -6,28 +6,28 @@ Subagents live in `.cursor/agents/` and appear in **Settings > Subagents**. Invo
 
 | Invoke | File | Model |
 |--------|------|-------|
-| PM | product_manager.md | claude-4.6-sonnet |
-| REVIEWER | code_reviewer.md | claude-4.6-sonnet |
-| TESTER | test_engineer.md | composer-1.5 |
-| DOCS | documentation_writer.md | composer-1.5 |
-| SECURITY | security_engineer.md | claude-4.6-opus |
-| ARCHITECT | architecture_advisor.md | claude-4.6-opus |
-| DEVOPS | devops_engineer.md | composer-1.5 |
-| DATABASE_SQL | sql_database_engineer.md | composer-1.5 |
-| DATABASE_NOSQL | nosql_database_engineer.md | composer-1.5 |
-| FE_UI_ENGINEER | fe_ui_engineer.md | composer-1.5 |
-| FE_UX_DESIGN | fe_ux_design.md | claude-4.6-sonnet |
-| FE_DESIGN_SYSTEM | fe_design_system.md | claude-4.6-sonnet |
-| FE_STATE_ENGINEER | fe_state_engineer.md | composer-1.5 |
-| FE_TEST_ENGINEER | fe_test_engineer.md | composer-1.5 |
-| FE_CODE_REVIEWER | fe_code_reviewer.md | claude-4.6-sonnet |
-| FE_ACCESSIBILITY_ENGINEER | fe_accessibility_engineer.md | claude-4.6-sonnet |
-| FE_PERFORMANCE_ENGINEER | fe_performance_engineer.md | claude-4.6-sonnet |
-| BACKEND_PYTHON | backend_python_engineer.md | composer-1.5 |
-| BACKEND_GO | backend_go_engineer.md | composer-1.5 |
-| PERFORMANCE | performance_engineer.md | claude-4.6-sonnet |
-| DATA_ENGINEER | data_engineer.md | composer-1.5 |
-| INCIDENT | incident_responder.md | claude-4.6-sonnet |
+| PM | product_manager.md | claude-4.6-sonnet-medium-thinking |
+| REVIEWER | code_reviewer.md | claude-4.6-sonnet-medium-thinking |
+| TESTER | test_engineer.md | composer-2.5-fast |
+| DOCS | documentation_writer.md | composer-2.5-fast |
+| SECURITY | security_engineer.md | claude-opus-4-8-thinking-high |
+| ARCHITECT | architecture_advisor.md | claude-opus-4-8-thinking-high |
+| DEVOPS | devops_engineer.md | composer-2.5-fast |
+| DATABASE_SQL | sql_database_engineer.md | composer-2.5-fast |
+| DATABASE_NOSQL | nosql_database_engineer.md | composer-2.5-fast |
+| FE_UI_ENGINEER | fe_ui_engineer.md | composer-2.5-fast |
+| FE_UX_DESIGN | fe_ux_design.md | claude-4.6-sonnet-medium-thinking |
+| FE_DESIGN_SYSTEM | fe_design_system.md | claude-4.6-sonnet-medium-thinking |
+| FE_STATE_ENGINEER | fe_state_engineer.md | composer-2.5-fast |
+| FE_TEST_ENGINEER | fe_test_engineer.md | composer-2.5-fast |
+| FE_CODE_REVIEWER | fe_code_reviewer.md | claude-4.6-sonnet-medium-thinking |
+| FE_ACCESSIBILITY_ENGINEER | fe_accessibility_engineer.md | claude-4.6-sonnet-medium-thinking |
+| FE_PERFORMANCE_ENGINEER | fe_performance_engineer.md | claude-4.6-sonnet-medium-thinking |
+| BACKEND_PYTHON | backend_python_engineer.md | composer-2.5-fast |
+| BACKEND_GO | backend_go_engineer.md | composer-2.5-fast |
+| PERFORMANCE | performance_engineer.md | claude-4.6-sonnet-medium-thinking |
+| DATA_ENGINEER | data_engineer.md | composer-2.5-fast |
+| INCIDENT | incident_responder.md | claude-4.6-sonnet-medium-thinking |
 
 ## CORE SUBAGENTS
 
@@ -103,27 +103,9 @@ Debugging and production incidents. Reproduce, isolate, evidence-driven RCA. Mit
 
 ## RULES (TECHNICAL STANDARDS)
 
-Rules in `.cursor/rules/*.mdc` add technical depth and apply via globs. Source: `templates/rules/`.
+Rules in `.cursor/rules/*.mdc` add technical depth and apply via globs. **Catalog:** [rules/RULES.md](../../rules/RULES.md). **Audit:** [prompts/plan-cursor-rules-audit.md](../../prompts/plan-cursor-rules-audit.md).
 
-| Rule | Scope |
-|------|-------|
-| architecture.mdc | Code files |
-| security.mdc | alwaysApply |
-| python-backend.mdc | `**/*.py` |
-| go-backend.mdc | `**/*.go` |
-| sql-database.mdc | SQL, migrations |
-| nosql-database.mdc | NoSQL models |
-| frontend.mdc | TSX, Vue, CSS |
-| devops.mdc | Dockerfile, CI, Terraform |
-| documentation.mdc | Markdown, docs |
-| planning.mdc | `**/specs/**` |
-| code-review.mdc | Code files |
-| testing.mdc | Test files |
-| performance.mdc | Code files |
-| data-pipelines.mdc | DAGs, pipelines |
-| api-contract.mdc | API/endpoint/spec files |
-| mcp-integrations.mdc | alwaysApply |
-| skills-consistency.mdc | `templates/skills/**/SKILL.md` |
+**Navigation hub:** [USAGE.md](../../USAGE.md).
 
 ## POLICY PRECEDENCE
 
@@ -131,8 +113,8 @@ When guidance conflicts, apply this order:
 
 1. **Security and safety constraints first** (never override these).
 2. **Scoped rules** in `.cursor/rules/*.mdc` for matching files.
-3. **Workflow skills** (`templates/skills/**/SKILL.md`) for task execution steps.
-4. **Subagent prompt** (`templates/agents/subagents/*.md`) for domain ownership and output style.
+3. **Workflow skills** (`.cursor/skills/**/SKILL.md`; source: `templates/skills/**`) for task execution steps.
+4. **Subagent prompt** (`.cursor/agents/*.md`; source: `templates/agents/subagents/*.md`) for domain ownership and output style.
 5. **Examples/docs** (`README`, usage snippets) as non-authoritative guidance.
 
 Tie-breaks:
@@ -143,4 +125,7 @@ Tie-breaks:
 
 ## SYNC
 
-Run `python templates/commands/sync-cursor.py` (or `.\templates\commands\sync-cursor.ps1` on Windows) to copy subagents from `templates/agents/subagents/` (or `~/.cursor/agents/`) to `.cursor/agents/` and rules to `.cursor/rules/`. The sync clears `.cursor/agents/` before copying so renamed files don't persist.
+Run `python templates/commands/sync-cursor.py` to copy into `.cursor/` (agents, rules, hooks, skills, **USAGE.md**, catalogs, prompts). For global: `--mode TemplatesToGlobal`. See `templates/README.md`.
+
+## Note:
+Codex will review your results of the review for double-check.
