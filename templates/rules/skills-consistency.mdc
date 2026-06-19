@@ -1,9 +1,8 @@
 ---
 description: Skills consistency - structure, terminology, routing boundaries
-globs: "templates/skills/**/SKILL.md"
+globs: ".cursor/skills/**/SKILL.md, templates/skills/**/SKILL.md"
 alwaysApply: false
 ---
-
 # Skills Consistency Standards
 
 **Structure**: Use concise sections with stable ordering: `Workflow`, `Output Contract` (when applicable), `Notes` and/or `Routing` guidance.
