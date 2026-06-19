@@ -2,9 +2,27 @@
 
 Centralized Markdown templates for Cursor instructions at multiple scopes: base templates, subagents, rules, hooks, and skills. Sync into `.cursor/` for any project.
 
+**Navigation:** After sync, start at **`.cursor/USAGE.md`**. Template source: [`templates/USAGE.md`](templates/USAGE.md) · [`templates/README.md`](templates/README.md).
+
 ## Quick Start
 
-1. **Sync Cursor config** into your project (requires **Python 3.7+** on `PATH`):
+### A. Publish templates to global (from this repo)
+
+```bash
+python templates/commands/sync-cursor.py --mode TemplatesToGlobal
+```
+
+### B. Initialize any project from global
+
+```bash
+python %USERPROFILE%\cursor\Cursor-Usage-Templates\templates\commands\sync-cursor.py --mode FromGlobal --project-root .
+```
+
+Then open **`project/.cursor/USAGE.md`**.
+
+### C. Sync templates directly into a project
+
+1. **Sync Cursor config** into your project (requires **Python 3.10+** on `PATH`):
    ```bash
    python templates/commands/sync-cursor.py
    ```
@@ -34,6 +52,7 @@ Centralized Markdown templates for Cursor instructions at multiple scopes: base 
 | `templates/hooks/hooks.json` or `hooks.unix.json` (see sync `--hooks-variant`) | `.cursor/hooks.json` |
 | `templates/hooks/windows/*.ps1` or `templates/hooks/unix/*.sh` | `.cursor/hooks/scripts/` (flat; OS only) |
 | `templates/skills/**/SKILL.md` | `.cursor/skills/**/` |
+| `templates/USAGE.md`, `rules/RULES.md`, `skills/SKILLS.md`, `hooks/HOOKS_USAGE.md`, `hooks/README.md`, `prompts/*.md` | `.cursor/` (same relative paths) |
 
 See `templates/commands/README.md` for global use (submodule, symlink, `--project-root`) and OS-specific hook dependencies.
 
@@ -75,29 +94,21 @@ Subagents live in `templates/agents/subagents/` and sync to `.cursor/agents/`. T
 | FE_DESIGN_SYSTEM | fe_design_system.md | Frontend design system consistency |
 | FE_STATE_ENGINEER | fe_state_engineer.md | Frontend state and caching strategy |
 | FE_TEST_ENGINEER | fe_test_engineer.md | Frontend test coverage and regressions |
+| FE_CODE_REVIEWER | fe_code_reviewer.md | Frontend-focused code review and regression risk detection |
 | FE_ACCESSIBILITY_ENGINEER | fe_accessibility_engineer.md | Frontend accessibility and WCAG checks |
 | FE_PERFORMANCE_ENGINEER | fe_performance_engineer.md | Frontend Core Web Vitals and runtime performance |
 
-See `templates/agents/subagents/AGENTS.md` for full descriptions and `AGENTS_USAGE.md` for examples.
+See [`templates/agents/subagents/AGENTS.md`](templates/agents/subagents/AGENTS.md) and [`.cursor/USAGE.md`](.cursor/USAGE.md) for routing.
 
 Frontend agents are FE-prefixed (`FE_*`) and backend agents are BE/domain-prefixed (`BACKEND_*`, `DATABASE_*`) to keep boundaries explicit.
 
 ## Rules
 
-Rules in `templates/rules/*.mdc` sync to `.cursor/rules/` and apply via globs (e.g. `**/*.py` → `python-backend.mdc`). `security.mdc` is always applied.
-
-Recent additions:
-- `api-contract.mdc` for API validation/status/versioning consistency
-- `skills-consistency.mdc` for `templates/skills/**/SKILL.md` structure/terminology consistency
-- `mcp-integrations.mdc` for MCP safety boundaries (read-only by default, explicit approval for state changes)
+Rules sync to `.cursor/rules/`. Catalog: [`.cursor/rules/RULES.md`](.cursor/rules/RULES.md).
 
 ## Hooks
 
-`templates/hooks/` provides lifecycle hooks (format-after-edit, block-destructive-shell, etc.). See `templates/prompts/plan-cursor-hooks.md` for setup.
-
-Recent additions:
-- `validate-template-consistency` hook (Windows + Unix) runs on `beforeSubmitPrompt` and `afterFileEdit` to catch stale terminology/policy drift in templates.
-- `validate-mcp-operations` hook (Windows + Unix) runs on `beforeMCPExecution` to require confirmation on state-changing MCP tools.
+User guide: [`.cursor/hooks/HOOKS_USAGE.md`](.cursor/hooks/HOOKS_USAGE.md). Extend: [`.cursor/prompts/plan-cursor-hooks.md`](.cursor/prompts/plan-cursor-hooks.md).
 
 ## MCP Integrations
 
@@ -114,36 +125,14 @@ Policy:
 
 ## Skills
 
-Skills in `templates/skills/**/SKILL.md` sync to `.cursor/skills/`. The agent uses them when relevant workflows are triggered (e.g. "update the docs" → keep-docs-in-sync-with-code).
-
-### Skill Packs
-
-| Pack | Focus |
-|------|-------|
-| `api-workflows` | API creation, extension, compatibility, versioning |
-| `architecture-workflows` | Architecture tradeoffs, pattern selection, migration/evolution planning |
-| `frontend-workflows` | FE delivery orchestration, UI/UX, state/cache, a11y, FE perf/testing |
-| `code-workflows` | Feature design, refactoring, logging, PR/code review |
-| `testing-workflows` | Test creation and failure reproduction |
-| `performance-workflows` | Bottleneck investigation and observability instrumentation |
-| `security-workflows` | Change-focused security scans and sensitive-data handling |
-| `docs-workflows` | ADR writing and docs/code sync |
-| `migration-workflows` | Breaking-change handling and migration execution |
-| `dependency-workflows` | Dependency audit and environment reproduction |
-| `config-workflows` | Config and secrets audit patterns |
-| `devops-workflows` | CI/CD pipeline design/implementation and IaC workflows (Terraform/CloudFormation) |
-| `git-workflows` | Git history analysis and atomic commit preparation |
-| `navigation-workflows` | Codebase structure and data-flow tracing |
-| `qa-workflows` | Risk-based QA planning, execution, defect triage, regression management, release signoff |
-| `release-workflows` | Release preparation and pre-deploy validation |
-| `shared-practices` | Redaction, token efficiency, and safe command behavior |
-
-Policy precedence for conflicting guidance is defined in `templates/agents/subagents/AGENTS.md` under `POLICY PRECEDENCE`.
+Catalog: [`.cursor/skills/SKILLS.md`](.cursor/skills/SKILLS.md). Policy: [`.cursor/USAGE.md`](.cursor/USAGE.md).
 
 ## Project Structure
 
 ```
 templates/
+├── README.md                # Templates folder entry + 3-hop workflow
+├── USAGE.md                 # → .cursor/USAGE.md (start here after sync)
 ├── workspace.md
 ├── project.md
 ├── user.md
@@ -158,19 +147,24 @@ templates/
 │       ├── product_manager.md
 │       └── ...
 ├── rules/                   # .cursor/rules/
-│   ├── security.mdc
-│   ├── python-backend.mdc
-│   └── ...
+│   ├── RULES.md
+│   └── *.mdc
 ├── hooks/                   # .cursor/hooks.json + hooks/scripts/
+│   ├── HOOKS_USAGE.md
 │   ├── hooks.json
 │   ├── hooks.unix.json
 │   ├── windows/*.ps1
 │   └── unix/*.sh
 ├── skills/                  # .cursor/skills/
+│   ├── SKILLS.md
 │   └── **/SKILL.md
 ├── mcp/
 │   └── README.md            # recommended MCP servers and safety defaults
 └── prompts/
+    ├── plan-cursor-session-map.md
+    ├── plan-cursor-agents-routing.md
+    ├── plan-cursor-skills-routing.md
+    ├── plan-cursor-rules-audit.md
     ├── plan-cursor-hooks.md
     └── plan-cursor-activity-logging.md
 ```
