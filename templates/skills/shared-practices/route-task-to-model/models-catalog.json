@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "last_updated": "2026-06-19",
+  "cursor_allowlist": [
+    "claude-4.6-sonnet-medium-thinking",
+    "claude-fable-5-thinking-high",
+    "claude-opus-4-8-thinking-high",
+    "composer-2.5-fast",
+    "gpt-5.3-codex",
+    "gpt-5.5-medium"
+  ],
+  "tiers": {
+    "frontier": {
+      "label": "Frontier Reasoning Models",
+      "primary": "claude-opus-4-8-thinking-high",
+      "alternates": ["claude-fable-5-thinking-high"],
+      "tradeoffs": "Highest quality; high cost/latency; lower token efficiency."
+    },
+    "mid_tier": {
+      "label": "Mid-Tier Balanced Models",
+      "primary": "claude-4.6-sonnet-medium-thinking",
+      "alternates": ["gpt-5.5-medium", "gpt-5.3-codex"],
+      "tradeoffs": "Optimal balance of speed, cost, and reasoning quality."
+    },
+    "lightweight": {
+      "label": "Lightweight Mini Models",
+      "primary": "composer-2.5-fast",
+      "alternates": [],
+      "tradeoffs": "Highest speed and token efficiency; lowest cost."
+    }
+  },
+  "task_routing": {
+    "architectural": "frontier",
+    "general": "mid_tier",
+    "routine": "lightweight"
+  },
+  "agent_tier_hints": {
+    "ARCHITECT": "frontier",
+    "SECURITY": "frontier",
+    "PM": "mid_tier",
+    "REVIEWER": "mid_tier",
+    "INCIDENT": "mid_tier",
+    "PERFORMANCE": "mid_tier",
+    "FE_UX_DESIGN": "mid_tier",
+    "FE_DESIGN_SYSTEM": "mid_tier",
+    "FE_CODE_REVIEWER": "mid_tier",
+    "FE_ACCESSIBILITY_ENGINEER": "mid_tier",
+    "FE_PERFORMANCE_ENGINEER": "mid_tier",
+    "BACKEND_PYTHON": "lightweight",
+    "BACKEND_GO": "lightweight",
+    "DEVOPS": "lightweight",
+    "TESTER": "lightweight",
+    "DOCS": "lightweight",
+    "DATA_ENGINEER": "lightweight",
+    "DATABASE_SQL": "lightweight",
+    "DATABASE_NOSQL": "lightweight",
+    "FE_UI_ENGINEER": "lightweight",
+    "FE_STATE_ENGINEER": "lightweight",
+    "FE_TEST_ENGINEER": "lightweight"
+  },
+  "sources": [
+    {
+      "url": "https://docs.cursor.com/models",
+      "checked_at": "2026-06-19",
+      "notes": "Official Cursor model list (refresh via update script)."
+    }
+  ],
+  "changelog": [
+    {
+      "date": "2026-06-19",
+      "summary": "Initial catalog seeded from Cursor Task-tool allowlist and tier framework."
+    }
+  ]
+}
