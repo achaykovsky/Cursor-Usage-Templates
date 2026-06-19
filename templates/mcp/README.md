@@ -1,5 +1,7 @@
 # MCP Servers to Configure
 
+**Hub:** [USAGE.md](../USAGE.md) | **Rules:** [mcp-integrations.mdc](../rules/mcp-integrations.mdc)
+
 This repository does not store live MCP credentials or machine-specific endpoints.
 Configure these servers in your local Cursor MCP settings:
 
