@@ -41,7 +41,7 @@ python /path/to/Cursor-Usage-Templates/templates/commands/sync-cursor.py \
   --mode FromGlobal --project-root /path/to/your-project
 ```
 
-Creates `your-project/.cursor/` including **`USAGE.md`** — open that in the project.
+Creates `your-project/.cursor/` including [`USAGE.md`](USAGE.md) — open that in the project after sync.
 
 ### 3. Templates → one project (skip global)
 
