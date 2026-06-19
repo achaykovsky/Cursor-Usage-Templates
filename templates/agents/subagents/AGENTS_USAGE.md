@@ -1,5 +1,7 @@
 # How to Use Subagents
 
+**Hub:** [USAGE.md](../../USAGE.md) — when to use agents vs skills vs rules. **Catalog:** [AGENTS.md](AGENTS.md).
+
 Subagents are in `.cursor/agents/` and visible in **Settings > Subagents**. Invoke with `@agent(NAME)`.
 
 ## Method 1: Chat
