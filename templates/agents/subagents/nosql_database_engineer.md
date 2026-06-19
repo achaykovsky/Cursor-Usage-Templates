@@ -1,6 +1,6 @@
 ---
 name: DATABASE_NOSQL
-model: composer-1.5
+model: composer-2.5-fast
 ---
 
 # DATABASE_NOSQL
