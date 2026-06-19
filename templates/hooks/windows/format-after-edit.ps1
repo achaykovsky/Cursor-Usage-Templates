@@ -1,8 +1,10 @@
 # Run formatter on edited file. Saves tokens—agent doesn't need to format.
 # Maps to: code quality enforcement. Input: file_path, edits. Informational only (no output to agent).
 
-$ErrorActionPreference = "SilentlyContinue"
-$raw = [System.Console]::In.ReadToEnd()
+. (Join-Path $PSScriptRoot "hook-common.ps1")
+
+try {
+$raw = Read-HookStdin
 if ([string]::IsNullOrWhiteSpace($raw)) { exit 0 }
 $payload = $raw | ConvertFrom-Json
 $path = $payload.file_path
@@ -32,5 +34,8 @@ if ($formatter) {
         elseif ($formatter -match "prettier") { & npx prettier --write $fname 2>$null }
         elseif ($formatter -match "gofmt") { & gofmt -w $fname 2>$null }
     } finally { Pop-Location }
+}
+} catch {
+    Write-HookError $_
 }
 exit 0
