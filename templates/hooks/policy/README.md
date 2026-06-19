@@ -1,5 +1,7 @@
 # Hook policy engine
 
+**Hub:** [USAGE.md](../../USAGE.md) | **Hooks mapping:** [README.md](../README.md) | **User guide:** [HOOKS_USAGE.md](../HOOKS_USAGE.md)
+
 Classifies `beforeShellExecution` (DB/git) and `beforeMCPExecution` (MCP) payloads.
 
 ## Files
@@ -39,7 +41,7 @@ Shell wrappers (`hook-common.ps1` / `hook-common.sh`) forward Python stderr to t
 
 ## Project overrides
 
-Copy `templates/hook-policy.example.json` to `.cursor/hook-policy.json` and adjust `modes` or rule lists.
+Copy [`hook-policy.example.json`](../../hook-policy.example.json) to `.cursor/hook-policy.json` and adjust `modes` or rule lists.
 
 Example stricter error handling:
 
