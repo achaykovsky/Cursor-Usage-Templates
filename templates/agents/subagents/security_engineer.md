@@ -1,6 +1,6 @@
 ---
 name: SECURITY
-model: claude-4.6-opus
+model: claude-opus-4-8-thinking-high
 ---
 
 # SECURITY
