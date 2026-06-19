@@ -2,7 +2,7 @@
 
 Syncs Cursor config (agents, rules, hooks, skills, commands, routing catalogs) between **`templates/`**, the project **`.cursor/`**, and the **user Cursor directory** (`%USERPROFILE%\.cursor\` on Windows, `~/.cursor/` on macOS and Linux).
 
-After sync, open **`.cursor/USAGE.md`** for routing. Does **not** sync `prompts/`, tests, logs, CI, or cache.
+Start at [`USAGE.md`](../USAGE.md) for routing (syncs to `.cursor/USAGE.md`). Does **not** sync `prompts/`, tests, logs, CI, or cache.
 
 **Entry points:**
 
@@ -80,7 +80,7 @@ Controls which **OS hook set** is used (`windows` → `*.ps1`, `unix` → `*.sh`
 | `templates/hooks/hooks.json` or `hooks.unix.json` (see variant above) | `.cursor/hooks.json` |
 | `templates/hooks/windows/*.ps1` or `templates/hooks/unix/*.sh` | `.cursor/hooks/scripts/` (flat; OS only) |
 | `templates/skills/**/SKILL.md` | `.cursor/skills/**/` |
-| Routing catalogs (`USAGE.md`, `rules/RULES.md`, `skills/SKILLS.md`, `hooks/HOOKS_USAGE.md`, `hooks/README.md`) | `.cursor/` (mirrored paths) |
+| Routing catalogs ([`USAGE.md`](../USAGE.md), [`rules/RULES.md`](../rules/RULES.md), [`skills/SKILLS.md`](../skills/SKILLS.md), [`hooks/HOOKS_USAGE.md`](../hooks/HOOKS_USAGE.md), [`hooks/README.md`](../hooks/README.md)) | `.cursor/` (mirrored paths) |
 
 **Not synced:** `prompts/`, `tests/`, logs, CI, cache. Commands are not re-copied locally when `templates/commands/` already exists in the project.
 
@@ -100,7 +100,7 @@ Copies between project **`.cursor/`** and **`~/.cursor/`**, plus **`templates/co
 | Rules | `rules/*.mdc` |
 | Hooks | `hooks.json` at the Cursor root, plus `hooks/scripts/*.{ps1,sh}` |
 | Skills | `skills/**/SKILL.md` (tree preserved) |
-| Routing catalogs | `USAGE.md`, `rules/RULES.md`, `skills/SKILLS.md`, `hooks/HOOKS_USAGE.md`, `hooks/README.md` |
+| Routing catalogs | [`USAGE.md`](../USAGE.md), [`rules/RULES.md`](../rules/RULES.md), [`skills/SKILLS.md`](../skills/SKILLS.md), [`hooks/HOOKS_USAGE.md`](../hooks/HOOKS_USAGE.md), [`hooks/README.md`](../hooks/README.md) |
 | Commands | Top-level `*.{py,ps1,sh}` and `README.md` under `templates/commands/` or `~/.cursor/commands/` (never `tests/`) |
 
 For **`TemplatesToLocal`:** Existing `*.md` in `agents/`, `*.mdc` in `rules/`, stale `SKILL.md` trees under `skills/`, and hook scripts at the destination are cleared or pruned before copy.
@@ -178,7 +178,7 @@ Pass `--project-root` when the script is not under that project’s `templates/c
 
 ## After Sync
 
-- **Start here:** `.cursor/USAGE.md` after sync or `FromGlobal`
+- **Start here:** [`USAGE.md`](../USAGE.md) (syncs to `.cursor/USAGE.md` after sync or `FromGlobal`)
 - **Agents** appear in Cursor Settings → Subagents
 - **Rules** apply via globs when editing matching files
 - **Hooks** run at lifecycle events
