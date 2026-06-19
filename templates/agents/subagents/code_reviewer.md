@@ -1,6 +1,6 @@
 ---
 name: REVIEWER
-model: claude-4.6-sonnet
+model: claude-4.6-sonnet-medium-thinking
 ---
 
 # REVIEWER
