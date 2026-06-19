@@ -1,6 +1,6 @@
 ---
 name: FE_ACCESSIBILITY_ENGINEER
-model: claude-4.6-sonnet
+model: claude-4.6-sonnet-medium-thinking
 ---
 
 # FE_ACCESSIBILITY_ENGINEER
