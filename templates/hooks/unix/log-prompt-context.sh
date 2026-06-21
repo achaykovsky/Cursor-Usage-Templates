@@ -1,41 +1,11 @@
 #!/usr/bin/env bash
 # Log prompt-level context for beforeSubmitPrompt.
-# Captures: timestamp, prompt, observed skill/rule fields, and predicted fallback.
+# Captures: timestamp, prompt, observed skill/rule fields, and routing.py predictions.
 
 set -euo pipefail
 
-predict_skills() {
-  local p
-  p=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
-  local -a out=()
-  [[ "$p" =~ fastapi|flask|endpoint|openapi|swagger|api ]] && out+=("api-workflows/implement-or-extend-api-surface")
-  [[ "$p" =~ version|deprecat|backward|breaking\ change ]] && out+=("api-workflows/check-api-backward-compatibility")
-  [[ "$p" =~ bug|broken|fix|error|exception|failing ]] && out+=("code-workflows/fix-bug-systematically")
-  [[ "$p" =~ refactor|cleanup|rename ]] && out+=("code-workflows/refactor-safely")
-  [[ "$p" =~ test|pytest|coverage|assert ]] && out+=("testing-workflows/add-tests-for-change")
-  [[ "$p" =~ security|secret|owasp|xss|sql\ injection|auth ]] && out+=("security-workflows/security-scan-changes")
-  [[ "$p" =~ deploy|release|pipeline|ci/cd|terraform|cloudformation ]] && out+=("devops-workflows/implement-ci-cd-pipeline")
-  [[ "$p" =~ doc|readme|adr|documentation ]] && out+=("docs-workflows/keep-docs-in-sync-with-code")
-  if ((${#out[@]} == 0)); then
-    printf '[]'
-  else
-    printf '%s\n' "${out[@]}" | jq -Rsc 'split("\n") | map(select(length > 0)) | unique'
-  fi
-}
-
-predict_rules() {
-  local p
-  p=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
-  local -a out=("security.mdc" "token-efficiency.mdc" "ai-guardrails.mdc")
-  [[ "$p" =~ python|pytest|poetry|fastapi|django ]] && out+=("python-backend.mdc")
-  [[ "$p" =~ (^|[[:space:]])go($|[[:space:]])|golang ]] && out+=("go-backend.mdc")
-  [[ "$p" =~ react|tsx|frontend|ui|ux|css ]] && out+=("frontend.mdc")
-  [[ "$p" =~ api|openapi|endpoint|swagger ]] && out+=("api-contract.mdc")
-  [[ "$p" =~ test|coverage|assert ]] && out+=("testing.mdc")
-  [[ "$p" =~ perf|latency|optimi ]] && out+=("performance.mdc")
-  [[ "$p" =~ doc|readme|adr|markdown ]] && out+=("documentation.mdc")
-  printf '%s\n' "${out[@]}" | jq -Rsc 'split("\n") | map(select(length > 0)) | unique'
-}
+# shellcheck source=hook-common.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/hook-common.sh"
 
 if ! command -v jq >/dev/null 2>&1; then
   printf '%s\n' '{"continue":true,"permission":"allow"}'
@@ -84,6 +54,7 @@ prompt=$(echo "$raw" | jq -r '
 if [[ ${#prompt} -gt 50000 ]]; then
   prompt="${prompt:0:50000}...[truncated]"
 fi
+prompt=$(invoke_redact_text "$prompt" "$project_root")
 
 skills=$(echo "$raw" | jq -c '
   def as_names:
@@ -113,11 +84,14 @@ rules=$(echo "$raw" | jq -c '
 
 predicted_skills='[]'
 predicted_rules='[]'
-if [[ "$skills" == "[]" ]]; then
-  predicted_skills=$(predict_skills "$prompt")
-fi
-if [[ "$rules" == "[]" ]]; then
-  predicted_rules=$(predict_rules "$prompt")
+if [[ "$skills" == "[]" || "$rules" == "[]" ]]; then
+  prediction=$(prompt_predictions_from_routing "$prompt" "$project_root")
+  if [[ "$skills" == "[]" ]]; then
+    predicted_skills=$(echo "$prediction" | jq -c '.predicted_skills // []')
+  fi
+  if [[ "$rules" == "[]" ]]; then
+    predicted_rules=$(echo "$prediction" | jq -c '.predicted_rules // []')
+  fi
 fi
 
 payload_keys=$(echo "$raw" | jq -c 'keys | sort')
@@ -155,7 +129,8 @@ line=$(jq -nc \
       parse_error: (if ($parse_error | length) > 0 then $parse_error else null end),
       payload_key_count: $payload_key_count,
       payload_keys: $payload_keys,
-      prompt_field_found: $prompt_field_found
+      prompt_field_found: $prompt_field_found,
+      prediction_source: "routing.py"
     }
   }')
 

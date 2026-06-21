@@ -6,6 +6,9 @@
 
 set -euo pipefail
 
+# shellcheck source=hook-common.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/hook-common.sh"
+
 emit_allow() {
   local ev="$1"
   case "$ev" in
@@ -88,6 +91,83 @@ skill_name_from_path() {
   fi
 }
 
+agent_invoke_from_subagent_file() {
+  local root="$1"
+  local file="$2"
+  local path
+  for path in "${root}/templates/agents/subagents/${file}" "${root}/.cursor/agents/${file}"; do
+    if [[ -f "$path" ]]; then
+      grep -m1 -E '^[[:space:]]*name:[[:space:]]*' "$path" 2>/dev/null | sed -E 's/^[[:space:]]*name:[[:space:]]*([^[:space:]]+).*/\1/' | tr -d '\r'
+      return
+    fi
+  done
+}
+
+agents_requested_from_prompt() {
+  local prompt="$1"
+  local root="$2"
+  local -a out=()
+  local name file invoke
+
+  while IFS= read -r name; do
+    [[ -z "$name" ]] && continue
+    out+=("$name")
+  done < <(printf '%s' "$prompt" | grep -oE '@agent\([[:space:]]*[^)]+\)' | sed -E 's/@agent\([[:space:]]*([^)]+)[[:space:]]*\)/\1/' | tr -d '\r')
+
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    invoke=$(agent_invoke_from_subagent_file "$root" "${file}.md")
+    [[ -n "$invoke" ]] && out+=("$invoke")
+  done < <(printf '%s' "$prompt" | grep -oiE 'subagents[/\\][a-zA-Z0-9_-]+\.md' | sed -E 's/.*[/\\]([a-zA-Z0-9_-]+)\.md/\1/i' | tr -d '\r')
+
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    if [[ "$file" =~ ^(AGENTS|AGENTS_USAGE)$ ]]; then
+      continue
+    fi
+    invoke=$(agent_invoke_from_subagent_file "$root" "${file}.md")
+    [[ -n "$invoke" ]] && out+=("$invoke")
+  done < <(printf '%s' "$prompt" | grep -oiE '[/\\]agents[/\\][a-zA-Z0-9_-]+\.md' | sed -E 's/.*[/\\]([a-zA-Z0-9_-]+)\.md/\1/i' | tr -d '\r')
+
+  if [[ ${#out[@]} -eq 0 ]]; then
+    printf '[]'
+    return
+  fi
+  printf '%s\n' "${out[@]}" | awk '!seen[$0]++' | jq -Rsc 'split("\n") | map(select(length > 0)) | sort'
+}
+
+routing_script_path() {
+  local root="$1"
+  for path in \
+    "${root}/templates/commands/routing.py" \
+    "${root}/.cursor/commands/routing.py"; do
+    if [[ -f "$path" ]]; then
+      printf '%s' "$path"
+      return
+    fi
+  done
+}
+
+skills_matched_from_prompt() {
+  local prompt="$1"
+  local root="$2"
+  local script py
+
+  if [[ -z "$prompt" ]]; then
+    printf '[]'
+    return
+  fi
+
+  script=$(routing_script_path "$root")
+  py=$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)
+  if [[ -z "$script" || -z "$py" ]]; then
+    printf '[]'
+    return
+  fi
+
+  "$py" "$script" skills-match --task "$prompt" 2>/dev/null || printf '[]'
+}
+
 append_tracking_event() {
   local ledger="$1"
   local track="$2"
@@ -119,22 +199,43 @@ case "$event" in
       ] | map(select(. != null)) | .[0] // [] | names
     ')
     hooks_cfg=$(get_hooks_configured)
-    echo "$raw" | jq -c \
+    model=$(echo "$raw" | jq -r '[.model, .model_name, .model_id, .subagent_model] | map(select(. != null and . != "")) | .[0] // empty')
+    prompt=$(echo "$raw" | jq -r '[.prompt, .user_prompt, .content, .text, .input, .message] | map(select(. != null and . != "")) | .[0] // ""')
+    agents_req=$(agents_requested_from_prompt "$prompt" "$project_root")
+    skills_matched=$(skills_matched_from_prompt "$prompt" "$project_root")
+    prompt_chars=${#prompt}
+    tokens='null'
+    if [[ "$prompt_chars" -gt 0 ]]; then
+      est_in=$(( (prompt_chars + 3) / 4 ))
+      tokens=$(jq -nc --argjson in "$est_in" --argjson pc "$prompt_chars" '{input_tokens: $in, total_tokens: $in, prompt_chars: $pc, estimated: true, source: "chars"}')
+    fi
+    ledger=$(echo "$raw" | jq -c \
       --argjson rules "$rules" \
       --argjson skills "$skills" \
       --argjson hooks "$hooks_cfg" \
+      --argjson agents_req "$agents_req" \
+      --argjson skills_matched "$skills_matched" \
+      --arg model "$model" \
+      --argjson tokens "$tokens" \
+      --argjson prompt_chars "$prompt_chars" \
       --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
       '{
         ts: $ts,
         generation_id: (.generation_id // ""),
         conversation_id: (.conversation_id // ""),
+        model: (if ($model | length) > 0 then $model else null end),
+        tokens: (if $tokens == null then null else $tokens end),
+        prompt_chars: (if $prompt_chars > 0 then $prompt_chars else null end),
         rules: $rules,
         skills_payload: $skills,
+        skills_matched: $skills_matched,
         skills_read: [],
+        agents_requested: $agents_req,
         subagents: [],
         hooks_configured: $hooks,
         tracking_events: ["beforeSubmitPrompt"]
-      }' >"$active_path"
+      }')
+    write_active_ledger_atomic "$active_path" "$ledger"
     emit_allow "$event"
     ;;
 
@@ -163,7 +264,7 @@ case "$event" in
           .ts = (now | todate)
         ')
         ledger=$(append_tracking_event "$ledger" "preToolUse:skill_read")
-        printf '%s\n' "$ledger" >"$active_path"
+        write_active_ledger_atomic "$active_path" "$ledger"
       fi
     fi
     emit_allow "$event"
@@ -196,7 +297,7 @@ case "$event" in
       .ts = (now | todate)
     ')
     ledger=$(append_tracking_event "$ledger" "subagentStart")
-    printf '%s\n' "$ledger" >"$active_path"
+    write_active_ledger_atomic "$active_path" "$ledger"
     emit_allow "$event"
     ;;
 
@@ -234,7 +335,60 @@ case "$event" in
       end
       ')
     ledger=$(append_tracking_event "$ledger" "subagentStop")
-    printf '%s\n' "$ledger" >"$active_path"
+    write_active_ledger_atomic "$active_path" "$ledger"
+    ;;
+
+  preCompact|afterAgentResponse)
+    if [[ ! -f "$active_path" ]]; then
+      ledger=$(echo "$raw" | jq -c '{
+        ts: (now | todate),
+        generation_id: (.generation_id // ""),
+        conversation_id: (.conversation_id // ""),
+        model: ([.model, .model_name, .subagent_model] | map(select(. != null and . != "")) | .[0] // null),
+        tokens: null,
+        rules: [],
+        skills_payload: [],
+        skills_read: [],
+        subagents: [],
+        tracking_events: []
+      }')
+      write_active_ledger_atomic "$active_path" "$ledger"
+    fi
+    ledger=$(cat "$active_path")
+    model=$(echo "$raw" | jq -r '[.model, .model_name, .subagent_model] | map(select(. != null and . != "")) | .[0] // empty')
+    token_patch=$(echo "$raw" | jq -c --arg ev "$event" '{
+      input_tokens: (.usage.input_tokens // .usage.prompt_tokens // .input_tokens // .prompt_tokens // null),
+      output_tokens: (.usage.output_tokens // .usage.completion_tokens // .output_tokens // .completion_tokens // null),
+      total_tokens: (.usage.total_tokens // .total_tokens // null),
+      context_tokens: .context_tokens,
+      context_usage_percent: .context_usage_percent,
+      context_window_size: .context_window_size,
+      source: $ev
+    } | with_entries(select(.value != null))')
+    ledger=$(echo "$ledger" | jq --arg m "$model" --argjson patch "$token_patch" --arg ev "$event" '
+      (if ($m | length) > 0 then .model = $m else . end) |
+      (if ($patch | length) > 0 then .tokens = ((.tokens // {}) * $patch) else . end) |
+      .tracking_events = ((.tracking_events // []) + [$ev] | unique) |
+      .ts = (now | todate)
+    ')
+    if [[ "$event" == "afterAgentResponse" ]]; then
+      response=$(echo "$raw" | jq -r '[.text, .response, .content, .message] | map(select(. != null and . != "")) | .[0] // ""')
+      response_chars=${#response}
+      if [[ "$response_chars" -gt 0 ]]; then
+        est_out=$(( (response_chars + 3) / 4 ))
+        ledger=$(echo "$ledger" | jq --argjson rc "$response_chars" --argjson out "$est_out" '
+          .response_chars = $rc |
+          .tokens = ((.tokens // {}) * {
+            output_tokens: $out,
+            response_chars: $rc,
+            estimated: true,
+            source: "chars"
+          }) |
+          .tokens.total_tokens = ((.tokens.input_tokens // 0) + (.tokens.output_tokens // 0))
+        ')
+      fi
+    fi
+    write_active_ledger_atomic "$active_path" "$ledger"
     ;;
 
   stop)
@@ -243,6 +397,16 @@ case "$event" in
     fi
     ledger=$(cat "$active_path")
     status=$(echo "$raw" | jq -r '.status // empty')
+    model=$(echo "$raw" | jq -r '[.model, .model_name, .subagent_model] | map(select(. != null and . != "")) | .[0] // empty')
+    token_patch=$(echo "$raw" | jq -c '{
+      input_tokens: (.usage.input_tokens // .usage.prompt_tokens // .input_tokens // .prompt_tokens // null),
+      output_tokens: (.usage.output_tokens // .usage.completion_tokens // .output_tokens // .completion_tokens // null),
+      total_tokens: (.usage.total_tokens // .total_tokens // null)
+    } | with_entries(select(.value != null))')
+    ledger=$(echo "$ledger" | jq --arg m "$model" --argjson patch "$token_patch" '
+      (if ($m | length) > 0 then .model = $m else . end) |
+      (if ($patch | length) > 0 then .tokens = ((.tokens // {}) * $patch | .source = "stop") else . end)
+    ')
     summary=$(echo "$ledger" | jq -c \
       --arg st "$status" \
       --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
@@ -251,10 +415,16 @@ case "$event" in
         event: "resource_summary",
         generation_id: .generation_id,
         conversation_id: .conversation_id,
+        model: .model,
+        tokens: .tokens,
+        prompt_chars: .prompt_chars,
+        response_chars: .response_chars,
         status: $st,
         rules: (.rules // []),
         skills_payload: (.skills_payload // []),
+        skills_matched: (.skills_matched // []),
         skills_read: (.skills_read // []),
+        agents_requested: (.agents_requested // []),
         subagents: (.subagents // []),
         hooks_configured: (.hooks_configured // []),
         tracking_events: ((.tracking_events // []) + ["stop"] | unique)
@@ -263,7 +433,7 @@ case "$event" in
     printf '%s\n' "$summary" >>"$resources_log"
     printf '%s\n' "$summary" | jq '.' >"${ledger_dir}/latest.json"
     ledger=$(append_tracking_event "$ledger" "stop")
-    printf '%s\n' "$ledger" >"$active_path"
+    write_active_ledger_atomic "$active_path" "$ledger"
     ;;
 
   *)

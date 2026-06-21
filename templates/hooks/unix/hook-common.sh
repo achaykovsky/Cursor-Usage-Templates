@@ -60,3 +60,105 @@ invoke_hook_policy() {
   fi
   printf '%s' "$raw" | "$py" "$policy" "$domain" || printf '%s\n' '{"continue":true,"permission":"allow"}'
 }
+
+find_redact_script() {
+  local project_root="${1:-}"
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  if [[ -n "$project_root" && -f "${project_root}/.cursor/hooks/policy/redact_sensitive.py" ]]; then
+    printf '%s\n' "${project_root}/.cursor/hooks/policy/redact_sensitive.py"
+    return 0
+  fi
+  if [[ -f "${script_dir}/policy/redact_sensitive.py" ]]; then
+    printf '%s\n' "${script_dir}/policy/redact_sensitive.py"
+    return 0
+  fi
+  return 1
+}
+
+invoke_redact_text() {
+  local text="$1"
+  local project_root="${2:-}"
+  local py script out
+  if [[ -z "$text" ]]; then
+    printf '%s' "$text"
+    return 0
+  fi
+  if ! py=$(find_python); then
+    printf '%s' "$text"
+    return 0
+  fi
+  if ! script=$(find_redact_script "$project_root"); then
+    printf '%s' "$text"
+    return 0
+  fi
+  out=$(printf '%s' "$text" | "$py" "$script" redact-text 2>/dev/null) || {
+    printf '%s' "$text"
+    return 0
+  }
+  printf '%s' "$out"
+}
+
+write_active_ledger_atomic() {
+  local path="$1"
+  local content="$2"
+  local dir lock tmp
+  dir=$(dirname "$path")
+  mkdir -p "$dir"
+  lock="${path}.lock"
+  tmp="${dir}/active.json.$$.$RANDOM.tmp"
+  if command -v flock >/dev/null 2>&1; then
+    (
+      flock -x 200
+      printf '%s\n' "$content" >"$tmp"
+      mv -f "$tmp" "$path"
+    ) 200>"$lock"
+  else
+    printf '%s\n' "$content" >"$tmp"
+    mv -f "$tmp" "$path"
+  fi
+}
+
+find_routing_script() {
+  local project_root="${1:-}"
+  local script_dir templates_root path
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  templates_root="$(cd "${script_dir}/.." && pwd)"
+  for path in \
+    "${project_root}/templates/commands/routing.py" \
+    "${project_root}/.cursor/commands/routing.py" \
+    "${templates_root}/commands/routing.py"; do
+    if [[ -n "$path" && -f "$path" ]]; then
+      printf '%s\n' "$path"
+      return 0
+    fi
+  done
+  return 1
+}
+
+prompt_predictions_from_routing() {
+  local prompt="$1"
+  local project_root="${2:-}"
+  local py script out
+  if [[ -z "$prompt" ]]; then
+    printf '%s\n' '{"predicted_skills":[],"predicted_rules":[]}'
+    return 0
+  fi
+  if ! py=$(find_python); then
+    printf '%s\n' '{"predicted_skills":[],"predicted_rules":[]}'
+    return 0
+  fi
+  if ! script=$(find_routing_script "$project_root"); then
+    printf '%s\n' '{"predicted_skills":[],"predicted_rules":[]}'
+    return 0
+  fi
+  out=$("$py" "$script" predict --task "$prompt" 2>/dev/null) || {
+    printf '%s\n' '{"predicted_skills":[],"predicted_rules":[]}'
+    return 0
+  }
+  if [[ -z "$out" ]]; then
+    printf '%s\n' '{"predicted_skills":[],"predicted_rules":[]}'
+    return 0
+  fi
+  printf '%s\n' "$out"
+}

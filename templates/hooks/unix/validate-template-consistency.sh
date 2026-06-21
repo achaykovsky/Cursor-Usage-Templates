@@ -15,6 +15,8 @@ if [[ -z "${raw//[[:space:]]/}" ]]; then
   exit 0
 fi
 
+event=$(echo "$raw" | jq -r '.hook_event_name // empty')
+
 cwd=$(echo "$raw" | jq -r '.cwd // empty')
 root=$(echo "$raw" | jq -r '.workspace_roots[0] // empty')
 r="$cwd"
@@ -49,7 +51,7 @@ check_pattern 'authoritative security pass' "Use 'primary in-template security r
 check_pattern 'tabIndex for focus order' 'Use semantic DOM order guidance (avoid positive tabIndex).' 'templates/rules'
 check_pattern 'dev-secret-change-in-prod' 'Insecure secret default found in templates.' 'templates'
 
-if [[ ${#issues[@]} -gt 0 ]]; then
+if [[ ${#issues[@]} -gt 0 && "$event" == "beforeSubmitPrompt" ]]; then
   msg="${issues[0]}"
   if [[ ${#issues[@]} -gt 1 ]]; then
     msg="$msg | ${issues[1]}"
@@ -62,5 +64,7 @@ if [[ ${#issues[@]} -gt 0 ]]; then
   exit 0
 fi
 
-printf '%s\n' '{"continue":true,"permission":"allow"}'
+if [[ "$event" == "beforeSubmitPrompt" ]]; then
+  printf '%s\n' '{"continue":true,"permission":"allow"}'
+fi
 exit 0
