@@ -91,6 +91,12 @@ def test_match_skills_comments_prompt() -> None:
     assert "add-comments-to-code" in matched
 
 
+def test_match_skills_error_handling_prompt() -> None:
+    """Error-handling prompts must match add-error-handling-to-code."""
+    matched = rt.match_skills_from_prompt("add specific exception handling with custom domain errors")
+    assert "add-error-handling-to-code" in matched
+
+
 def test_skill_keywords_cover_catalog() -> None:
     """Every templates/skills/*/SKILL.md must have a SKILL_KEYWORDS entry."""
     from pathlib import Path
