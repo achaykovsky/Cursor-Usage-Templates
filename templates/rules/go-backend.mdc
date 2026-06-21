@@ -6,17 +6,27 @@ alwaysApply: false
 
 # Go Backend Standards
 
-**Error handling** (never ignore):
+**Error handling** (never ignore; specific types):
 ```go
-// ❌ BAD
+// ❌ BAD — ignored error, generic message, lost cause
 result, _ := doThing()
-
-// ✅ GOOD
-result, err := doThing()
 if err != nil {
-    return fmt.Errorf("doThing: %w", err)
+    return fmt.Errorf("failed")
+}
+
+// ✅ GOOD — wrapped cause, sentinel for callers
+var ErrUserNotFound = errors.New("user not found")
+
+row, err := db.QueryRowContext(ctx, q, id).Scan(&user)
+if errors.Is(err, sql.ErrNoRows) {
+    return ErrUserNotFound
+}
+if err != nil {
+    return fmt.Errorf("load user %q: %w", id, err)
 }
 ```
+- Wrap with `%w` when callers need `errors.Is` / `errors.As`. Prefer sentinel or typed errors over string matching.
+- No panics in production paths. Map domain errors to HTTP at handlers — do not expose internals.
 
 **Parameterized queries**: `db.Query("SELECT ... WHERE id = ?", id)`. Never `fmt.Sprintf` for SQL. Use `sqlx.Named` for named params.
 

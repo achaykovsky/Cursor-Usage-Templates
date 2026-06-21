@@ -12,7 +12,7 @@ alwaysApply: false
 
 **Mocking**: Mock at boundaries (HTTP, DB, file I/O). Don't mock internals. Use `responses`/`respx` for HTTP, `unittest.mock.patch` for modules.
 
-**Coverage**: Aim 80%+ on critical paths. Cover error branches, validation failures, edge cases (empty, null, boundary). `pytest-cov`, `go test -cover`.
+**Coverage**: Aim 80%+ on critical paths. Cover error branches, validation failures, edge cases (empty, null, boundary). Assert specific failures (pytest.raises(ExpectedError), Go rrors.Is/rrors.As). pytest-cov, go test -cover.
 
 **Scope routing**: Frontend-local UI/state/E2E coverage stays with FE testing workflows/agents. Cross-stack/system-wide strategy and mixed backend/frontend integration test policy escalate to generic `TESTER`.
 

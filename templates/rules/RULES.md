@@ -24,7 +24,7 @@ Rules sync to `.cursor/rules/`. They load **automatically** when you edit files 
 
 | Rule | Globs | Focus |
 |------|-------|-------|
-| `python-backend.mdc` | `**/*.py` | FastAPI, typing, pytest |
+| `python-backend.mdc` | `**/*.py` | FastAPI, typing, pytest, specific exceptions |
 | `go-backend.mdc` | `**/*.go` | Idiomatic Go, tests |
 | `frontend.mdc` | `**/*.{tsx,jsx,vue,css,scss}` | React/TS, a11y, UX |
 | `sql-database.mdc` | `**/*.sql`, migrations, alembic | Schema, queries |

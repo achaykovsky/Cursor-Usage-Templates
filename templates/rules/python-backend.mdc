@@ -24,4 +24,22 @@ cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
 
 **N+1 fix**: `selectinload()`, `joinedload()`, or `select_related()` for relations. Avoid loops that trigger lazy loads.
 
-**Tests**: `pytest -x` fail fast. `@pytest.fixture` for DB session. `factory_boy` for model factories. `responses` or `respx` for HTTP mocks.
+**Exceptions** (specific types, narrow catches):
+```python
+# ❌ BAD — generic raise, broad catch, lost cause
+try:
+    process(user_id)
+except Exception:
+    raise Exception("failed")
+
+# ✅ GOOD — specific types, narrow catch, chained cause
+try:
+    row = repo.get(user_id)
+except RecordNotFound as exc:
+    raise UserNotFoundError(user_id) from exc
+```
+- Raise stdlib or domain types callers can handle; avoid bare `Exception` except at top-level boundaries.
+- Catch specific types only; no silent `except Exception:` in business logic.
+- Use `raise ... from exc` when translating. Map domain errors to HTTP at the API layer — never expose stack traces.
+
+**Tests**: `pytest -x` fail fast. `@pytest.fixture` for DB session. `factory_boy` for model factories. `responses` or `respx` for HTTP mocks. Assert failures with `pytest.raises(SpecificError, match=...)`.

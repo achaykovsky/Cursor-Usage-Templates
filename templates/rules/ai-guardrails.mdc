@@ -15,9 +15,10 @@ alwaysApply: true
 
 **Safety**: Do not silently remove or weaken **validation**, **error handling**, **tests**, or **assertions**. If something must be removed or changed, call it out in the response and keep the change intentional and reviewable.
 
-**Code authorship**: When writing or materially editing code, **logging and comments are mandatory** — do not ship logic-only diffs.
+**Code authorship**: When writing or materially editing code, **logging, comments, and error handling are mandatory** — do not ship logic-only diffs.
 - **Logging**: Follow `observability.mdc` and read **add-logging-to-code** when adding or editing log statements.
 - **Comments**: Read **add-comments-to-code** when writing code. Explain **why**, not what. Document invariants, non-obvious constraints, complex branches, regex/math, and business rules. Skip comments only on trivial one-liners (imports, simple getters).
+- **Error handling**: Follow scoped language rules (python-backend.mdc, go-backend.mdc) and read **add-error-handling-to-code** when adding or editing raise/except paths, domain error types, or failure translation at boundaries.
 
 **Subagents when mentioned**: When the user names a subagent via `@agent(NAME)`, a path to `templates/agents/subagents/*.md` or `.cursor/agents/*.md`, or `agents_requested` in the resource ledger lists invoke names, **spawn** each subagent with the **Task** tool (`subagent_type` = that invoke name, e.g. `DOCS`, `BACKEND_PYTHON`) and delegate the relevant work. Do **not** substitute reading the agent `.md` in the parent agent. Spawn all mentioned agents; run in parallel when their tasks are independent. Before your final reply, every `agents_requested` entry must have a matching spawned subagent recorded in the ledger.
 

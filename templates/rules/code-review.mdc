@@ -12,4 +12,4 @@ CRITICAL: [issue] - [impact] - [fix]
 WARNING: [issue] - [suggestion]
 ```
 
-**Checklist**: Type safety (Any, missing hints). Security (injection, secrets, validation). Performance (N+1, blocking I/O). Architecture (god modules, coupling). Tests (edge cases, error paths). Include code snippet for fix when suggesting change.
+**Checklist**: Type safety (Any, missing hints). Security (injection, secrets, validation). Performance (N+1, blocking I/O). Architecture (god modules, coupling). Error handling (specific raise/error types, narrow catch, chained causes — flag generic `Exception` / `except Exception:` / ignored Go `err`). Tests (edge cases, error paths, `pytest.raises` / `errors.Is`). Include code snippet for fix when suggesting change.
