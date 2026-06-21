@@ -38,6 +38,8 @@ Format: `skill-name` | trigger phrases | optional `@agent`
 | `fix-bug-systematically` | fix bug, root cause | `INCIDENT` |
 | `refactor-safely` | refactor, rename, cleanup | `REVIEWER` |
 | `add-logging-to-code` | add logging, debug path | — |
+| `add-comments-to-code` | add comments, document code, explain function | — |
+| `add-error-handling-to-code` | add error handling, custom/specific exceptions | — |
 | `audit-codebase-cleanup` | dead code, duplication audit | `REVIEWER` |
 | `review-architecture-fit` | does this fit architecture | `ARCHITECT` |
 | `review-pull-request` | PR review, review this change | `REVIEWER` |
