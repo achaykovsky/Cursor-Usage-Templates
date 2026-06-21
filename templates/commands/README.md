@@ -183,7 +183,48 @@ Pass `--project-root` when the script is not under that project’s `templates/c
 - **Rules** apply via globs when editing matching files
 - **Hooks** run at lifecycle events
 - **Skills** are available to the agent when relevant workflows are triggered
-- **Commands** (`sync-cursor.py`, etc.) live under `templates/commands/` after `FromGlobal`, or `~/.cursor/commands/` after `TemplatesToGlobal`
+- **Commands** (`sync-cursor.py`, routing scripts, etc.) live under `templates/commands/` after `FromGlobal`, or `~/.cursor/commands/` after `TemplatesToGlobal`
+
+---
+
+## Activity log query
+
+Summarize `cursor-activity-*.jsonl` by `generation_id` (prompt → files → commands → status).
+
+| Platform | Command |
+|----------|---------|
+| Python | `python templates/commands/cursor_activity.py query --date 2026-02-25 --project-root .` |
+| Windows | `.\templates\commands\query-cursor-logs.ps1 -Date 2026-02-25` |
+
+**Flags:** `-Date yyyy-MM-dd`, `-GenerationId <id>`, `-ProjectRoot <path>` (PowerShell) / `--date`, `--generation-id`, `--project-root` (Python).
+
+Requires activity logs from `log-cursor-activity` hook (sync hooks first).
+
+---
+
+## Routing CLI (deterministic)
+
+Keyword/heuristic routing — same structured output as planning prompts, without pasting into chat.
+
+| Script | Python equivalent | Purpose |
+|--------|-------------------|---------|
+| `route-session.ps1` | `python routing.py session --task "..." --files a.py` | Session route table (max 6 rows) |
+| `route-agent.ps1` | `python routing.py agent --task "..."` | Primary/secondary `@agent` |
+| `route-skill.ps1` | `python routing.py skill --task "..." --phase implement` | Skill chain |
+| `route-model.ps1` | `python routing.py model --task "..."` | Category, tier, slug from `models-catalog.json` |
+| `route-rules.ps1` | `python routing.py rules --files src/a.py` | Always-applied + file-scoped rules |
+
+```powershell
+.\templates\commands\route-session.ps1 -Task "fix auth bug" -Files src/auth.py
+.\templates\commands\route-agent.ps1 -Task "review PR for security"
+.\templates\commands\route-skill.ps1 -Task "deploy to staging" -Phase release
+.\templates\commands\route-model.ps1 -Task "refactor service boundaries"
+.\templates\commands\route-rules.ps1 -Files src/api/router.py
+```
+
+All scripts support `--help`. Shared logic: `routing.py`, `cursor_activity.py`.
+
+---
 
 ## Contributors (this repo)
 

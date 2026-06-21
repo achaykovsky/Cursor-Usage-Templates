@@ -18,11 +18,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
+import logging
 import shutil
 import sys
+from contextvars import ContextVar
 from dataclasses import dataclass
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -31,28 +34,32 @@ class SyncOptions:
     verbose: bool = False
 
 
-_SYNC_OPTS = SyncOptions()
+_sync_opts: ContextVar[SyncOptions] = ContextVar("sync_opts", default=SyncOptions())
+
+
+def _get_sync_opts() -> SyncOptions:
+    return _sync_opts.get()
 
 
 def set_sync_options(*, dry_run: bool = False, verbose: bool = False) -> None:
-    global _SYNC_OPTS
-    _SYNC_OPTS = SyncOptions(dry_run=dry_run, verbose=verbose)
+    _sync_opts.set(SyncOptions(dry_run=dry_run, verbose=verbose))
+    logger.info("set_sync_options", extra={"dry_run": dry_run, "verbose": verbose})
 
 
 def _log(level: str, event: str, **fields: object) -> None:
-    if not _SYNC_OPTS.verbose:
+    if not _get_sync_opts().verbose:
         return
     record = {"level": level, "component": "sync_cursor", "event": event, **fields}
     print(json.dumps(record, separators=(",", ":")), file=sys.stderr)
 
 
 def _ensure_dir(path: Path) -> None:
-    if not _SYNC_OPTS.dry_run:
+    if not _get_sync_opts().dry_run:
         path.mkdir(parents=True, exist_ok=True)
 
 
 def _copy2(src: Path, dest: Path) -> None:
-    if _SYNC_OPTS.dry_run:
+    if _get_sync_opts().dry_run:
         _log("info", "would_copy", src=str(src), dest=str(dest))
         return
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -60,7 +67,7 @@ def _copy2(src: Path, dest: Path) -> None:
 
 
 def _write_text(path: Path, text: str) -> None:
-    if _SYNC_OPTS.dry_run:
+    if _get_sync_opts().dry_run:
         _log("info", "would_write", path=str(path))
         return
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -68,12 +75,12 @@ def _write_text(path: Path, text: str) -> None:
 
 
 def _write_sync_line(msg: str) -> None:
-    prefix = "DRY" if _SYNC_OPTS.dry_run else "OK"
+    prefix = "DRY" if _get_sync_opts().dry_run else "OK"
     print(f"  {prefix}  {msg}")
 
 
 def _clear_matching(dir_path: Path, patterns: tuple[str, ...]) -> None:
-    if not dir_path.is_dir() or _SYNC_OPTS.dry_run:
+    if not dir_path.is_dir() or _get_sync_opts().dry_run:
         return
     for p in patterns:
         for f in dir_path.glob(p):
@@ -83,11 +90,15 @@ def _clear_matching(dir_path: Path, patterns: tuple[str, ...]) -> None:
 
 def platform_hooks_variant(variant: str) -> str:
     """Return 'windows' or 'unix' for hook script selection."""
+    logger.info("platform_hooks_variant_enter", extra={"variant": variant})
     if variant == "windows":
-        return "windows"
-    if variant == "unix":
-        return "unix"
-    return "windows" if sys.platform == "win32" else "unix"
+        result = "windows"
+    elif variant == "unix":
+        result = "unix"
+    else:
+        result = "windows" if sys.platform == "win32" else "unix"
+    logger.info("platform_hooks_variant_exit", extra={"resolved": result})
+    return result
 
 
 def hook_script_suffix_for_platform(pk: str) -> str:
@@ -106,18 +117,22 @@ def iter_template_hook_scripts(templates_hooks: Path, variant: str) -> list[Path
     legacy = templates_hooks / "scripts"
     if legacy.is_dir():
         return sorted(
-            p for p in legacy.iterdir() if p.is_file() and p.suffix in (".ps1", ".sh") and p.suffix == ext
+            p for p in legacy.iterdir() if p.is_file() and p.suffix == ext
         )
     return []
 
 
 def resolve_agents_source(project_root: Path, global_cursor: Path) -> Path | None:
+    logger.info("resolve_agents_source_enter", extra={"project_root": str(project_root)})
     templates_subagents = project_root / "templates" / "agents" / "subagents"
     if templates_subagents.is_dir() and any(templates_subagents.glob("*.md")):
+        logger.info("resolve_agents_source_exit", extra={"source": "templates_subagents"})
         return templates_subagents
     agents_global = global_cursor / "agents"
     if agents_global.is_dir() and any(agents_global.glob("*.md")):
+        logger.info("resolve_agents_source_exit", extra={"source": "global_agents"})
         return agents_global
+    logger.info("resolve_agents_source_exit", extra={"source": None})
     return None
 
 
@@ -140,18 +155,7 @@ def sync_agents_dir(source_cursor: Path, dest_cursor: Path) -> int:
     src = source_cursor / "agents"
     if not src.is_dir():
         return 0
-    files = sorted(src.glob("*.md"))
-    if not files:
-        return 0
-    dest = dest_cursor / "agents"
-    _ensure_dir(dest)
-    _clear_matching(dest, ("*.md",))
-    n = 0
-    for f in files:
-        _copy2(f, dest / f.name)
-        _write_sync_line(f"agents/{f.name}")
-        n += 1
-    return n
+    return sync_agents_from_source(src, dest_cursor)
 
 
 def sync_rules_dir(source_cursor: Path, dest_cursor: Path) -> int:
@@ -186,6 +190,15 @@ def sync_hooks_tree(
     so commands stay consistent. If hooks.json is missing on the source and we are not using
     template scripts, fall back to templates hooks json for this variant.
     """
+    logger.info(
+        "sync_hooks_tree_enter",
+        extra={
+            "source": str(source_cursor),
+            "dest": str(dest_cursor),
+            "hooks_variant": hooks_variant,
+            "has_project_root": project_root is not None,
+        },
+    )
     pk = platform_hooks_variant(hooks_variant)
     want_suffix = hook_script_suffix_for_platform(pk)
 
@@ -206,6 +219,11 @@ def sync_hooks_tree(
         th = project_root / "templates" / "hooks"
         script_files = iter_template_hook_scripts(th, hooks_variant)
         template_fallback = bool(script_files)
+        if template_fallback:
+            logger.info(
+                "sync_hooks_tree_template_fallback",
+                extra={"hooks_variant": hooks_variant, "script_count": len(script_files)},
+            )
 
     if template_fallback and th is not None:
         t = resolve_hooks_json_template(th, hooks_variant)
@@ -250,6 +268,7 @@ def sync_hooks_tree(
         policy_src = source_cursor / "hooks"
     if policy_src is not None:
         n += sync_hooks_policy(policy_src, dest_cursor / "hooks")
+    logger.info("sync_hooks_tree_exit", extra={"files_copied": n, "template_fallback": template_fallback})
     return n
 
 
@@ -262,9 +281,7 @@ def sync_hooks_policy(source_hooks: Path, dest_hooks: Path) -> int:
     _ensure_dir(dest)
     n = 0
     for f in sorted(src.rglob("*")):
-        if not f.is_file():
-            continue
-        if "__pycache__" in f.parts or f.suffix == ".pyc":
+        if not f.is_file() or _should_skip_sync_path(f.relative_to(src)):
             continue
         rel = f.relative_to(src)
         out = dest / rel
@@ -276,7 +293,7 @@ def sync_hooks_policy(source_hooks: Path, dest_hooks: Path) -> int:
 
 def _prune_stale_skills(dest_skills: Path, expected_rels: set[Path]) -> int:
     """Remove SKILL.md files under dest_skills not present in expected_rels."""
-    if not dest_skills.is_dir() or _SYNC_OPTS.dry_run:
+    if not dest_skills.is_dir() or _get_sync_opts().dry_run:
         return 0
     removed = 0
     for existing in sorted(dest_skills.rglob("SKILL.md")):
@@ -348,6 +365,33 @@ def sync_catalogs_tree(source_cursor: Path, dest_cursor: Path) -> int:
 
 
 _COMMAND_SCRIPT_SUFFIXES: tuple[str, ...] = (".py", ".ps1", ".sh")
+# Repo-only dirs that must never land in ~/.cursor/ or project .cursor/ via sync.
+_EXCLUDED_SYNC_DIR_NAMES: frozenset[str] = frozenset(
+    {"__pycache__", ".pytest_cache", "tests", "logs", ".cache"}
+)
+_EXCLUDED_SYNC_SUFFIXES: frozenset[str] = frozenset({".pyc", ".pyo"})
+
+
+def _should_skip_sync_path(path: Path) -> bool:
+    """Skip cache, tests, logs, and bytecode when copying trees to/from global."""
+    if path.suffix.lower() in _EXCLUDED_SYNC_SUFFIXES:
+        return True
+    return any(part in _EXCLUDED_SYNC_DIR_NAMES for part in path.parts)
+
+
+def _prune_sync_artifacts(root: Path) -> int:
+    """Remove excluded artifact dirs/files under a synced destination tree."""
+    if not root.is_dir() or _get_sync_opts().dry_run:
+        return 0
+    removed = 0
+    for p in sorted(root.rglob("*"), key=lambda x: len(x.parts), reverse=True):
+        if p.is_dir() and p.name in _EXCLUDED_SYNC_DIR_NAMES:
+            shutil.rmtree(p, ignore_errors=True)
+            removed += 1
+        elif p.is_file() and p.suffix.lower() in _EXCLUDED_SYNC_SUFFIXES:
+            p.unlink()
+            removed += 1
+    return removed
 
 
 def _is_sync_command_file(path: Path) -> bool:
@@ -357,19 +401,48 @@ def _is_sync_command_file(path: Path) -> bool:
 
 
 def sync_commands_dir(source_commands: Path, dest_commands: Path) -> int:
-    """Copy top-level command entrypoints (never tests/ or nested dirs)."""
+    """Copy top-level command entrypoints and the routing package (never tests/)."""
     if not source_commands.is_dir():
         return 0
     files = sorted(f for f in source_commands.iterdir() if f.is_file() and _is_sync_command_file(f))
     if not files:
-        return 0
-    _ensure_dir(dest_commands)
-    n = 0
-    for f in files:
-        _copy2(f, dest_commands / f.name)
-        _write_sync_line(f"commands/{f.name}")
-        n += 1
+        n = 0
+    else:
+        _ensure_dir(dest_commands)
+        n = 0
+        for f in files:
+            _copy2(f, dest_commands / f.name)
+            _write_sync_line(f"commands/{f.name}")
+            n += 1
+    n += _sync_routing_package(source_commands, dest_commands)
+    pruned = _prune_sync_artifacts(dest_commands)
+    if pruned:
+        _write_sync_line(f"commands/ (pruned {pruned} cache/test/log artifacts)")
     return n
+
+
+def _sync_routing_package(source_commands: Path, dest_commands: Path) -> int:
+    """Copy commands/routing/*.py only — no __pycache__, tests, or logs."""
+    src = source_commands / "routing"
+    if not src.is_dir():
+        return 0
+    dest = dest_commands / "routing"
+    py_files = sorted(
+        p
+        for p in src.rglob("*.py")
+        if p.is_file() and not _should_skip_sync_path(p.relative_to(src))
+    )
+    if not py_files:
+        return 0
+    _ensure_dir(dest)
+    copied = 0
+    for path in py_files:
+        rel = path.relative_to(src)
+        out = dest / rel
+        _copy2(path, out)
+        _write_sync_line(f"commands/routing/{rel.as_posix()}")
+        copied += 1
+    return copied
 
 
 def sync_hooks_from_templates(
@@ -434,6 +507,10 @@ def sync_templates_to_cursor(
     global_cursor: Path | None = None,
 ) -> int:
     """Copy templates/agents, rules, hooks, skills, and routing catalogs into dest_cursor."""
+    logger.info(
+        "sync_templates_to_cursor_enter",
+        extra={"project_root": str(project_root), "dest": str(dest_cursor), "hooks_variant": hooks_variant},
+    )
     copied = 0
     home_cursor = global_cursor or Path.home() / ".cursor"
     templates_root = project_root / "templates"
@@ -446,6 +523,7 @@ def sync_templates_to_cursor(
     copied += sync_hooks_from_templates(project_root, dest_cursor, hooks_variant)
     copied += sync_skills_tree(templates_root / "skills", dest_cursor / "skills")
     copied += sync_catalogs_from_templates(templates_root, dest_cursor)
+    logger.info("sync_templates_to_cursor_exit", extra={"files_copied": copied})
     return copied
 
 
@@ -498,6 +576,8 @@ def main() -> int:
     parser.add_argument("--verbose", action="store_true", help="Emit structured JSON logs to stderr.")
     args = parser.parse_args()
     set_sync_options(dry_run=args.dry_run, verbose=args.verbose)
+    if args.verbose:
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     script_dir = Path(__file__).resolve().parent
     if args.project_root:
@@ -511,6 +591,15 @@ def main() -> int:
 
     copied = 0
     mode = args.mode
+    logger.info(
+        "main_enter",
+        extra={
+            "mode": mode,
+            "project_root": str(project_root),
+            "dry_run": args.dry_run,
+            "hooks_variant": args.hooks_variant,
+        },
+    )
 
     if mode == "TemplatesToGlobal":
         print(f"Mode: templates/ -> {global_cursor}")
@@ -552,6 +641,7 @@ def main() -> int:
 
     print("")
     print(f"Synced {copied} files ({mode})")
+    logger.info("main_exit", extra={"mode": mode, "files_copied": copied, "exit_code": 0})
     return 0
 
 
