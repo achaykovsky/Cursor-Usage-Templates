@@ -2,7 +2,7 @@
 
 **Usage:** Paste with task one-liner. Pick `@agent(NAME)` only — not skills or full workflows.
 
-**Reference:** [agents/AGENTS.md](../agents/AGENTS.md) | [agents/AGENTS_USAGE.md](../agents/AGENTS_USAGE.md) | [USAGE.md](../USAGE.md)
+**Reference:** [agents/AGENTS.md](../agents/AGENTS.md) | [agents/AGENTS_USAGE.md](../agents/AGENTS_USAGE.md) | [USAGE.md](../USAGE.md) | CLI: `templates/commands/route-agent.ps1`
 
 ---
 

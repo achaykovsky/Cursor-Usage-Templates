@@ -145,17 +145,16 @@ At `stop`, we could emit a **summary line** that aggregates the generation. Opti
 {"ts":"2026-02-25T20:11:50Z","event":"stop","conversation_id":"abc","generation_id":"gen1","status":"completed"}
 ```
 
-**Query output (`query-cursor-logs.ps1 -Date 2026-02-25`):**
-```
+**Query output** (`query-cursor-logs.ps1 -Date 2026-02-25`):
+
 Generation gen1 (2026-02-25 20:11:35)
   Prompt: Add logging to the auth module
   Files changed: src/auth/login.py, src/auth/__init__.py
   Status: completed
 ```
 
----
+**CLI:** `.\templates\commands\query-cursor-logs.ps1 -Date yyyy-MM-dd` — see [commands/README.md](../commands/README.md).
 
-## Files to Modify
 
 | File | Changes |
 |------|---------|

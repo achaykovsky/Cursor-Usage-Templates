@@ -22,7 +22,7 @@ This repo includes `templates/hooks/` with ready-to-use scripts. Run `python tem
 | `stop` | `suggest-commit-on-stop.ps1` | `prepare-atomic-commit` | Output git status/diff and suggested commit groups; user runs skill for full analysis. |
 | `beforeShellExecution` | `validate-git-commands.ps1` | `prepare-atomic-commit` | Validate commit message (conventional); deny force-push on main/master. |
 | `beforeShellExecution` | `validate-pre-push.ps1` | `validate-pre-deploy` | Run pytest/npm test before push if configured. |
-| `beforeSubmitPrompt`, `beforeShellExecution`, `afterFileEdit`, `stop` | `log-cursor-activity.ps1` | — | Log prompts, commands, edits, session end to `project/.cursor/logs/cursor-activity-YYYY-MM-DD.jsonl` (JSONL). Never writes to `~/.cursor`. |
+| `beforeSubmitPrompt`, `beforeShellExecution`, `afterFileEdit`, `stop` | `log-cursor-activity.ps1` / `log-cursor-activity.sh` | — | Structured JSONL per event (`conversation_id`, `generation_id`, edit summaries) to `project/.cursor/logs/cursor-activity-YYYY-MM-DD.jsonl`. Query: `templates/commands/query-cursor-logs.ps1`. Never writes to `~/.cursor`. |
 
 **Note:** Hooks do not receive LLM responses—only user prompts, edits, commands, and session status. Logs may contain sensitive data; `.cursor/` is gitignored.
 

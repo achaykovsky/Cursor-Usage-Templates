@@ -2,7 +2,7 @@
 
 **Usage:** Paste into Chat/Composer with your **task one-liner** and optional `@files`. Returns a minimal route — not full catalogs.
 
-**Reference:** [USAGE.md](../USAGE.md) | [skills/SKILLS.md](../skills/SKILLS.md) | [rules/RULES.md](../rules/RULES.md) | [hooks/HOOKS_USAGE.md](../hooks/HOOKS_USAGE.md) | [agents/AGENTS_USAGE.md](../agents/AGENTS_USAGE.md)
+**Reference:** [USAGE.md](../USAGE.md) | [skills/SKILLS.md](../skills/SKILLS.md) | [rules/RULES.md](../rules/RULES.md) | [hooks/HOOKS_USAGE.md](../hooks/HOOKS_USAGE.md) | [agents/AGENTS_USAGE.md](../agents/AGENTS_USAGE.md) | CLI: `templates/commands/route-session.ps1`
 
 ---
 

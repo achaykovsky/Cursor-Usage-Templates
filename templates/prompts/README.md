@@ -1,196 +1,199 @@
 # Planning prompts index
 
-**Validated:** 2026-06-19 | **Method:** PM acceptance-criteria review against repo ground truth (`templates/`, `pyproject.toml`, pytest)
+**Validated:** 2026-06-19 (analysis pass) | **Tests:** `211 passed` — `poetry run pytest templates/hooks/tests templates/commands/tests -q`
 
-Paste prompts from this folder when routing is unclear. Open [USAGE.md](../USAGE.md) for the full navigation hub.
+Paste prompts from this folder when routing is unclear. Open [USAGE.md](../USAGE.md) for the navigation hub.
+
+**CLI alternatives:** `templates/commands/route-*.ps1`, `query-cursor-logs.ps1` (backed by `routing.py`, `cursor_activity.py`).
+
+---
+
+## Analysis summary
+
+| Metric | Value |
+|--------|-------|
+| Plans tracked | **11** |
+| **Done** | **7** (64%) |
+| **Partial** | **3** (27%) |
+| **Open** (within partial plans) | **8** acceptance items |
+
+```
+Done     ████████████████████░░░░░░░  7/11 plans
+Partial  ░░░░░░░░░░░░░░░░░░░░███████  3/11 plans
+```
+
+### At a glance
+
+| Status | Plans |
+|--------|-------|
+| [x] **Done** | session-map, agents-routing, skills-routing, model-routing, rules-audit, python-remediation (overview, foundation, sync-scripts) |
+| [~] **Partial** | cursor-hooks, cursor-activity-logging, python-remediation-hook-policy |
+| [ ] **Open** | *(no plan fully untouched)* |
+
+---
 
 ## Status legend
 
-| Status | Meaning |
-|--------|---------|
-| **Done** | Deliverable complete — prompt exists and/or implementation acceptance criteria met |
-| **Partial** | Core work shipped; listed gaps remain |
-| **Open** | Plan valid; implementation not started or minimal |
-| **Prompt only** | No code deliverable — the markdown file *is* the product |
+| Mark | Meaning |
+|------|---------|
+| **[x] Done** | Acceptance criteria met; evidence in repo |
+| **[~] Partial** | Core shipped; listed gaps remain |
+| **[ ] Open** | Not started or not found in repo |
+| **Prompt + CLI** | Markdown prompt plus deterministic CLI companion |
 
-## Summary
+---
 
-| Plan | Type | Status | Priority |
+## Summary table
+
+| Plan | Type | Status | Evidence |
 |------|------|--------|----------|
-| [plan-cursor-session-map.md](plan-cursor-session-map.md) | Routing | **Prompt only** | — |
-| [plan-cursor-agents-routing.md](plan-cursor-agents-routing.md) | Routing | **Prompt only** | — |
-| [plan-cursor-skills-routing.md](plan-cursor-skills-routing.md) | Routing | **Prompt only** | — |
-| [plan-cursor-model-routing.md](plan-cursor-model-routing.md) | Routing | **Prompt only** | — |
-| [plan-cursor-rules-audit.md](plan-cursor-rules-audit.md) | Routing | **Prompt only** | — |
-| [plan-cursor-hooks.md](plan-cursor-hooks.md) | Hooks | **Partial** | P1–P2 |
-| [plan-cursor-activity-logging.md](plan-cursor-activity-logging.md) | Hooks / observability | **Open** | P2 |
-| [plan-python-remediation-overview.md](plan-python-remediation-overview.md) | Hub | **Done** | P0–P3 |
-| [plan-python-remediation-foundation.md](plan-python-remediation-foundation.md) | Python / policy | **Done** | P0 |
-| [plan-python-remediation-hook-policy.md](plan-python-remediation-hook-policy.md) | Python / policy | **Partial** | P1–P2 |
-| [plan-python-remediation-sync-scripts.md](plan-python-remediation-sync-scripts.md) | Python / sync | **Done** | P2–P3 |
-
-**Test signal:** `poetry run pytest templates/hooks/tests templates/commands/tests -q` → **173 passed** (2026-06-19).
+| [plan-cursor-session-map.md](plan-cursor-session-map.md) | Routing | **[x] Done** | `route-session.ps1` → `routing.py session` |
+| [plan-cursor-agents-routing.md](plan-cursor-agents-routing.md) | Routing | **[x] Done** | `route-agent.ps1` → `routing.py agent` |
+| [plan-cursor-skills-routing.md](plan-cursor-skills-routing.md) | Routing | **[x] Done** | `route-skill.ps1` → `routing.py skill` |
+| [plan-cursor-model-routing.md](plan-cursor-model-routing.md) | Routing | **[x] Done** | `route-model.ps1` → `models-catalog.json` |
+| [plan-cursor-rules-audit.md](plan-cursor-rules-audit.md) | Routing | **[x] Done** | `route-rules.ps1` → `RULES.md` globs |
+| [plan-cursor-hooks.md](plan-cursor-hooks.md) | Hooks | **[~] Partial** | 13 core scripts; 5 planned log hooks missing |
+| [plan-cursor-activity-logging.md](plan-cursor-activity-logging.md) | Observability | **[~] Partial** | Steps 1–5 done; stop summary + prompt redaction open |
+| [plan-python-remediation-overview.md](plan-python-remediation-overview.md) | Hub | **[x] Done** | P0–P3 Python scope complete |
+| [plan-python-remediation-foundation.md](plan-python-remediation-foundation.md) | Python | **[x] Done** | pyproject, CI, fail-open stderr |
+| [plan-python-remediation-hook-policy.md](plan-python-remediation-hook-policy.md) | Python | **[~] Partial** | MCP/cache/log done; test/coverage gaps |
+| [plan-python-remediation-sync-scripts.md](plan-python-remediation-sync-scripts.md) | Python | **[x] Done** | Dedup, dry-run, sync tests |
 
 ---
 
-## Routing prompts (prompt only)
+## Routing — [x] Done (5/5)
 
-These files are paste-into-Cursor templates. References they depend on exist in-repo.
+Prompt + CLI deliverables complete. Tests: `test_routing.py` (6 cases).
 
-| Plan | References verified | Notes |
-|------|---------------------|-------|
-| [plan-cursor-session-map.md](plan-cursor-session-map.md) | USAGE.md, SKILLS.md, RULES.md, HOOKS_USAGE.md, AGENTS_USAGE.md | Full route table for one task |
-| [plan-cursor-agents-routing.md](plan-cursor-agents-routing.md) | agents/AGENTS.md, AGENTS_USAGE.md | `@agent(NAME)` picker |
-| [plan-cursor-skills-routing.md](plan-cursor-skills-routing.md) | skills/SKILLS.md | Skill chain picker |
-| [plan-cursor-model-routing.md](plan-cursor-model-routing.md) | route-task-to-model/SKILL.md, models-catalog.json | Model tier + slug |
-| [plan-cursor-rules-audit.md](plan-cursor-rules-audit.md) | rules/RULES.md | Rules overlap for paths |
+| Plan | CLI | Python | Tests |
+|------|-----|--------|-------|
+| Session map | `route-session.ps1` | `routing.py session` | [x] |
+| Agents | `route-agent.ps1` | `routing.py agent` | [x] |
+| Skills | `route-skill.ps1` | `routing.py skill` | [x] |
+| Model | `route-model.ps1` | `routing.py model` | [x] |
+| Rules audit | `route-rules.ps1` | `routing.py rules` | [x] |
 
-**Usage:** `@templates/prompts/plan-cursor-session-map.md` when stuck; use narrower prompts when you already know the layer (agent vs skill vs model).
+**Usage:** `.\templates\commands\route-session.ps1 -Task "fix auth bug"` — or paste the prompt when you need LLM judgment beyond keyword heuristics.
 
 ---
 
-## Hooks plans
+## Hooks — [~] Partial
 
-### [plan-cursor-hooks.md](plan-cursor-hooks.md) — Partial
+### [plan-cursor-hooks.md](plan-cursor-hooks.md)
 
-| Area | Status | Evidence |
+| Item | Status | Evidence |
 |------|--------|----------|
-| Core safety hooks (shell, read, edit, git, MCP, activity) | **Done** | `templates/hooks/windows/*.ps1`, `templates/hooks/hooks.json` |
-| Policy engine hooks (DB, git, MCP classify) | **Done** | `validate-*-operations.ps1` → `hook_policy.py` |
-| Resource / prompt logging hooks | **Done** | `log-resource-usage.ps1`, `log-prompt-context.ps1` |
-| Template consistency validation | **Done** | `validate-template-consistency.ps1` |
-| Planned log hooks (scan-logs-in-edit, block-log-edit-secrets, block-secret-in-write, audit-log-patterns) | **Open** | No matching scripts in `templates/hooks/` |
-| `redact-logs-before-read` (*.log paths) | **Open** | `redact-sensitive-read.ps1` exists; `*.log` extension not confirmed |
+| `block-destructive-shell` | [x] | `windows/block-destructive-shell.ps1`, `unix/*.sh` |
+| `redact-sensitive-read` | [x] | `redact-sensitive-read.ps1` / `.sh` |
+| `format-after-edit` | [x] | `format-after-edit.ps1` / `.sh` |
+| `suggest-commit-on-stop` | [x] | `suggest-commit-on-stop.ps1` / `.sh` |
+| `validate-git-commands` | [x] | `validate-git-commands.ps1` / `.sh` |
+| `validate-pre-push` | [x] | `validate-pre-push.ps1` / `.sh` |
+| `validate-db-shell-operations` | [x] | → `hook_policy.py` |
+| `validate-mcp-operations` | [x] | → `hook_policy.py` |
+| `log-cursor-activity` | [x] | → `cursor_activity.py normalize` |
+| `log-resource-usage` / `log-prompt-context` | [x] | `log-resource-usage.ps1`, `log-prompt-context.ps1` |
+| `validate-template-consistency` | [x] | `validate-template-consistency.ps1` / `.sh` |
+| `scan-logs-in-edit` | [ ] | No script |
+| `block-log-edit-secrets` | [ ] | No script |
+| `block-secret-in-write` (preToolUse) | [ ] | No script |
+| `audit-log-patterns` (stop) | [ ] | No script |
+| `redact-logs-before-read` (*.log) | [ ] | `redact-sensitive-read` has no `*.log` glob |
 
-### [plan-cursor-activity-logging.md](plan-cursor-activity-logging.md) — Open
-
-| Acceptance item | Status | Evidence |
-|-----------------|--------|----------|
-| Normalize `event` (never null) | **Open** | `log-cursor-activity.ps1` sets `event` from payload only; no shape inference |
-| Always log `conversation_id`, `generation_id` | **Partial** | Raw payload copy — present when Cursor sends them |
-| `edit_count`, `edit_summary`, truncation policy | **Open** | Truncates at 50k chars; no structured `edit_summary` |
-| Per-event normalized schema | **Open** | Still dumps raw payload + `ts` |
-| Query script `query-cursor-logs.ps1` | **Open** | File does not exist |
-| Session summary at `stop` | **Open** | Not implemented (plan recommends query script first) |
-
-**Next:** Implement steps 1–5 from the plan in `templates/hooks/windows/log-cursor-activity.ps1`; add `templates/commands/query-cursor-logs.ps1`.
-
----
-
-## Python remediation hub
-
-### [plan-python-remediation-overview.md](plan-python-remediation-overview.md) — Done
-
-Program-level acceptance (Python hooks + sync scope):
-
-- [x] `requires-python = ">=3.10"` in `pyproject.toml`
-- [x] `poetry run pytest templates/hooks/tests templates/commands/tests` passes
-- [x] Policy stderr contract + MCP unification + sync dedup + sync tests
-- [x] hook_policy tests cover main, force-push, overrides, heredoc, modes, Windows shlex
-
-Does **not** cover [plan-cursor-activity-logging.md](plan-cursor-activity-logging.md) or planned log hooks in [plan-cursor-hooks.md](plan-cursor-hooks.md).
+**Plan status:** core table **done**; planned log-hooks section **open** (5 items).
 
 ---
 
-### [plan-python-remediation-foundation.md](plan-python-remediation-foundation.md) — Done
+### [plan-cursor-activity-logging.md](plan-cursor-activity-logging.md)
 
-#### Item 1 — pyproject + pytest (P0)
+| Step | Status | Evidence |
+|------|--------|----------|
+| 1. Normalize `event` (never null) | [x] | `cursor_activity.infer_event()` |
+| 2. Log `conversation_id`, `generation_id` | [x] | `normalize_activity_entry()` |
+| 3. `edit_count`, `edit_summary`, truncation | [x] | `build_edit_summary()`, 2KB `edits_full` cap |
+| 4. Per-event schema (not raw dump) | [x] | `normalize_activity_entry()` per event type |
+| 5. Query script | [x] | `query-cursor-logs.ps1` + `cursor_activity.py query` |
+| 6. Session summary at `stop` | [ ] | Optional per plan; query covers grouping |
+| Prompt secret redaction | [~] | File-path redaction [x]; prompt text patterns [ ] |
 
-| Criterion | Status |
-|-----------|--------|
-| `requires-python = ">=3.10"` | **Done** — `pyproject.toml` |
-| pytest dev deps + `testpaths` / `pythonpath` | **Done** |
-| README / HOOKS_USAGE / commands README → 3.10+ | **Done** |
-| CI matrix (ubuntu + windows, 3.10–3.12) | **Done** — `.github/workflows/python-tests.yml` |
+**Tests:** `test_cursor_activity.py` (6 cases). **Hooks:** `log-cursor-activity.ps1` / `.sh` wired via `Get-CursorActivityScript`.
 
-#### Item 2 — Fail-open policy + stderr (P0)
-
-| Criterion | Status |
-|-----------|--------|
-| `_emit_log()` structured stderr | **Done** — `hook_policy.py` |
-| Corrupt policy → allow + `policy_load_failed` | **Done** + tests |
-| `policy_engine_error` / `policy_load_error` modes | **Done** — `default.policy.json`, `hook-policy.example.json` |
-| Shell wrappers forward stderr | **Done** — `hook-common.ps1` (no `2>$null` on policy invoke) |
-| Documented in policy README + HOOKS_USAGE | **Done** — `templates/hooks/policy/README.md` |
+**Plan status:** steps 1–5 **[x] Done**; step 6 + prompt redaction **[ ] / [~]**.
 
 ---
 
-### [plan-python-remediation-hook-policy.md](plan-python-remediation-hook-policy.md) — Partial
+## Python remediation
 
-#### Item 3 — MCP classification unify (P1) — Done
+### [plan-python-remediation-overview.md](plan-python-remediation-overview.md) — [x] Done
 
-| Criterion | Status |
-|-----------|--------|
-| `mcp_classify.py` shared module | **Done** |
-| `hook_policy.py` + `sync_mcp_policy.py` import it | **Done** |
-| `global_write_name_pattern` in JSON | **Done** — `default.policy.json` |
-| `test_mcp_classify.py` | **Done** |
-| README documents single edit path | **Done** |
+- [x] `requires-python = ">=3.10"` (`pyproject.toml`)
+- [x] `poetry run pytest templates/hooks/tests templates/commands/tests` — 211 passed
+- [x] Policy stderr + MCP unify + sync dedup + sync tests
+- [x] hook_policy: main, force-push, overrides, heredoc, modes, Windows shlex
 
-#### Item 4 — Expand hook_policy tests (P1) — Partial
-
-| Criterion | Status |
-|-----------|--------|
-| `fixtures/` golden cases (8–12) | **Done** — 9 JSON fixtures |
-| `FixtureFileTests` runs | **Done** |
-| `test_hook_policy_main.py` (main, force-push, overrides, heredoc, modes) | **Done** |
-| Windows shlex test | **Done** — `skipif` on non-NT |
-| 40+ tests, 0 skips (except platform) | **Done** — 173 total suite; hook tests ~51 |
-| `hook_policy.py` ≥ 85% line coverage | **Unverified** — `pytest-cov` not in dev deps |
-| `fixtures/policies/` override JSON set | **Open** |
-| `test_custom_deny_rule` | **Open** |
-| Full pytest migration (drop unittest) | **Open** — dual runner retained |
-
-#### Item 6 — `lru_cache` + real `log` mode (P2) — Done
-
-| Criterion | Status |
-|-----------|--------|
-| `@lru_cache` on policy load + mtime key | **Done** |
-| `clear_policy_cache()` for tests | **Done** — `conftest.py` |
-| `log` mode emits `policy_would_ask` | **Done** + tests |
-
-#### Security hardening — Partial
-
-| Criterion | Status |
-|-----------|--------|
-| Corrupt JSON handling | **Done** (P0) |
-| Narrow full-cmd SQL scan | **Done** — `_sql_carrier_segments` no longer appends full `cmd` |
-| Tighten `delete_all_rows` regex (explicit WHERE exclusion) | **Open** — pattern unchanged; behavior correct via carrier rules + tests |
-| Tiered exception handling | **Done** |
+*Scope excludes planned log hooks in [plan-cursor-hooks.md](plan-cursor-hooks.md).*
 
 ---
 
-### [plan-python-remediation-sync-scripts.md](plan-python-remediation-sync-scripts.md) — Done
+### [plan-python-remediation-foundation.md](plan-python-remediation-foundation.md) — [x] Done
 
-#### Item 5 — sync-cursor dedup (P2) — Done
-
-| Criterion | Status |
-|-----------|--------|
-| `sync_templates_to_cursor` delegates to helpers | **Done** — `resolve_agents_source`, `sync_hooks_from_templates`, `sync_rules_dir`, etc. |
-| Unified catalog sync | **Done** — `_sync_catalog_paths` (plan name: `_sync_docs_paths`) |
-| `--dry-run`, `--verbose` | **Done** |
-| Line-count reduction | **Done** — inline duplication removed |
-
-**Note:** `sync-cursor.py` intentionally **does not** copy `templates/prompts/` to `.cursor/prompts/` (repo-only authoring). Tests assert `prompts/` absent after sync.
-
-#### Item 7 — sync tests (P3) — Done
-
-| Criterion | Status |
-|-----------|--------|
-| `test_sync_cursor.py` | **Done** |
-| `test_sync_mcp_policy.py` | **Done** |
-| `fixtures/minimal_templates/` | **Done** |
-| Hermetic (mock home) | **Done** |
-| dry-run / verbose tests | **Done** |
+| Item | Criterion | Status |
+|------|-----------|--------|
+| **P0-1** | pyproject + pytest + CI | [x] `.github/workflows/python-tests.yml` |
+| **P0-1** | Docs → Python 3.10+ | [x] README, HOOKS_USAGE, commands README |
+| **P0-2** | `_emit_log()` stderr | [x] `hook_policy.py` |
+| **P0-2** | `policy_load_error` / `policy_engine_error` modes | [x] `hook-policy.example.json` |
+| **P0-2** | Shell wrappers forward stderr | [x] `hook-common.ps1` (no `2>$null` on policy) |
+| **P0-2** | Documented fail-open contract | [x] `hooks/policy/README.md` |
 
 ---
 
-## Recommended next work (PM priority)
+### [plan-python-remediation-hook-policy.md](plan-python-remediation-hook-policy.md) — [~] Partial
 
-1. **P2 — Activity logging** — [plan-cursor-activity-logging.md](plan-cursor-activity-logging.md) steps 1–5
-2. **P2 — Log hooks** — [plan-cursor-hooks.md](plan-cursor-hooks.md) planned log hooks table
-3. **P3 — Test gaps** — `test_custom_deny_rule`, `fixtures/policies/`, add `pytest-cov` if 85% gate is required
-4. **P3 — Policy regex** — align `delete_all_rows` pattern with plan spec (optional; behavior already tested)
+| Item | Criterion | Status |
+|------|-----------|--------|
+| **P1-3** MCP unify | `mcp_classify.py` shared | [x] |
+| **P1-3** | Engine + sync import | [x] `hook_policy.py`, `sync_mcp_policy.py` |
+| **P1-3** | `test_mcp_classify.py` | [x] 7 tests |
+| **P1-4** Fixtures (8–12) | [x] 9 JSON in `hooks/tests/fixtures/` |
+| **P1-4** `test_hook_policy_main.py` | [x] 23 tests |
+| **P1-4** `test_hook_policy.py` | [x] 21 tests + FixtureFileTests |
+| **P1-4** 40+ hook tests | [x] ~51 hook tests total |
+| **P1-4** `hook_policy.py` ≥ 85% coverage | [ ] `pytest-cov` not in dev deps |
+| **P1-4** `fixtures/policies/` | [ ] |
+| **P1-4** `test_custom_deny_rule` | [ ] |
+| **P1-4** Full pytest migration | [ ] unittest + pytest dual |
+| **P2-6** `lru_cache` + `clear_policy_cache` | [x] |
+| **P2-6** Real `log` mode (`policy_would_ask`) | [x] |
+| **Security** corrupt JSON | [x] P0 |
+| **Security** narrow SQL scan | [x] `_sql_carrier_segments` |
+| **Security** `delete_all_rows` regex (WHERE) | [~] behavior correct; regex not plan-spec |
+| **Security** tiered exceptions | [x] |
+
+---
+
+### [plan-python-remediation-sync-scripts.md](plan-python-remediation-sync-scripts.md) — [x] Done
+
+| Item | Criterion | Status |
+|------|-----------|--------|
+| **P2-5** Dedup `sync_templates_to_cursor` | [x] helpers: `resolve_agents_source`, `sync_hooks_from_templates`, `_sync_catalog_paths` |
+| **P2-5** `--dry-run`, `--verbose` | [x] |
+| **P3-7** `test_sync_cursor.py` | [x] 9 tests |
+| **P3-7** `test_sync_mcp_policy.py` | [x] 4 tests |
+| **P3-7** Hermetic fixtures | [x] `minimal_templates/` |
+
+**Note:** `sync-cursor.py` does **not** copy `templates/prompts/` → `.cursor/prompts/` (repo-only authoring).
+
+---
+
+## Open work (prioritized)
+
+| Priority | Plan | Open items |
+|----------|------|------------|
+| P2 | [plan-cursor-hooks.md](plan-cursor-hooks.md) | 5 planned log hooks + `*.log` redaction |
+| P2 | [plan-cursor-activity-logging.md](plan-cursor-activity-logging.md) | Stop summary; prompt secret redaction |
+| P3 | [plan-python-remediation-hook-policy.md](plan-python-remediation-hook-policy.md) | `fixtures/policies/`, `test_custom_deny_rule`, pytest-cov gate, unittest migration |
+| P3 | hook-policy | Optional: align `delete_all_rows` regex with plan spec |
 
 ---
 
@@ -202,4 +205,11 @@ poetry run pytest templates/hooks/tests templates/commands/tests -q
 poetry check
 ```
 
-Re-run this index review after closing any plan above.
+**Example routing:**
+
+```powershell
+.\templates\commands\route-session.ps1 -Task "Add API endpoint for users"
+.\templates\commands\query-cursor-logs.ps1 -Date 2026-06-19
+```
+
+Re-run analysis and update this index after closing any `[ ]` item above.

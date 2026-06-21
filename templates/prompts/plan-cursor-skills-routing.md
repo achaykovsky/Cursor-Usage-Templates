@@ -2,7 +2,7 @@
 
 **Usage:** Paste with task one-liner. Pick skill(s) only — not `@agent` unless escalation needed.
 
-**Reference:** [SKILLS.md](../skills/SKILLS.md) | [USAGE.md](../USAGE.md)
+**Reference:** [SKILLS.md](../skills/SKILLS.md) | [USAGE.md](../USAGE.md) | CLI: `templates/commands/route-skill.ps1`
 
 ---
 

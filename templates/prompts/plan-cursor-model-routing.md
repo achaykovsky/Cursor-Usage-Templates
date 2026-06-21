@@ -2,7 +2,7 @@
 
 **Usage:** Paste with task one-liner. Pick model **tier + slug** only — not full skills or agent prompts.
 
-**Reference:** [route-task-to-model/SKILL.md](../skills/shared-practices/route-task-to-model/SKILL.md) | [models-catalog.json](../skills/shared-practices/route-task-to-model/models-catalog.json)
+**Reference:** [route-task-to-model/SKILL.md](../skills/shared-practices/route-task-to-model/SKILL.md) | [models-catalog.json](../skills/shared-practices/route-task-to-model/models-catalog.json) | CLI: `templates/commands/route-model.ps1`
 
 ---
 

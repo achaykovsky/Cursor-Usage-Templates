@@ -2,7 +2,7 @@
 
 **Usage:** Paste with file paths or globs. Returns which rules apply — not rule text.
 
-**Reference:** [RULES.md](../rules/RULES.md) | [USAGE.md](../USAGE.md)
+**Reference:** [RULES.md](../rules/RULES.md) | [USAGE.md](../USAGE.md) | CLI: `templates/commands/route-rules.ps1`
 
 ---
 
