@@ -39,63 +39,6 @@ try {
     $logDir = Join-Path (Join-Path $projectRoot ".cursor") "logs"
     $null = New-Item -ItemType Directory -Path $logDir -Force
 
-    function ConvertTo-NameList($value) {
-        if ($null -eq $value) { return @() }
-
-        if ($value -is [string]) {
-            if ([string]::IsNullOrWhiteSpace($value)) { return @() }
-            return @($value.Trim())
-        }
-
-        if ($value -is [System.Collections.IEnumerable]) {
-            $items = @()
-            foreach ($item in $value) {
-                if ($null -eq $item) { continue }
-
-                if ($item -is [string]) {
-                    if (-not [string]::IsNullOrWhiteSpace($item)) {
-                        $items += $item.Trim()
-                    }
-                    continue
-                }
-
-                $name = $item.name
-                if (-not [string]::IsNullOrWhiteSpace($name)) {
-                    $items += "$name".Trim()
-                    continue
-                }
-
-                $id = $item.id
-                if (-not [string]::IsNullOrWhiteSpace($id)) {
-                    $items += "$id".Trim()
-                    continue
-                }
-
-                $str = "$item"
-                if (-not [string]::IsNullOrWhiteSpace($str)) {
-                    $items += $str.Trim()
-                }
-            }
-            return @($items | Select-Object -Unique)
-        }
-
-        return @("$value")
-    }
-
-    function Get-FirstList($data, $keys) {
-        if (-not $data) { return @() }
-        foreach ($key in $keys) {
-            $prop = $data.PSObject.Properties[$key]
-            if ($null -ne $prop -and $null -ne $prop.Value) {
-                $normalized = ConvertTo-NameList $prop.Value
-                if ($normalized.Count -gt 0) {
-                    return $normalized
-                }
-            }
-        }
-        return @()
-    }
-
     function Get-SkillNameFromPath([string]$Path) {
         if ([string]::IsNullOrWhiteSpace($Path)) { return $null }
         $normalized = $Path -replace '\\', '/'
@@ -147,6 +90,79 @@ try {
         ($Data | ConvertTo-Json -Depth 12) | Set-Content -LiteralPath $Path -Encoding UTF8
     }
 
+    function Read-ActiveLedgerObject([string]$Path, $payload, [string]$eventName) {
+        $ledger = Read-ActiveLedger $Path
+        if (-not $ledger) {
+            $ledger = [PSCustomObject][ordered]@{
+                ts              = (Get-Date).ToString("o")
+                generation_id   = "$($payload.generation_id)"
+                conversation_id = "$($payload.conversation_id)"
+                model           = $null
+                tokens          = $null
+                rules           = @()
+                skills_payload  = @()
+                skills_read     = @()
+                subagents       = @()
+                tracking_events = @()
+            }
+        }
+        return Update-LedgerModelAndTokens $ledger $payload $eventName
+    }
+
+    function Apply-CharTokenEstimate($ledger, [string]$promptText, [string]$responseText) {
+        if (-not $ledger) { return $ledger }
+
+        $promptChars = if ($promptText) { $promptText.Length } else { 0 }
+        $responseChars = if ($responseText) { $responseText.Length } else { 0 }
+
+        if ($promptChars -gt 0) {
+            Set-LedgerProperty $ledger "prompt_chars" $promptChars
+        }
+        if ($responseChars -gt 0) {
+            Set-LedgerProperty $ledger "response_chars" $responseChars
+        }
+
+        if ($promptChars -eq 0 -and $responseChars -eq 0) {
+            return $ledger
+        }
+
+        $existing = @{}
+        if ($ledger.tokens) {
+            foreach ($prop in $ledger.tokens.PSObject.Properties) {
+                $existing[$prop.Name] = $prop.Value
+            }
+        }
+
+        $hasBilling = ($null -ne $existing.input_tokens) -or ($null -ne $existing.output_tokens) -or ($null -ne $existing.total_tokens)
+        if ($hasBilling -and $existing.source -and $existing.source -ne "chars") {
+            if ($promptChars -gt 0) { Set-LedgerProperty $ledger "prompt_chars" $promptChars }
+            if ($responseChars -gt 0) { Set-LedgerProperty $ledger "response_chars" $responseChars }
+            return $ledger
+        }
+
+        if ($null -eq $existing.input_tokens -and $promptChars -gt 0) {
+            $existing.input_tokens = [long][Math]::Ceiling($promptChars / 4.0)
+        }
+        if ($null -eq $existing.output_tokens -and $responseChars -gt 0) {
+            $existing.output_tokens = [long][Math]::Ceiling($responseChars / 4.0)
+        }
+        if ($null -eq $existing.total_tokens) {
+            $inEst = if ($existing.input_tokens) { [long]$existing.input_tokens } else { 0 }
+            $outEst = if ($existing.output_tokens) { [long]$existing.output_tokens } else { 0 }
+            if (($inEst + $outEst) -gt 0) {
+                $existing.total_tokens = $inEst + $outEst
+            }
+        }
+
+        $existing.estimated = $true
+        $existing.source = "chars"
+        if ($promptChars -gt 0) { $existing.prompt_chars = $promptChars }
+        if ($responseChars -gt 0) { $existing.response_chars = $responseChars }
+
+        $ledger.tokens = [PSCustomObject]$existing
+        return $ledger
+    }
+
     function Add-Unique([System.Collections.Generic.List[string]]$List, [string]$Value) {
         if ([string]::IsNullOrWhiteSpace($Value)) { return }
         if (-not $List.Contains($Value)) {
@@ -174,19 +190,30 @@ try {
             $skills = Get-FirstList $payload @(
                 "skills", "used_skills", "applied_skills", "matched_skills", "selected_skills", "skill_names"
             )
+            $model = Get-PayloadModel $payload
+            $prompt = Get-FirstString $payload @(
+                "prompt", "user_prompt", "content", "text", "input", "message"
+            )
+            $agentsRequested = @(Get-AgentsRequestedFromPrompt $prompt $projectRoot)
+            $skillsMatched = @(Get-SkillsMatchedFromPrompt $prompt $projectRoot)
 
-            $ledger = [ordered]@{
+            $ledger = [PSCustomObject][ordered]@{
                 ts               = (Get-Date).ToString("o")
                 generation_id    = $generationId
                 conversation_id  = $conversationId
+                model            = $model
+                tokens           = $null
                 rules            = @($rules)
                 skills_payload   = @($skills)
+                skills_matched   = @($skillsMatched)
                 skills_read      = @()
+                agents_requested = @($agentsRequested)
                 subagents        = @()
                 hooks_configured = @(Get-HooksConfigured $projectRoot)
                 tracking_events  = @("beforeSubmitPrompt")
             }
-            Write-ActiveLedger $activePath $ledger
+            $ledger = Apply-CharTokenEstimate $ledger $prompt ""
+            Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
         }
 
         "preToolUse" {
@@ -232,7 +259,7 @@ try {
             $ledger.skills_read = @($skillsRead)
             Append-TrackingEvent $ledger "preToolUse:skill_read"
             $ledger.ts = (Get-Date).ToString("o")
-            ($ledger | ConvertTo-Json -Depth 12) | Set-Content -LiteralPath $activePath -Encoding UTF8
+            Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
         }
 
         "subagentStart" {
@@ -261,9 +288,10 @@ try {
             foreach ($s in @($ledger.subagents)) { $subagents.Add($s) | Out-Null }
             $subagents.Add([PSCustomObject]$entry) | Out-Null
             $ledger.subagents = @($subagents)
+            $ledger = Update-LedgerModelAndTokens $ledger $payload "subagentStart"
             Append-TrackingEvent $ledger "subagentStart"
             $ledger.ts = (Get-Date).ToString("o")
-            ($ledger | ConvertTo-Json -Depth 12) | Set-Content -LiteralPath $activePath -Encoding UTF8
+            Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
         }
 
         "subagentStop" {
@@ -301,9 +329,37 @@ try {
                 }
             }
             $ledger.subagents = @($updated)
+            $ledger = Update-LedgerModelAndTokens $ledger $payload "subagentStop"
             Append-TrackingEvent $ledger "subagentStop"
             $ledger.ts = (Get-Date).ToString("o")
-            ($ledger | ConvertTo-Json -Depth 12) | Set-Content -LiteralPath $activePath -Encoding UTF8
+            Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
+        }
+
+        "preCompact" {
+            $ledger = Read-ActiveLedgerObject $activePath $payload "preCompact"
+            Append-TrackingEvent $ledger "preCompact"
+            $ledger.ts = (Get-Date).ToString("o")
+            Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
+        }
+
+        "afterAgentResponse" {
+            $ledger = Read-ActiveLedger $activePath
+            if (-not $ledger) {
+                $ledger = Read-ActiveLedgerObject $activePath $payload "afterAgentResponse"
+            } else {
+                $ledger = Update-LedgerModelAndTokens $ledger $payload "afterAgentResponse"
+            }
+
+            $responseText = Get-FirstString $payload @("text", "response", "content", "message")
+            $promptChars = if ($ledger.prompt_chars) { [int]$ledger.prompt_chars } else { 0 }
+            $ledger = Apply-CharTokenEstimate $ledger "" $responseText
+            if ($promptChars -gt 0) {
+                Set-LedgerProperty $ledger "prompt_chars" $promptChars
+            }
+
+            Append-TrackingEvent $ledger "afterAgentResponse"
+            $ledger.ts = (Get-Date).ToString("o")
+            Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
         }
 
         "stop" {
@@ -312,15 +368,23 @@ try {
                 break
             }
 
+            $ledger = Update-LedgerModelAndTokens $ledger $payload "stop"
+
             $summary = [ordered]@{
                 ts               = (Get-Date).ToString("o")
                 event            = "resource_summary"
                 generation_id    = $ledger.generation_id
                 conversation_id  = $ledger.conversation_id
+                model            = $ledger.model
+                tokens           = $ledger.tokens
+                prompt_chars     = $ledger.prompt_chars
+                response_chars   = $ledger.response_chars
                 status           = "$($payload.status)"
                 rules            = @($ledger.rules)
                 skills_payload   = @($ledger.skills_payload)
+                skills_matched   = @($ledger.skills_matched)
                 skills_read      = @($ledger.skills_read)
+                agents_requested = @($ledger.agents_requested)
                 subagents        = @($ledger.subagents)
                 hooks_configured = @($ledger.hooks_configured)
                 tracking_events  = @($ledger.tracking_events)
@@ -334,7 +398,7 @@ try {
             ($summary | ConvertTo-Json -Depth 12) | Set-Content -LiteralPath $latestPath -Encoding UTF8
             Append-TrackingEvent $ledger "stop"
             $ledger.ts = (Get-Date).ToString("o")
-            ($ledger | ConvertTo-Json -Depth 12) | Set-Content -LiteralPath $activePath -Encoding UTF8
+            Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
         }
     }
 } catch {

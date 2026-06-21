@@ -12,12 +12,25 @@ try {
     }
 
     $payload = Get-HookPayload $raw
+    $root = Get-ProjectRootFromPayload $payload
+    $redacted = Invoke-RedactReadPayload -Raw $raw -ProjectRoot $root
+    if ($redacted) {
+        if ($redacted.content) {
+            Write-ReadAllowWithContent "$($redacted.content)"
+        } else {
+            Write-ReadAllow
+        }
+        exit 0
+    }
+
+    # Fallback when Python/redact_sensitive.py is unavailable — path-only env/PEM redaction.
     $content = if ($null -ne $payload -and $null -ne $payload.content) { "$($payload.content)" } else { "" }
     $path = if ($null -ne $payload -and $null -ne $payload.file_path) { "$($payload.file_path)" } else { "" }
 
     $sensitivePatterns = @(
-        '\.env$', '\.env\.', '\.pem$', '\.key$', 'secrets\.', 'credentials\.',
-        'config\.local\.', '\.secret', 'id_rsa', 'id_ed25519'
+        '\.env$', '\.env\.', '\.pem$', '\.key$', '\.pfx$', '\.p12$',
+        'secrets\.', 'credentials\.', 'config\.local\.', '\.secret',
+        'id_rsa', 'id_ed25519', 'service-account', 'token\.json'
     )
 
     $isSensitive = $false
@@ -26,9 +39,9 @@ try {
     }
 
     if ($isSensitive) {
-        $redacted = $content -replace '(?m)^([^#=]+)=(.*)$', '$1=***REDACTED***'
-        $redacted = $redacted -replace '(-----BEGIN[^\r\n]+-----)[\s\S]*?(-----END[^\r\n]+-----)', '$1 ***REDACTED*** $2'
-        Write-ReadAllowWithContent $redacted
+        $redactedContent = $content -replace '(?m)^([^#=]+)=(.*)$', '$1=***REDACTED***'
+        $redactedContent = $redactedContent -replace '(-----BEGIN[^\r\n]+-----)[\s\S]*?(-----END[^\r\n]+-----)', '$1 ***REDACTED*** $2'
+        Write-ReadAllowWithContent $redactedContent
     } else {
         Write-ReadAllow
     }

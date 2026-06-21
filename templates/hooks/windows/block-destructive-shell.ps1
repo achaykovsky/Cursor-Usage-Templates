@@ -1,4 +1,4 @@
-# Block destructive shell commands.
+# Block destructive shell commands (policy engine).
 
 . (Join-Path $PSScriptRoot "hook-common.ps1")
 
@@ -10,25 +10,9 @@ try {
     }
 
     $payload = Get-HookPayload $raw
-    $cmd = if ($payload -and $payload.command) { "$($payload.command)".Trim() } else { "" }
-
-    $blocked = @(
-        { $cmd -match 'rm\s+-rf\s+/' },
-        { $cmd -match 'rm\s+-rf\s+\$' },
-        { $cmd -match ':\s*\(\s*\)\s*\{\s*:\s*\|' },
-        { $cmd -match 'git\s+reset\s+--hard\s+origin' },
-        { $cmd -match 'DROP\s+(TABLE|DATABASE)\s+' },
-        { $cmd -match 'DELETE\s+FROM\s+\w+\s*;?\s*$' }
-    )
-
-    foreach ($pred in $blocked) {
-        if (& $pred) {
-            Write-ShellDeny "Blocked: destructive command not allowed." "Command blocked by hook. Use suggest-commands-dont-run-destructive: suggest the command for the user to run instead."
-            exit 0
-        }
-    }
-
-    Write-ShellAllow
+    $root = Get-ProjectRootFromPayload $payload
+    $result = Invoke-HookPolicy -Domain "shell-destructive" -Raw $raw -ProjectRoot $root
+    Emit-HookPolicyResult $result
 } catch {
     Write-HookError $_
     Write-ShellAllow

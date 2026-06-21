@@ -10,8 +10,8 @@ try {
     }
 
     $payload = Get-HookPayload $raw
-    $event = if ($payload) { "$($payload.hook_event_name)" } else { "" }
-    $needsShellJson = ($event -eq "beforeShellExecution")
+    $hookEvent = if ($payload) { "$($payload.hook_event_name)" } else { "" }
+    $needsShellJson = ($hookEvent -eq "beforeShellExecution")
 
     $projectRoot = Get-ProjectRootFromPayload $payload
     if (-not $projectRoot) { exit 0 }
@@ -20,28 +20,35 @@ try {
     $null = New-Item -ItemType Directory -Path $logDir -Force
     $logFile = Join-Path $logDir ("cursor-activity-{0:yyyy-MM-dd}.jsonl" -f (Get-Date))
 
-    $entry = @{}
-    if ($payload) {
-        $payload.PSObject.Properties | ForEach-Object { $entry[$_.Name] = $_.Value }
-    }
-    $entry["ts"] = (Get-Date).ToString("o")
-    $entry["event"] = $event
-
-    $maxLen = 50000
-    foreach ($key in @("content", "prompt")) {
-        if ($entry[$key] -and $entry[$key].Length -gt $maxLen) {
-            $entry[$key] = $entry[$key].Substring(0, $maxLen) + "...[truncated]"
-        }
-    }
-    if ($entry.edits) {
-        foreach ($e in $entry.edits) {
-            if ($e.old_string -and $e.old_string.Length -gt $maxLen) { $e.old_string = $e.old_string.Substring(0, $maxLen) + "...[truncated]" }
-            if ($e.new_string -and $e.new_string.Length -gt $maxLen) { $e.new_string = $e.new_string.Substring(0, $maxLen) + "...[truncated]" }
+    $line = $null
+    $py = Get-PythonExecutable
+    $activityScript = Get-CursorActivityScript $projectRoot
+    if ($py -and $activityScript) {
+        try {
+            $line = $raw | & $py $activityScript normalize
+        } catch {
+            Write-HookError $_
         }
     }
 
-    $line = $entry | ConvertTo-Json -Compress -Depth 10
-    Add-Content -Path $logFile -Value $line -Encoding UTF8
+    if ([string]::IsNullOrWhiteSpace($line)) {
+        $entry = @{}
+        if ($payload) {
+            if ($payload.file_path -and $payload.edits) { $entry["event"] = "afterFileEdit" }
+            elseif ($payload.prompt) { $entry["event"] = "beforeSubmitPrompt" }
+            elseif ($payload.command) { $entry["event"] = "beforeShellExecution" }
+            elseif ($payload.status) { $entry["event"] = "stop" }
+            else { $entry["event"] = if ($hookEvent) { $hookEvent } else { "unknown" } }
+
+            foreach ($key in @("conversation_id", "generation_id", "prompt", "file_path", "command", "cwd", "status")) {
+                if ($null -ne $payload.$key) { $entry[$key] = $payload.$key }
+            }
+        }
+        $entry["ts"] = (Get-Date).ToString("o")
+        $line = $entry | ConvertTo-Json -Compress -Depth 10
+    }
+
+    Add-Content -Path $logFile -Value $line.Trim() -Encoding UTF8
 } catch {
     Write-HookError $_
 } finally {

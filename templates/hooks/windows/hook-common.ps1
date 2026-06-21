@@ -45,9 +45,45 @@ function Write-ShellAsk([string]$UserMsg, [string]$AgentMsg) {
 
 function Read-HookStdin() {
     try {
-        return [System.Console]::In.ReadToEnd()
+        $stdin = [Console]::OpenStandardInput()
+        try {
+            $ms = New-Object System.IO.MemoryStream
+            $stdin.CopyTo($ms)
+            $bytes = $ms.ToArray()
+        } finally {
+            $stdin.Dispose()
+        }
+
+        if ($bytes.Length -eq 0) {
+            return ""
+        }
+
+        # UTF-8 BOM — Cursor on Windows may pipe JSON with EF BB BF; default console
+        # encoding misreads that prefix as garbage (e.g. U+2229) and breaks ConvertFrom-Json.
+        if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+            return [System.Text.Encoding]::UTF8.GetString($bytes, 3, $bytes.Length - 3)
+        }
+
+        # UTF-16 LE / BE BOM
+        if ($bytes.Length -ge 2 -and $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) {
+            return [System.Text.Encoding]::Unicode.GetString($bytes, 2, $bytes.Length - 2)
+        }
+        if ($bytes.Length -ge 2 -and $bytes[0] -eq 0xFE -and $bytes[1] -eq 0xFF) {
+            return [System.Text.Encoding]::BigEndianUnicode.GetString($bytes, 2, $bytes.Length - 2)
+        }
+
+        # UTF-16 LE without BOM (leading "{" or quote followed by null byte)
+        if ($bytes.Length -ge 2 -and $bytes[1] -eq 0x00 -and ($bytes[0] -eq 0x7B -or $bytes[0] -eq 0x22)) {
+            return [System.Text.Encoding]::Unicode.GetString($bytes)
+        }
+
+        return [System.Text.Encoding]::UTF8.GetString($bytes)
     } catch {
-        return ""
+        try {
+            return [Console]::In.ReadToEnd()
+        } catch {
+            return ""
+        }
     }
 }
 
@@ -179,6 +215,341 @@ function Get-ResourceActiveLedgerPath([string]$ProjectRoot) {
     return Join-Path (Get-ResourceLedgerDir $ProjectRoot) "active.json"
 }
 
+function Write-ActiveLedgerAtomic([string]$Path, [object]$Ledger) {
+    if ([string]::IsNullOrWhiteSpace($Path) -or $null -eq $Ledger) { return }
+
+    $dir = Split-Path -Parent $Path
+    if (-not (Test-Path -LiteralPath $dir)) {
+        $null = New-Item -ItemType Directory -Path $dir -Force
+    }
+
+    $lockPath = "$Path.lock"
+    $lockStream = $null
+    try {
+        # Exclusive lock prevents concurrent hook events from interleaving ledger writes.
+        $lockStream = [System.IO.File]::Open(
+            $lockPath,
+            [System.IO.FileMode]::OpenOrCreate,
+            [System.IO.FileAccess]::Write,
+            [System.IO.FileShare]::None
+        )
+        $tmp = Join-Path $dir ("active.json.{0}.tmp" -f [Guid]::NewGuid().ToString("N"))
+        ($Ledger | ConvertTo-Json -Depth 12) | Set-Content -LiteralPath $tmp -Encoding UTF8
+        Move-Item -LiteralPath $tmp -Destination $Path -Force
+    } catch {
+        Write-HookError $_
+        throw
+    } finally {
+        if ($null -ne $lockStream) {
+            $lockStream.Dispose()
+        }
+    }
+}
+
+function Get-NumericField($data, [string[]]$keys) {
+    if (-not $data) { return $null }
+
+    foreach ($key in $keys) {
+        $prop = $data.PSObject.Properties[$key]
+        if ($null -eq $prop -or $null -eq $prop.Value) { continue }
+
+        $value = $prop.Value
+        if ($value -is [int] -or $value -is [long] -or $value -is [decimal] -or $value -is [double]) {
+            return [long]$value
+        }
+
+        $text = "$value".Trim()
+        if ($text -match '^\d+$') {
+            return [long]$text
+        }
+    }
+
+    return $null
+}
+
+function Get-PayloadModel($data) {
+    if (-not $data) { return $null }
+
+    $model = Get-FirstString $data @(
+        "model", "model_name", "modelName", "model_id", "selected_model", "agent_model", "subagent_model"
+    )
+    if (-not [string]::IsNullOrWhiteSpace($model)) {
+        return $model
+    }
+
+    $modelObj = $data.model
+    if ($modelObj -is [PSCustomObject]) {
+        $nested = Get-FirstString $modelObj @("id", "name", "display_name")
+        if (-not [string]::IsNullOrWhiteSpace($nested)) {
+            return $nested
+        }
+    }
+
+    return $null
+}
+
+function Get-UsageFromObject($obj) {
+    $usage = @{}
+    if (-not $obj) { return $usage }
+
+    $inputTokens = Get-NumericField $obj @("input_tokens", "prompt_tokens", "inputTokens")
+    $outputTokens = Get-NumericField $obj @("output_tokens", "completion_tokens", "outputTokens")
+    $totalTokens = Get-NumericField $obj @("total_tokens", "totalTokens", "tokens")
+
+    if ($null -ne $inputTokens) { $usage.input_tokens = $inputTokens }
+    if ($null -ne $outputTokens) { $usage.output_tokens = $outputTokens }
+    if ($null -ne $totalTokens) { $usage.total_tokens = $totalTokens }
+
+    return $usage
+}
+
+function Get-PayloadTokenUsage($data, [string]$EventName) {
+    $usage = @{}
+    if (-not $data) { return $usage }
+
+    foreach ($key in @("usage", "usage_stats", "token_usage", "tokens")) {
+        $prop = $data.PSObject.Properties[$key]
+        if ($null -eq $prop -or $null -eq $prop.Value) { continue }
+
+        $nested = Get-UsageFromObject $prop.Value
+        foreach ($field in $nested.Keys) {
+            $usage[$field] = $nested[$field]
+        }
+    }
+
+    $flatFields = [ordered]@{
+        input_tokens            = @("input_tokens", "prompt_tokens")
+        output_tokens           = @("output_tokens", "completion_tokens")
+        total_tokens            = @("total_tokens")
+        context_tokens          = @("context_tokens")
+        context_usage_percent   = @("context_usage_percent")
+        context_window_size     = @("context_window_size")
+    }
+
+    foreach ($field in $flatFields.Keys) {
+        $value = Get-NumericField $data $flatFields[$field]
+        if ($null -ne $value) {
+            $usage[$field] = $value
+        }
+    }
+
+    if ($usage.Count -gt 0) {
+        $usage.source = $EventName
+    }
+
+    return $usage
+}
+
+function Merge-TokenUsageHashtable($base, $incoming) {
+    if (-not $incoming -or $incoming.Count -eq 0) {
+        return $base
+    }
+
+    if (-not $base) {
+        $base = @{}
+    }
+
+    foreach ($key in $incoming.Keys) {
+        if ($null -ne $incoming[$key]) {
+            $base[$key] = $incoming[$key]
+        }
+    }
+
+    return $base
+}
+
+function Set-LedgerProperty($ledger, [string]$Name, $Value) {
+    if ($null -eq $ledger) { return }
+    if ($null -eq $Value -and $Name -ne "model") { return }
+
+    $prop = $ledger.PSObject.Properties[$Name]
+    if ($null -ne $prop) {
+        $ledger.$Name = $Value
+    } else {
+        $ledger | Add-Member -NotePropertyName $Name -NotePropertyValue $Value -Force
+    }
+}
+
+function Update-LedgerModelAndTokens($ledger, $payload, [string]$EventName) {
+    if (-not $ledger) { return $ledger }
+
+    $model = Get-PayloadModel $payload
+    if (-not [string]::IsNullOrWhiteSpace($model)) {
+        Set-LedgerProperty $ledger "model" $model
+    }
+
+    $incoming = Get-PayloadTokenUsage $payload $EventName
+    if ($incoming.Count -gt 0) {
+        $existing = @{}
+        if ($ledger.tokens) {
+            foreach ($prop in $ledger.tokens.PSObject.Properties) {
+                $existing[$prop.Name] = $prop.Value
+            }
+        }
+        Set-LedgerProperty $ledger "tokens" ([PSCustomObject](Merge-TokenUsageHashtable $existing $incoming))
+    }
+
+    return $ledger
+}
+
+function Add-UniqueToStringList([System.Collections.Generic.List[string]]$List, [string]$Value) {
+    if ([string]::IsNullOrWhiteSpace($Value)) { return }
+    $trimmed = $Value.Trim()
+    if (-not $List.Contains($trimmed)) {
+        $List.Add($trimmed) | Out-Null
+    }
+}
+
+function Get-AgentInvokeFromSubagentFile([string]$ProjectRoot, [string]$FileName) {
+    if ([string]::IsNullOrWhiteSpace($FileName) -or [string]::IsNullOrWhiteSpace($ProjectRoot)) {
+        return $null
+    }
+
+    $candidates = @(
+        (Join-Path $ProjectRoot "templates\agents\subagents\$FileName"),
+        (Join-Path $ProjectRoot ".cursor\agents\$FileName")
+    )
+    foreach ($path in $candidates) {
+        if (-not (Test-Path -LiteralPath $path)) { continue }
+        try {
+            $lines = Get-Content -LiteralPath $path -TotalCount 12 -Encoding UTF8
+            foreach ($line in $lines) {
+                if ($line -match '^\s*name:\s*(\S+)\s*$') {
+                    return $Matches[1].Trim()
+                }
+            }
+        } catch {
+            continue
+        }
+    }
+    return $null
+}
+
+function Get-AgentsRequestedFromPrompt([string]$Prompt, [string]$ProjectRoot) {
+    $agents = [System.Collections.Generic.List[string]]::new()
+    if ([string]::IsNullOrWhiteSpace($Prompt)) {
+        return @()
+    }
+
+    foreach ($match in [regex]::Matches($Prompt, '@agent\(\s*([^)]+?)\s*\)', 'IgnoreCase')) {
+        Add-UniqueToStringList $agents $match.Groups[1].Value
+    }
+
+    foreach ($match in [regex]::Matches($Prompt, 'subagents[/\\]([a-zA-Z0-9_-]+)\.md', 'IgnoreCase')) {
+        $invoke = Get-AgentInvokeFromSubagentFile $ProjectRoot ($match.Groups[1].Value + '.md')
+        if ($invoke) {
+            Add-UniqueToStringList $agents $invoke
+        }
+    }
+
+    foreach ($match in [regex]::Matches($Prompt, '[/\\]agents[/\\]([a-zA-Z0-9_-]+)\.md', 'IgnoreCase')) {
+        $fileName = $match.Groups[1].Value + '.md'
+        if ($fileName -match '^(AGENTS|AGENTS_USAGE)\.md$') { continue }
+        $invoke = Get-AgentInvokeFromSubagentFile $ProjectRoot $fileName
+        if ($invoke) {
+            Add-UniqueToStringList $agents $invoke
+        }
+    }
+
+    return @($agents | Sort-Object)
+}
+
+function Get-RoutingScript([string]$ProjectRoot) {
+    $candidates = @()
+    if ($ProjectRoot) {
+        $candidates += Join-Path (Join-Path $ProjectRoot "templates") "commands\routing.py"
+        $candidates += Join-Path (Join-Path (Join-Path $ProjectRoot ".cursor") "commands") "routing.py"
+    }
+    $templatesRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+    $candidates += Join-Path (Join-Path $templatesRoot "commands") "routing.py"
+    foreach ($path in $candidates) {
+        if (Test-Path -LiteralPath $path) { return $path }
+    }
+    return $null
+}
+
+function Get-SkillsMatchedFromPrompt([string]$Prompt, [string]$ProjectRoot) {
+    if ([string]::IsNullOrWhiteSpace($Prompt)) {
+        return @()
+    }
+
+    $py = Get-PythonExecutable
+    $script = Get-RoutingScript $ProjectRoot
+    if (-not $py -or -not $script) {
+        return @()
+    }
+
+    try {
+        $out = & $py $script skills-match --task $Prompt 2>$null
+        if ([string]::IsNullOrWhiteSpace($out)) {
+            return @()
+        }
+        $parsed = $out | ConvertFrom-Json
+        if ($null -eq $parsed) {
+            return @()
+        }
+        return @($parsed)
+    } catch {
+        return @()
+    }
+}
+
+function Get-RulesMatchedFromPrompt([string]$Prompt, [string]$ProjectRoot) {
+    if ([string]::IsNullOrWhiteSpace($Prompt)) {
+        return @()
+    }
+
+    $py = Get-PythonExecutable
+    $script = Get-RoutingScript $ProjectRoot
+    if (-not $py -or -not $script) {
+        return @()
+    }
+
+    try {
+        $out = & $py $script rules-match --task $Prompt 2>$null
+        if ([string]::IsNullOrWhiteSpace($out)) {
+            return @()
+        }
+        $parsed = $out | ConvertFrom-Json
+        if ($null -eq $parsed) {
+            return @()
+        }
+        return @($parsed)
+    } catch {
+        return @()
+    }
+}
+
+function Get-PromptPredictions([string]$Prompt, [string]$ProjectRoot) {
+    $empty = @{
+        predicted_skills = @()
+        predicted_rules  = @()
+    }
+    if ([string]::IsNullOrWhiteSpace($Prompt)) {
+        return $empty
+    }
+
+    $py = Get-PythonExecutable
+    $script = Get-RoutingScript $ProjectRoot
+    if (-not $py -or -not $script) {
+        return $empty
+    }
+
+    try {
+        $out = & $py $script predict --task $Prompt 2>$null
+        if ([string]::IsNullOrWhiteSpace($out)) {
+            return $empty
+        }
+        $parsed = $out | ConvertFrom-Json
+        return @{
+            predicted_skills = @($parsed.predicted_skills)
+            predicted_rules  = @($parsed.predicted_rules)
+        }
+    } catch {
+        return $empty
+    }
+}
+
 function Write-PreToolUseAllow() {
     Write-HookJson @{ permission = "allow" }
 }
@@ -201,6 +572,66 @@ function Get-HookPolicyScript([string]$ProjectRoot) {
         $candidates += Join-Path (Join-Path (Join-Path $ProjectRoot ".cursor") "hooks") "policy\hook_policy.py"
     }
     $candidates += Join-Path (Split-Path $PSScriptRoot -Parent) "policy\hook_policy.py"
+    foreach ($path in $candidates) {
+        if (Test-Path -LiteralPath $path) { return $path }
+    }
+    return $null
+}
+
+function Get-RedactSensitiveScript([string]$ProjectRoot) {
+    $candidates = @()
+    if ($ProjectRoot) {
+        $candidates += Join-Path (Join-Path (Join-Path $ProjectRoot ".cursor") "hooks") "policy\redact_sensitive.py"
+    }
+    $candidates += Join-Path (Split-Path $PSScriptRoot -Parent) "policy\redact_sensitive.py"
+    foreach ($path in $candidates) {
+        if (Test-Path -LiteralPath $path) { return $path }
+    }
+    return $null
+}
+
+function Invoke-RedactText([string]$Text, [string]$ProjectRoot) {
+    if ([string]::IsNullOrEmpty($Text)) { return $Text }
+
+    $py = Get-PythonExecutable
+    $script = Get-RedactSensitiveScript $ProjectRoot
+    if (-not $py -or -not $script) {
+        return $Text
+    }
+
+    try {
+        $out = $Text | & $py $script redact-text 2>$null
+        if ($null -eq $out) { return $Text }
+        return "$out"
+    } catch {
+        return $Text
+    }
+}
+
+function Invoke-RedactReadPayload([string]$Raw, [string]$ProjectRoot) {
+    $py = Get-PythonExecutable
+    $script = Get-RedactSensitiveScript $ProjectRoot
+    if (-not $py -or -not $script) {
+        return $null
+    }
+
+    try {
+        $out = $Raw | & $py $script redact-read-payload 2>$null
+        if ([string]::IsNullOrWhiteSpace($out)) { return $null }
+        return $out | ConvertFrom-Json
+    } catch {
+        return $null
+    }
+}
+
+function Get-CursorActivityScript([string]$ProjectRoot) {
+    $candidates = @()
+    if ($ProjectRoot) {
+        $candidates += Join-Path (Join-Path $ProjectRoot "templates") "commands\cursor_activity.py"
+        $candidates += Join-Path (Join-Path (Join-Path $ProjectRoot ".cursor") "commands") "cursor_activity.py"
+    }
+    $templatesRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+    $candidates += Join-Path (Join-Path $templatesRoot "commands") "cursor_activity.py"
     foreach ($path in $candidates) {
         if (Test-Path -LiteralPath $path) { return $path }
     }
