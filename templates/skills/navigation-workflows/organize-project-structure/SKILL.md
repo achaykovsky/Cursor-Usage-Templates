@@ -37,6 +37,12 @@ description: Assesses current project layout, proposes a target structure aligne
   - Run tests; fix if broken
   - Commit or stage atomically
 
+## Routing boundaries
+
+- Use when the user wants to **restructure folders**, decide **where new code goes**, or plan **incremental moves**.
+- For understanding current layout or locating features, use **explain-codebase-structure** first.
+- For following one request/value through code, use **trace-data-flow** — not this skill.
+
 ## Notes
 
 - Apply **refactor-safely** principles when executing moves: impact analysis, test coverage, incremental steps.

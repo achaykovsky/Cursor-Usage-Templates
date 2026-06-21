@@ -29,6 +29,12 @@ description: Identifies code paths touched by a change, finds test gaps, adds or
    - If tests fail: distinguish failures caused by the new tests (fix test or code) from pre-existing failures (report, do not hide).
    - Fix any failures introduced by the change or by the new tests. Re-run until the suite passes.
 
+## Output Contract
+
+- Touched paths and coverage gaps addressed
+- Tests added or updated (file + behavior covered)
+- Suite run command and result (pass/fail); note any remaining gaps
+
 ## Notes
 
 - Prefer the project's patterns: fixtures, parametrization, mocks. Match naming and layout.

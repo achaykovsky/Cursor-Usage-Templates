@@ -22,6 +22,12 @@ description: Compares implementation (routes, types, status codes) to contract o
 4. **Summarize**
    - Short report: endpoints checked, number of drifts, and top fixes. If no drift, state that implementation matches contract.
 
+## Output Contract
+
+- Endpoints checked and drift count
+- Per-drift: spec vs code mismatch and proposed fix (code or spec update)
+- Source-of-truth recommendation when ambiguous
+
 ## Notes
 
 - Ignore cosmetic differences (e.g. field order in JSON) unless the project requires strict compatibility.

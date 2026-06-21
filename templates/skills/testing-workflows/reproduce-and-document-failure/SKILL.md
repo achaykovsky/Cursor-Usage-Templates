@@ -29,5 +29,6 @@ description: Turns a failure report (error message, stack trace, steps) into a m
 
 ## Notes
 
+- When repro and environment are documented, hand off to **fix-bug-systematically** (code-workflows) for isolate → fix → verify.
 - If reproduction is not possible (e.g. missing data or environment), say so and list what is needed (exact command, sample input, version, logs).
 - When documenting repro or pasting into a ticket: apply **redact-sensitive-in-output** (shared-practices).

@@ -33,6 +33,12 @@ description: Chooses and applies API versioning strategies (URL path, header, Ac
 6. **Governance**
    - Define how many major versions run concurrently (e.g. current + one previous). Plan removal only after metrics show low traffic on old version.
 
+## Output Contract
+
+- Chosen version surface (path, header, Accept, or query) and why
+- Coexistence and sunset rules
+- Deprecation signaling plan (headers, spec flags, changelog)
+
 ## Notes
 
 - Version **resource** URLs vs **representation** version: REST purists often version representations; many teams version path for simplicity—choose and document.

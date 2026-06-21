@@ -5,23 +5,24 @@ description: Reduces Cursor/context token use via concise prompts, file referenc
 
 # Save Tokens in Context
 
-Apply these habits so prompts, tool traces, and replies stay small without hiding needed detail.
+Apply **`token-efficiency.mdc`** first (inputs, tool use, replies, code citations, scope). This skill adds only what the rule does not cover.
 
-## For the user (prompt side)
+## Workflow
 
-- Prefer `@path` / `@symbol` over pasting hundreds of lines; add line numbers only when the model must see exact text.
-- One primary goal per message; split huge refactors across turns with clear checkpoints.
-- Paste errors as text (message + relevant stack frame), not screenshots of logs.
-- Say "summary only" or "no full file" when a short answer is enough.
+### User (prompt side)
 
-## For the agent (behavior)
+- Paste errors as **text** (message + relevant stack frame), not screenshots of logs.
+- Say **"summary only"** or **"no full file"** when a short answer is enough.
+- Split huge refactors across turns with explicit checkpoints (one primary goal per message).
 
-- **Answer first**, then supporting detail. Avoid preambles ("Here is…", "I'll help you…").
-- **Cite** existing code with line-range references; do not reproduce whole files.
-- **Batch** tool calls (parallel reads/searches) instead of sequential one-liners when independent.
-- **Skip** re-reading files already in the active context unless invalidated.
-- **Truncate** long listings in replies; point to paths and grep patterns for the rest.
+### Agent (behavior)
 
-## When this conflicts with quality
+- For long listings in replies, **truncate** and point to paths plus grep patterns instead of enumerating every match.
 
-If brevity would skip safety (security, data loss, breaking changes), prioritize correctness and state the tradeoff in one line.
+### When brevity conflicts with quality
+
+If being concise would skip safety (security, data loss, breaking changes), prioritize correctness and state the tradeoff in one line.
+
+## Notes
+
+- Pair with **route-task-to-model** when choosing a cheaper model tier for routine edits.

@@ -23,6 +23,12 @@ description: Evaluates whether an API change is backward compatible for existing
 4. **Recommend**
    - If breaking: default path is **versioning** + migration window, or **deprecation** with overlap (see **api-versioning-guidance**). Use **handle-breaking-change** for migration execution details. If additive-only: still document new fields and optional semantics.
 
+## Output Contract
+
+- Baseline vs proposed contract refs
+- Per-delta compat verdict (safe / risky / breaking) with rationale
+- Recommended mitigation (version, deprecate, document, or ship as additive)
+
 ## Notes
 
 - JSON: clients that fail on unknown properties are fragile; call that out if the codebase or partner contracts require "closed" schemas.

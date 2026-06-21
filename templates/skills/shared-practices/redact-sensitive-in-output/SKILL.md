@@ -5,16 +5,22 @@ description: Ensures output (docs, logs, repro steps, release notes, suggestions
 
 # Redact Sensitive in Output
 
-Apply this whenever producing output that may be shared, pasted into tickets, or committed.
+Apply **`security.mdc`** for secrets, credentials, PII, and auth policy. This skill covers **shareable output** (chat replies, tickets, repro docs, release notes) where echoing env-specific or internal detail is easy to miss.
 
-## Rules
+## Workflow
 
-- **Secrets:** Do not include API keys, passwords, tokens, or connection strings. Use placeholders (e.g. `REDACTED`, `***`, or "present in X") or env var names.
-- **PII:** Do not log or echo real user/patient identifiers, emails, or auth material. Use placeholders (e.g. `user_id`, `REDACTED`).
-- **Internal paths:** In repro steps or docs intended for others, generalize or redact machine-specific paths (e.g. `/home/me/...` → "project root" or placeholder).
-- **Errors:** Do not expose internal errors or stack traces in API responses or user-facing docs; suggest logging server-side only.
-- **Release notes / changelog:** Do not include internal or sensitive details.
+1. **Before pasting or suggesting text for others**
+   - Replace secrets and connection strings with placeholders (`REDACTED`, `***`, or env var **names** only).
+   - Replace real user/patient identifiers and emails with generic IDs (`user_id`, `REDACTED`).
 
-## When in doubt
+2. **Output-context checklist**
+   - **Repro steps / tickets:** Generalize machine-specific paths (`/home/me/...` → "project root" or `<repo-root>`).
+   - **User-facing docs / API examples:** No internal stack traces or verbose server errors — log server-side only.
+   - **Release notes / changelog:** No internal hostnames, tenant names, or operational secrets.
 
-Recommend redaction or minimal exposure. Treat config, credentials, and user identifiers as sensitive.
+3. **When in doubt**
+   - Recommend redaction or minimal exposure. For regulated data paths in code, use **sensitive-data-handling** (security-workflows).
+
+## Notes
+
+- Applies to suggested commands, MCP excerpts, and hook-visible output — not only final chat replies.

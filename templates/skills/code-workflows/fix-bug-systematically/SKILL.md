@@ -7,9 +7,9 @@ description: Reproduces, isolates, hypothesizes, fixes, and verifies bugs with t
 
 ## Workflow
 
-1. **Reproduce**
-   - From the user's description or error: identify steps, inputs, and environment.
-   - If possible, run the code or tests to reproduce the failure. Document exact steps and outcome.
+1. **Reproduce** (skip if already documented)
+   - If a minimal repro, steps, and environment are already documented (e.g. from **reproduce-and-document-failure**), confirm it still fails and proceed to isolate.
+   - Otherwise: from the user's description or error, identify steps, inputs, and environment; run the code or tests to reproduce. Document exact steps and outcome.
 
 2. **Isolate**
    - Narrow to the smallest unit (single function, single call path, single input) that still fails.
@@ -32,5 +32,6 @@ description: Reproduces, isolates, hypothesizes, fixes, and verifies bugs with t
 
 ## Notes
 
+- When the user only pasted an error or "it fails when" with no repro yet, run **reproduce-and-document-failure** (testing-workflows) first; then continue here from isolate.
 - If reproduction is impossible (e.g. no access to env), say so and suggest what the user should run or capture (logs, stack trace, minimal repro).
-- When the root cause is unclear, suggest targeted logging or assertions to confirm the hypothesis before changing behavior.
+- When the root cause is unclear, suggest targeted logging (**add-logging-to-code**) or assertions to confirm the hypothesis before changing behavior.

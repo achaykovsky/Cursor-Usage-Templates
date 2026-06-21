@@ -22,10 +22,10 @@ description: Analyzes working tree and staged state, groups changes into logical
 4. **Optional validation**
    - If the repo has commit message rules (e.g. in `.github/`, `commitlint`, or CONTRIBUTING): check length, format, and required scope/type. Suggest edits if the proposal violates them.
 
-## Output
+## Output Contract
 
-- For "one commit": single message + optional body.
-- For "split into commits": ordered list of (files/hunks, message) pairs and exact commands to stage per commit if the user wants to apply the split (e.g. `git add ...` then `git commit -m "..."`).
+- For one commit: single message + optional body
+- For a split: ordered list of (files/hunks, message) pairs and exact `git add` / `git commit` commands per commit
 
 ## Notes
 

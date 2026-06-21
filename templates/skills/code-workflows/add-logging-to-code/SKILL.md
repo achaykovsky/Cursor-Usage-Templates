@@ -43,5 +43,7 @@ description: Adds structured code-path logging (entry/exit, errors, key decision
 
 ## Notes
 
+- For mandatory inline rationale on new/edited logic, use **add-comments-to-code** (code-workflows).
+- For specific raises, narrow catches, and domain error types — use **add-error-handling-to-code** (code-workflows).
 - For broader observability (metrics, traces, production telemetry), use **add-observability-for-debugging** (performance-workflows).
 - Document what was added: "Search logs for `request_id=X` to trace this flow."

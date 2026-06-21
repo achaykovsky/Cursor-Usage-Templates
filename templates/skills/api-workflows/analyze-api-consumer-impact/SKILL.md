@@ -30,6 +30,12 @@ description: Identifies who consumes an API and what breaks for them (internal a
    - Comms: changelog, direct partner notice, developer blog or status page for externals.
    - Pair with **handle-breaking-change** for deprecation vs adapter vs new version.
 
+## Output Contract
+
+- Change summary (endpoints/fields/behaviors)
+- Per-consumer impact: who, integration style, what breaks, migration effort
+- Blast radius (critical path callers first) and recommended timeline/comms
+
 ## Notes
 
 - Do not assume "no repo references" means no consumers—check gateway logs and product owners.

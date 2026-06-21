@@ -30,6 +30,12 @@ description: Plans safe evolution of request/response JSON and form schemas (req
 6. **Verify**
    - Contract tests or snapshot tests for golden requests/responses; **review-openapi-diff** against previous release.
 
+## Output Contract
+
+- Affected operations and shared schemas
+- Planned changes per field/operation (additive, deprecated, breaking)
+- Versioning or parallel-shape recommendation when additive is insufficient
+
 ## Notes
 
 - **Error bodies** are part of the contract; changing error codes or JSON error shape affects retries and client branching—classify like response schema changes.

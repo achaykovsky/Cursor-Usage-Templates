@@ -12,7 +12,7 @@ description: Identifies production observability instrumentation (metrics, trace
    - Define: which operations, inputs, and outcomes matter (success, failure, latency, count).
 
 2. **Choose instrumentation**
-   - **Logs:** Structured log lines at key points (entry, exit, errors). Include correlation ID or request ID if the project uses it. Apply **redact-sensitive-in-output** (shared-practices).
+   - **Logs:** Apply **add-logging-to-code** (code-workflows) for structured entry/exit/error/decision logs at key points. Do not duplicate logging guidance here.
    - **Metrics:** Counters or histograms for rates, latency, or errors if the project has a metrics system. Use existing naming and labels.
    - **Traces:** If the project uses distributed tracing, add spans for the operation. Keep span names and attributes consistent.
 

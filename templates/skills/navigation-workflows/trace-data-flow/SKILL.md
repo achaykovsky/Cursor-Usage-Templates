@@ -23,6 +23,12 @@ description: Follows data from input to output (or error) through the codebase; 
 4. **Summarize**
    - One-paragraph summary of the flow. Call out any side effects (e.g. DB write, external call) or non-obvious behavior.
 
+## Routing boundaries
+
+- Use when the user names a **specific request, value, or error path** and needs Entry → … → Exit detail.
+- For repo overview or "where is X," use **explain-codebase-structure** instead.
+- For folder layout or moves, use **organize-project-structure** — not this skill.
+
 ## Notes
 
 - Stay at a level that is useful: not every variable assignment, but each logical step. Increase detail only where the user needs it.

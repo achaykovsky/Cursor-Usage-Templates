@@ -1,6 +1,6 @@
 ---
 name: audit-codebase-cleanup
-description: Performs a structured, report-only audit of the codebase for duplication, dead code, redundant files, and legacy logic. Identifies and reports issues without modifying files. Use when the user wants to "clean up the codebase," "find dead code," "detect duplication," or "audit for maintainability."
+description: Performs a structured, report-only audit of the codebase for duplication, dead code, redundant files, and legacy logic. Identifies and reports issues without modifying files. Use when the user wants to "clean up the codebase," "code clean-up," "find dead code," "detect duplication," "redundancies," or "audit for maintainability" across Python or other source files.
 ---
 
 # Audit Codebase Cleanup

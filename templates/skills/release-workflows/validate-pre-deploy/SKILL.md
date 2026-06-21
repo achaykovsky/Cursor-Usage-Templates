@@ -26,6 +26,12 @@ description: Runs a pre-deploy checklist: tests, migrations, config, secrets, fe
 5. **Summarize**
    - Pass/fail per area. List blocking issues first, then recommendations. If all pass, state that the pre-deploy checklist is satisfied and remind about post-deploy verification (e.g. health check, smoke test).
 
+## Output Contract
+
+- Pass/fail per area: tests, migrations/schema, config/secrets, dependencies/build
+- Blocking issues first, then recommendations
+- Explicit ready/not-ready verdict for deploy
+
 ## Notes
 
 - Apply **suggest-commands-dont-run-destructive** (shared-practices): only validate and report; suggest fixes and let the user run deploy.

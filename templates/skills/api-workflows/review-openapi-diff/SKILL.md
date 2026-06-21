@@ -27,6 +27,12 @@ description: Reviews a diff between two OpenAPI (or similar) specs; highlights b
    - Table or bullet list: **change → classification (breaking / non-breaking / unclear) → consumer note**.
    - Point to **check-api-backward-compatibility** for semantics and **manage-request-response-schema-changes** for schema-level patterns.
 
+## Output Contract
+
+- Baseline vs new artifact refs
+- Changes classified as breaking / non-breaking / unclear with consumer notes
+- Pointers to follow-up skills when semantics or schema planning is needed
+
 ## Notes
 
 - Cosmetic reordering of keys or descriptions is usually non-functional; still mention if it obscures real diffs.

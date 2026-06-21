@@ -1,6 +1,6 @@
 ---
 name: review-pull-request
-description: Performs end-to-end PR review: diff analysis, checklist against project or team standards, structured feedback (CRITICAL, WARNING, GOOD), and follow-up verification. Use when the user asks for a PR or code review, says "review this change," or when context includes staged or diff content.
+description: Performs end-to-end PR or repo review: diff analysis, checklist against project or team standards, structured feedback (CRITICAL, WARNING, GOOD), and follow-up verification. Use when the user asks for a PR or code review, "review all Python files," "clean-code standards," or when context includes staged or diff content.
 ---
 
 # Review Pull Request
@@ -16,6 +16,7 @@ description: Performs end-to-end PR review: diff analysis, checklist against pro
    - Correctness: logic, edge cases, off-by-one, null/empty handling.
    - Security: injection (SQL, command, XSS), auth/authz, secrets, unsafe deserialization.
    - Maintainability: naming, function size, duplication, coupling.
+   - Error handling: specific exception/error types, narrow catches, preserved cause chains; flag generic `Exception`, broad `except Exception:`, swallowed errors.
    - Style: match project conventions (linter/formatter); flag only meaningful violations.
    - Tests: changes have corresponding tests; existing tests still pass.
 
@@ -30,9 +31,11 @@ description: Performs end-to-end PR review: diff analysis, checklist against pro
    - If applicable, note follow-up verification (e.g. "run tests," "check migration").
    - If GitHub MCP was used, include unresolved review threads/check failures as explicit blockers.
 
-## Output format
+## Output Contract
 
-Use clear headings and bullet lists. Group feedback by severity. Do not repeat the diff; reference it by file/region.
+- Overall assessment (1–2 sentences) and top 1–3 items to address
+- Findings grouped by **CRITICAL** / **WARNING** / **GOOD** with file:line or region references (do not repeat the full diff)
+- Follow-up verification (e.g. tests to run, migrations to check)
 
 ## Routing boundaries
 

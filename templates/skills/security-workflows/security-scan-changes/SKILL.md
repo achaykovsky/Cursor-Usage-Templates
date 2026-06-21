@@ -1,6 +1,6 @@
 ---
 name: security-scan-changes
-description: For a given change or PR, checks for obvious issues (injection, hardcoded secrets, unsafe deserialization, permission logic), suggests mitigations, and references OWASP-style guidance where relevant. Use when the user asks for a security review or before sensitive releases.
+description: For a given change or PR, checks for obvious issues (injection, hardcoded secrets, unsafe deserialization, permission logic), suggests mitigations, and references OWASP-style guidance where relevant. Use when the user asks for a security review, "security risks," "vulns," or before sensitive releases.
 ---
 
 # Security Scan Changes
@@ -24,6 +24,12 @@ description: For a given change or PR, checks for obvious issues (injection, har
 
 4. **Summarize**
    - Short summary: scope reviewed, number and severity of findings, and top actions. If nothing obvious, state that and recommend broader review for high-risk areas.
+
+## Output Contract
+
+- Scope reviewed (files/areas and touchpoints)
+- Findings by severity (**CRITICAL** / **WARNING**) with concrete mitigations
+- Summary: count of findings and top actions; note if deeper review is advised
 
 ## Notes
 
