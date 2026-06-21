@@ -11,11 +11,11 @@ Rules sync to `.cursor/rules/`. They load **automatically** when you edit files 
 | Rule | Focus |
 |------|-------|
 | `security.mdc` | OWASP, secrets, auth, injection, dependencies |
-| `ai-guardrails.mdc` | Ground truth, minimal diffs, no invented APIs |
+| `ai-guardrails.mdc` | Ground truth, minimal diffs, mandatory logging/comments on new code |
 | `observability.mdc` | Logs, metrics, traces, audit, redaction |
 | `token-efficiency.mdc` | Concise I/O, references over pastes |
 | `mcp-integrations.mdc` | MCP read-only default; approval for writes |
-| `resource-usage-report.mdc` | Agent prepends Resources used table |
+| `resource-usage-report.mdc` | Agent prepends Resources used table (full enumeration; rules, skills, agents, hooks) |
 | `performance.mdc` | Profiling, complexity, N+1 (always applied) |
 
 ---
@@ -32,7 +32,7 @@ Rules sync to `.cursor/rules/`. They load **automatically** when you edit files 
 | `api-contract.mdc` | api, openapi, router paths | Status codes, versioning |
 | `architecture.mdc` | `**/*.{py,go,ts,tsx,js,jsx,vue}` | Layers, coupling, ADRs |
 | `code-review.mdc` | code extensions | Review quality bar |
-| `testing.mdc` | test file patterns | pytest, AAA, coverage |
+| `testing.mdc` | test file patterns | pytest, AAA, coverage, portable Code Runner + CLI entry |
 | `documentation.mdc` | `**/*.md`, docs | README, API docs, ADR shape |
 | `planning.mdc` | `**/specs/**` | Specs, acceptance criteria |
 | `devops.mdc` | Dockerfile, CI, `**/*.tf` | CI/CD, containers, IaC |

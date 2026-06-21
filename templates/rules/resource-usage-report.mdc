@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Resource Usage Report
 
-Before the main body of **every user-facing reply**, prepend a short **Resources used** section.
+Before the main body of **every user-facing reply**, prepend a **Resources used** section.
 
 ## Before composing the reply
 
@@ -22,9 +22,9 @@ Use this structure (omit empty rows; do not invent entries):
 | Kind | Used | Source |
 |------|------|--------|
 | Rules | security.mdc, token-efficiency.mdc | ledger or context |
-| Skills | create-hook (read) | ledger or Read on SKILL.md |
-| Agents | explore — "find auth flow" | ledger or Task tool |
-| Hooks | log-resource-usage, log-prompt-context | ledger only |
+| Skills | audit-codebase-cleanup (matched), review-pull-request (read) | ledger |
+| Agents | DOCS — "add test comments", BACKEND_PYTHON — "review pytest style" | ledger or Task tool |
+| Hooks | beforeSubmitPrompt:log-resource-usage.ps1, stop:log-resource-usage.ps1 | ledger only |
 
 ---
 ```
@@ -33,14 +33,25 @@ Then continue with the normal answer after the `---` divider.
 
 ## Accuracy rules
 
-- **Rules**: Prefer `rules` from the ledger. Otherwise list rules visible in the current context (always-applied + file-scoped). Do not list rules that were only "available" in the catalog but not applied.
-- **Skills**: Prefer `skills_read` from the ledger. Only list a skill if its `SKILL.md` was read this turn or you explicitly followed it. Do not list the full skills catalog.
-- **Agents / subagents**: Prefer `subagents` from the ledger. Only list subagents spawned via the Task tool this turn.
-- **Hooks**: Prefer `hooks_configured` from the ledger. Do not guess hook names. If the ledger is unavailable, write `Hooks | (unknown) | not observable to agent`.
+- **Rules**: Prefer `rules` from the ledger. Otherwise list **every** always-applied and file-scoped rule visible in the current context. Do not list rules that were only "available" in the catalog but not applied.
+- **Skills**: Build the row from ledger fields (dedupe by skill name; omit the row only when all sources are empty):
+  - `skills_matched` — keyword routing from prompt text (`routing.py` via hook; tag `(matched)`)
+  - `skills_payload` — Cursor-supplied matched skills on submit (tag `(payload)` when not already matched/read)
+  - `skills_read` — `SKILL.md` read via Read tool this turn (tag `(read)`; also self-report with source `Read on SKILL.md` when ledger is stale)
+  - Format: comma-separated `` `name` (matched) ``, `` `name` (read) ``, or `` `name` (matched, read) `` when both apply.
+  - When the user asks for code review, cleanup, duplication, dead code, security review, or architecture review, cross-check that expected skills appear in `skills_matched` or `skills_read`; if matched but not read, **read** the relevant `SKILL.md` before executing (see `ai-guardrails.mdc`).
+- **Agents / subagents**: Prefer `subagents` from the ledger. List **every** spawned subagent as `INVOKE — "task summary"` (use `type` and `task` from the ledger). Also cross-check `agents_requested`: each invoke name there must have a matching spawned subagent before you finish the turn (see `ai-guardrails.mdc`). Self-report only subagents you spawned via the Task tool this turn when the ledger is unavailable.
+- **Hooks**: Prefer `hooks_configured` from the ledger. List **every** hook entry verbatim (`hookEvent:script.ps1`). Do not guess hook names. If the ledger is unavailable, write `Hooks | (unknown) | not observable to agent`.
 - **Source column**: `ledger` when taken from `active.json`; `context` / `Read on SKILL.md` / `Task tool` when self-reported.
+
+## Enumeration (mandatory)
+
+- **Never truncate** lists with `...`, `etc.`, `and N more`, or similar shorthand.
+- One table row per Kind; put all items for that Kind on the row, comma-separated.
+- If a Kind has many items (e.g. hooks), still list **all** of them — wrap to multiple lines inside the cell if needed, but do not omit any entry.
 
 ## Constraints
 
-- Keep the table compact (one line per kind when possible).
 - Do not repeat the user prompt in this section.
 - In very short replies (one sentence), a minimal table is still required.
+- Do not include model or token usage rows — Cursor hooks do not expose reliable per-turn model slugs or billing tokens to the agent.

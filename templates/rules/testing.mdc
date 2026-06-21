@@ -1,6 +1,6 @@
 ---
-description: Test standards - pytest, AAA, coverage, organization
-globs: "**/test*.py, **/*_test.go, **/*.test.{ts,tsx}, **/__tests__/**"
+description: Test standards - pytest, AAA, coverage, portable entry points (Code Runner + CLI)
+globs: "**/test*.py, **/tests/**, **/*_test.go, **/*.test.{ts,tsx}, **/__tests__/**"
 alwaysApply: false
 ---
 
@@ -15,6 +15,53 @@ alwaysApply: false
 **Coverage**: Aim 80%+ on critical paths. Cover error branches, validation failures, edge cases (empty, null, boundary). `pytest-cov`, `go test -cover`.
 
 **Scope routing**: Frontend-local UI/state/E2E coverage stays with FE testing workflows/agents. Cross-stack/system-wide strategy and mixed backend/frontend integration test policy escalate to generic `TESTER`.
+
+## Portable entry points (required for Python tests in this repo)
+
+Every `test_*.py` under `templates/commands/tests/` and `templates/hooks/tests/` must pass from **all** of:
+
+- `py -3.13 -m pytest <file> -q` (or `poetry run pytest …` from repo root)
+- Code Runner / `python test_*.py` (often VS Code bundled Python 3.7 + old pytest)
+- IDE Test Explorer (pytest collection)
+
+**Why**: Code Runner skips `pyproject.toml` `pythonpath` and may use Python <3.10 / pytest <8 (no `tmp_path`). Delegate to `py -3.13` before importing modules that need 3.10+.
+
+**Bootstrap** (import before code under test):
+
+| Location | Module | Use |
+|---|---|---|
+| `templates/commands/tests/` | `_commands_bootstrap` | `ensure_paths()`; `policy=True` when importing hook policy |
+| `templates/commands/tests/` | `_sync_bootstrap` | Hyphenated `sync-cursor.py` only |
+| `templates/hooks/tests/` | `_hooks_bootstrap` | `ensure_policy_path()` before policy imports |
+
+**Required skeleton** (commands example; hooks: swap bootstrap import):
+
+```python
+from __future__ import annotations
+
+if __name__ == "__main__":
+    from _commands_bootstrap import run_test_file, runtime_ok
+    if not runtime_ok():
+        raise SystemExit(run_test_file(__file__))
+
+from _commands_bootstrap import ensure_paths, run_test_file
+ensure_paths()
+import module_under_test
+
+# ... tests ...
+
+if __name__ == "__main__":
+    raise SystemExit(run_test_file(__file__))
+```
+
+**Checklist when adding or editing a test file**:
+
+1. Early `__main__` guard **before** imports that need 3.10+ or `pyproject.toml` paths
+2. `ensure_paths()` / `ensure_policy_path()` before local command or policy imports
+3. Bottom `run_test_file(__file__)` — never bare `pytest.main()` or `unittest.main()` alone
+4. Verify: `python <file>` and `py -3.13 -m pytest <file> -q` both pass
+
+**Full suite**: `py -3.13 -m pytest templates/hooks/tests templates/commands/tests -q`
 
 ```python
 # ✅ Clear, one concern
