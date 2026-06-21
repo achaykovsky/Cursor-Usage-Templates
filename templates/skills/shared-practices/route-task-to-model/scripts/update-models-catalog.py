@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import re
 import sys
 import urllib.error
@@ -16,8 +17,14 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-# Must match Cursor Task tool model slugs (subagent model= parameter).
-CURSOR_ALLOWLIST: tuple[str, ...] = (
+logger = logging.getLogger(__name__)
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+CATALOG_PATH = SCRIPT_DIR.parent / "models-catalog.json"
+MAX_FETCH_BYTES = 5 * 1024 * 1024  # 5 MiB
+
+# Last-resort bootstrap when models-catalog.json lacks cursor_allowlist (corrupt or new file).
+BOOTSTRAP_CURSOR_ALLOWLIST: tuple[str, ...] = (
     "claude-4.6-sonnet-medium-thinking",
     "claude-fable-5-thinking-high",
     "claude-opus-4-8-thinking-high",
@@ -57,13 +64,17 @@ TIER_KEYWORDS: dict[str, dict[str, int]] = {
     },
 }
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-CATALOG_PATH = SCRIPT_DIR.parent / "models-catalog.json"
+
+def cursor_allowlist_from_catalog(catalog: dict[str, Any]) -> tuple[str, ...]:
+    """Canonical allowlist lives in models-catalog.json; bootstrap is fallback only."""
+    raw = catalog.get("cursor_allowlist")
+    if isinstance(raw, list) and raw and all(isinstance(s, str) and s.strip() for s in raw):
+        return tuple(dict.fromkeys(s.strip() for s in raw))
+    return BOOTSTRAP_CURSOR_ALLOWLIST
 
 
 def _slug_aliases(slug: str) -> list[str]:
     """Search terms derived from a Cursor slug."""
-    parts = slug.replace(".", "-").split("-")
     aliases = [slug, slug.replace("-medium-thinking", ""), slug.replace("-thinking-high", "")]
     if "claude" in slug:
         if "opus" in slug:
@@ -79,13 +90,30 @@ def _slug_aliases(slug: str) -> list[str]:
     return list(dict.fromkeys(a for a in aliases if a))
 
 
-def fetch_url(url: str, timeout: int = 15) -> str:
+def fetch_url(url: str, timeout: int = 15, max_bytes: int = MAX_FETCH_BYTES) -> str:
+    logger.info("fetch_url_enter", extra={"url": url, "timeout": timeout, "max_bytes": max_bytes})
     req = urllib.request.Request(
         url,
         headers={"User-Agent": "cursor-usage-templates/1.0 (model-catalog-update)"},
     )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return resp.read().decode("utf-8", errors="replace")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            chunks: list[bytes] = []
+            total = 0
+            while True:
+                chunk = resp.read(min(65536, max_bytes - total + 1))
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > max_bytes:
+                    raise ValueError(f"response exceeds {max_bytes} bytes")
+                chunks.append(chunk)
+            body = b"".join(chunks).decode("utf-8", errors="replace")
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
+        logger.error("fetch_url_failed", extra={"url": url, "error_type": type(exc).__name__})
+        raise
+    logger.info("fetch_url_exit", extra={"url": url, "body_length": len(body)})
+    return body
 
 
 def score_slug_in_text(slug: str, text: str) -> dict[str, int]:
@@ -102,15 +130,16 @@ def score_slug_in_text(slug: str, text: str) -> dict[str, int]:
     return scores
 
 
-def aggregate_scores(corpus: str) -> dict[str, dict[str, int]]:
+def aggregate_scores(corpus: str, allowlist: tuple[str, ...]) -> dict[str, dict[str, int]]:
     result: dict[str, dict[str, int]] = {}
-    for slug in CURSOR_ALLOWLIST:
+    for slug in allowlist:
         result[slug] = score_slug_in_text(slug, corpus)
     return result
 
 
 def pick_tier_winners(
     scores: dict[str, dict[str, int]],
+    allowlist: tuple[str, ...],
 ) -> dict[str, list[str]]:
     """Return ordered slug lists per tier (best first)."""
     tier_slugs: dict[str, list[tuple[int, str]]] = {
@@ -126,11 +155,11 @@ def pick_tier_winners(
         ordered[tier] = [slug for score, slug in pairs if score > 0]
         if not ordered[tier]:
             # Fallback: static defaults when web fetch yields no signal
-            ordered[tier] = _static_tier_defaults(tier)
+            ordered[tier] = _static_tier_defaults(tier, allowlist)
     return ordered
 
 
-def _static_tier_defaults(tier: str) -> list[str]:
+def _static_tier_defaults(tier: str, allowlist: tuple[str, ...]) -> list[str]:
     defaults = {
         "frontier": ["claude-opus-4-8-thinking-high", "claude-fable-5-thinking-high"],
         "mid_tier": [
@@ -140,28 +169,38 @@ def _static_tier_defaults(tier: str) -> list[str]:
         ],
         "lightweight": ["composer-2.5-fast", "gpt-5.3-codex"],
     }
-    return [s for s in defaults.get(tier, []) if s in CURSOR_ALLOWLIST]
+    return [s for s in defaults.get(tier, []) if s in allowlist]
 
 
 def load_catalog(path: Path) -> dict[str, Any]:
-    with path.open(encoding="utf-8") as f:
-        return json.load(f)
+    logger.info("load_catalog_enter", extra={"path": str(path)})
+    try:
+        with path.open(encoding="utf-8") as f:
+            catalog = json.load(f)
+    except (OSError, json.JSONDecodeError) as exc:
+        logger.error("load_catalog_failed", extra={"path": str(path), "error_type": type(exc).__name__})
+        raise
+    logger.info("load_catalog_exit", extra={"path": str(path), "tier_count": len(catalog.get("tiers", {}))})
+    return catalog
 
 
 def validate_catalog(catalog: dict[str, Any]) -> list[str]:
+    logger.info("validate_catalog_enter", extra={})
     errors: list[str] = []
-    allowlist = catalog.get("cursor_allowlist", [])
-    if set(allowlist) - set(CURSOR_ALLOWLIST):
-        errors.append("cursor_allowlist contains unknown slugs")
-    if set(CURSOR_ALLOWLIST) - set(allowlist):
-        errors.append("cursor_allowlist missing required Cursor slugs")
+    allowlist = cursor_allowlist_from_catalog(catalog)
+    if not allowlist:
+        errors.append("cursor_allowlist is empty or missing")
+    allowset = set(allowlist)
+    if len(allowset) != len(allowlist):
+        errors.append("cursor_allowlist contains duplicate slugs")
     for tier_key, tier in catalog.get("tiers", {}).items():
         primary = tier.get("primary")
-        if primary not in CURSOR_ALLOWLIST:
+        if primary not in allowset:
             errors.append(f"tiers.{tier_key}.primary not in allowlist: {primary}")
         for alt in tier.get("alternates", []):
-            if alt not in CURSOR_ALLOWLIST:
+            if alt not in allowset:
                 errors.append(f"tiers.{tier_key} alternate not in allowlist: {alt}")
+    logger.info("validate_catalog_exit", extra={"error_count": len(errors)})
     return errors
 
 
@@ -169,6 +208,7 @@ def propose_updates(
     catalog: dict[str, Any],
     sources: tuple[str, ...],
 ) -> tuple[dict[str, Any], str]:
+    logger.info("propose_updates_enter", extra={"source_count": len(sources)})
     corpus_parts: list[str] = []
     source_meta: list[dict[str, str]] = []
     today = date.today().isoformat()
@@ -181,6 +221,10 @@ def propose_updates(
                 {"url": url, "checked_at": today, "notes": f"Fetched OK ({len(body)} bytes)"}
             )
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
+            logger.warning(
+                "propose_updates_fetch_failed",
+                extra={"url": url, "error_type": type(exc).__name__},
+            )
             source_meta.append(
                 {
                     "url": url,
@@ -190,21 +234,23 @@ def propose_updates(
             )
 
     corpus = "\n".join(corpus_parts)
-    scores = aggregate_scores(corpus)
-    winners = pick_tier_winners(scores)
+    allowlist = cursor_allowlist_from_catalog(catalog)
+    scores = aggregate_scores(corpus, allowlist)
+    winners = pick_tier_winners(scores, allowlist)
 
     updated = json.loads(json.dumps(catalog))  # deep copy
     updated["last_updated"] = today
-    updated["cursor_allowlist"] = list(CURSOR_ALLOWLIST)
+    updated["cursor_allowlist"] = list(allowlist)
 
     report_lines = ["Model catalog update proposal", "=" * 40, ""]
+    allowset = set(allowlist)
 
     for tier_key in ("frontier", "mid_tier", "lightweight"):
         slugs = winners.get(tier_key, [])
         if not slugs:
-            slugs = _static_tier_defaults(tier_key)
+            slugs = _static_tier_defaults(tier_key, allowlist)
         primary = slugs[0]
-        alternates = [s for s in slugs[1:] if s in CURSOR_ALLOWLIST]
+        alternates = [s for s in slugs[1:] if s in allowset]
         old = catalog["tiers"][tier_key]
         updated["tiers"][tier_key]["primary"] = primary
         updated["tiers"][tier_key]["alternates"] = alternates
@@ -216,15 +262,20 @@ def propose_updates(
     updated["sources"] = source_meta
     report_lines.append("")
     report_lines.append("Per-slug tier scores (top signal):")
-    for slug in CURSOR_ALLOWLIST:
+    for slug in allowlist:
         tier_scores = scores[slug]
         best = max(tier_scores, key=lambda t: tier_scores[t])
         report_lines.append(f"  {slug}: {best}={tier_scores[best]}")
 
+    logger.info(
+        "propose_updates_exit",
+        extra={"corpus_length": len(corpus), "source_count": len(source_meta)},
+    )
     return updated, "\n".join(report_lines)
 
 
 def apply_catalog(path: Path, catalog: dict[str, Any], summary: str) -> None:
+    logger.info("apply_catalog_enter", extra={"path": str(path)})
     changelog = catalog.setdefault("changelog", [])
     changelog.append(
         {
@@ -235,9 +286,11 @@ def apply_catalog(path: Path, catalog: dict[str, Any], summary: str) -> None:
     with path.open("w", encoding="utf-8") as f:
         json.dump(catalog, f, indent=2)
         f.write("\n")
+    logger.info("apply_catalog_exit", extra={"path": str(path)})
 
 
 def main(argv: list[str] | None = None) -> int:
+    logger.info("main_enter", extra={"argv_length": len(argv) if argv is not None else 0})
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--catalog",
@@ -258,9 +311,14 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     sources = tuple(args.sources) if args.sources else DEFAULT_SOURCES
+    logger.info(
+        "main_config",
+        extra={"catalog": str(args.catalog), "dry_run": args.dry_run, "source_count": len(sources)},
+    )
     catalog = load_catalog(args.catalog)
     errors = validate_catalog(catalog)
     if errors:
+        logger.warning("main_catalog_validation_warnings", extra={"warning_count": len(errors)})
         print("Catalog validation warnings:", file=sys.stderr)
         for err in errors:
             print(f"  - {err}", file=sys.stderr)
@@ -270,9 +328,11 @@ def main(argv: list[str] | None = None) -> int:
 
     post_errors = validate_catalog(updated)
     if post_errors:
+        logger.error("main_post_validation_failed", extra={"error_count": len(post_errors)})
         print("\nRefusing to apply; post-update validation failed:", file=sys.stderr)
         for err in post_errors:
             print(f"  - {err}", file=sys.stderr)
+        logger.info("main_exit", extra={"apply": args.apply, "exit_code": 1})
         return 1
 
     if args.apply:
@@ -281,8 +341,10 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("\nDry run only. Re-run with --apply to write.")
 
+    logger.info("main_exit", extra={"apply": args.apply, "exit_code": 0})
     return 0
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     raise SystemExit(main())

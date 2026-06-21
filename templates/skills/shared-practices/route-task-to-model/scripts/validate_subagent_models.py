@@ -4,9 +4,12 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 SKILL_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = SKILL_DIR.parents[3]
@@ -16,6 +19,7 @@ SKIP_FILES = {"AGENTS.md", "AGENTS_USAGE.md"}
 
 
 def main() -> int:
+    logger.info("main_enter", extra={"catalog": str(CATALOG_PATH), "subagents_dir": str(SUBAGENTS_DIR)})
     catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
     allowlist = set(catalog["cursor_allowlist"])
     tiers = catalog["tiers"]
@@ -108,8 +112,21 @@ def main() -> int:
         for name in orphan_files:
             print(f"  - {name}")
 
-    return 1 if bad or missing or orphan_files else 0
+    exit_code = 1 if bad or missing or orphan_files else 0
+    logger.info(
+        "main_exit",
+        extra={
+            "total_checked": len(results),
+            "valid": len(ok),
+            "invalid": len(bad),
+            "missing_frontmatter": len(missing),
+            "orphan_files": len(orphan_files),
+            "exit_code": exit_code,
+        },
+    )
+    return exit_code
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     sys.exit(main())
