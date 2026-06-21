@@ -1,0 +1,8 @@
+{
+  "hook_event_name": "beforeSubmitPrompt",
+  "prompt": "Use @templates/agents/subagents/documentation_writer.md and @templates/agents/subagents/backend_python_engineer.md to add comments to tests. Also @agent(TESTER) for coverage.",
+  "model": "composer-2.5-fast",
+  "conversation_id": "conv-agents-1",
+  "generation_id": "gen-agents-1",
+  "workspace_roots": ["__PROJECT_ROOT__"]
+}

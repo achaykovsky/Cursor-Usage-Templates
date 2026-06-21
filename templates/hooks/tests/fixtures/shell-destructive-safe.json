@@ -1,0 +1,8 @@
+{
+  "domain": "shell-destructive",
+  "permission": "allow",
+  "payload": {
+    "hook_event_name": "beforeShellExecution",
+    "command": "git status"
+  }
+}

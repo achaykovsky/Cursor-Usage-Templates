@@ -1,0 +1,8 @@
+{
+  "hook_event_name": "beforeSubmitPrompt",
+  "prompt": "Use backend_python_engineer.md, code_reviewer.md, architecture_advisor.md go through all the python files (including test files) to make code review and a clean-up in the repo. Validate: 1. Are there any duplications? 2. Is there dead code? 3. Are there redundancies? 4. Is the code stands by the clean-code standards? 5. Are there any security risks, vulns that could arise?",
+  "model": "composer-2.5-fast",
+  "conversation_id": "conv-cleanup-1",
+  "generation_id": "gen-cleanup-1",
+  "workspace_roots": ["__PROJECT_ROOT__"]
+}

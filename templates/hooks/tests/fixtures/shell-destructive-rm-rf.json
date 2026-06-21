@@ -1,0 +1,8 @@
+{
+  "domain": "shell-destructive",
+  "permission": "deny",
+  "payload": {
+    "hook_event_name": "beforeShellExecution",
+    "command": "rm -rf /tmp/project"
+  }
+}

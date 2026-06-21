@@ -1,0 +1,8 @@
+{
+  "hook_event_name": "beforeSubmitPrompt",
+  "prompt": "Add structured logging to the payments module",
+  "model": "composer-2.5-fast",
+  "conversation_id": "conv-test-1",
+  "generation_id": "gen-test-1",
+  "workspace_roots": ["__PROJECT_ROOT__"]
+}
