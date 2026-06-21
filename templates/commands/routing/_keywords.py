@@ -97,6 +97,18 @@ SKILL_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
         "add-comments-to-code",
         ("add comment", "add comments", "document this", "explain this", "docstring", "inline comment"),
     ),
+    (
+        "add-error-handling-to-code",
+        (
+            "add error handling",
+            "error handling",
+            "raise exception",
+            "custom exception",
+            "specific exception",
+            "except block",
+            "domain error",
+        ),
+    ),
     ("review-architecture-fit", ("architecture fit", "fit our architecture", "module boundar", "new subsystem")),
     ("review-pull-request", ("pull request", "code review", "pr review", "clean-code", " review ")),
     # config / dependency
