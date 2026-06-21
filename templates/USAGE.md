@@ -84,13 +84,25 @@ Skill: `save-tokens-in-context` when context is large.
 
 ## Planning prompts
 
+CLI routing scripts (deterministic, no chat paste required):
+
+| Script | Use when |
+|--------|----------|
+| `templates/commands/route-session.ps1` | Full route for one task |
+| `templates/commands/route-agent.ps1` | `@agent` only |
+| `templates/commands/route-skill.ps1` | Skills only |
+| `templates/commands/route-model.ps1` | Model tier + slug only |
+| `templates/commands/route-rules.ps1` | Rules for given files |
+
+Paste prompts when you prefer in-chat reasoning:
+
 | Prompt | Use when |
 |--------|----------|
-| [plan-cursor-session-map.md](prompts/plan-cursor-session-map.md) | Full route for one task |
-| [plan-cursor-agents-routing.md](prompts/plan-cursor-agents-routing.md) | `@agent` only |
-| [plan-cursor-skills-routing.md](prompts/plan-cursor-skills-routing.md) | Skills only |
-| [plan-cursor-model-routing.md](prompts/plan-cursor-model-routing.md) | Model tier + slug only |
-| [plan-cursor-rules-audit.md](prompts/plan-cursor-rules-audit.md) | Rules for given files |
+| [plan-cursor-session-map.md](prompts/plan-cursor-session-map.md) | Full route for one task (chat) |
+| [plan-cursor-agents-routing.md](prompts/plan-cursor-agents-routing.md) | `@agent` only (chat) |
+| [plan-cursor-skills-routing.md](prompts/plan-cursor-skills-routing.md) | Skills only (chat) |
+| [plan-cursor-model-routing.md](prompts/plan-cursor-model-routing.md) | Model tier + slug only (chat) |
+| [plan-cursor-rules-audit.md](prompts/plan-cursor-rules-audit.md) | Rules for given files (chat) |
 | [plan-cursor-hooks.md](prompts/plan-cursor-hooks.md) | Extend hooks |
 | [plan-cursor-activity-logging.md](prompts/plan-cursor-activity-logging.md) | Activity logs |
 | [plan-python-remediation-overview.md](prompts/plan-python-remediation-overview.md) | Python hooks/sync remediation (P0–P3) |
