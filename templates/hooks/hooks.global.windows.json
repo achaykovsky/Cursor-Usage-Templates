@@ -76,6 +76,17 @@
       {
         "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\suggest-commit-on-stop.ps1\""
       }
+    ],
+    "preCompact": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-resource-usage.ps1\""
+      }
+    ],
+    "afterAgentResponse": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-resource-usage.ps1\"",
+        "matcher": "AgentResponse"
+      }
     ]
   }
 }

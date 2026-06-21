@@ -76,6 +76,17 @@
       {
         "command": "bash \"$HOME/.cursor/hooks/scripts/suggest-commit-on-stop.sh\""
       }
+    ],
+    "preCompact": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-resource-usage.sh\""
+      }
+    ],
+    "afterAgentResponse": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-resource-usage.sh\"",
+        "matcher": "AgentResponse"
+      }
     ]
   }
 }
