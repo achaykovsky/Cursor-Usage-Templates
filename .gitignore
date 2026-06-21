@@ -67,4 +67,5 @@ Thumbs.db
 .DS_Store
 
 # templates
-agents/original_agents/
+/.dist
+/.cache
