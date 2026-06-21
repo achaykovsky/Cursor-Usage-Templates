@@ -1,12 +1,24 @@
 {
   "version": 1,
+  "_comment": "Copy to .cursor/hook-policy.json. Merge modes/rules; do not replace default.policy.json wholesale.",
   "modes": {
     "db_shell": "ask",
     "mcp_write": "ask",
     "mcp_unknown": "ask",
     "git_commit_format": "deny",
     "git_commit_unparsed": "allow",
+    "pre_push": "deny",
     "policy_load_error": "allow",
     "policy_engine_error": "allow"
+  },
+  "secure_baseline_modes": {
+    "_comment": "Recommended for regulated/production repos — copy into modes above or merge selectively.",
+    "policy_load_error": "ask",
+    "policy_engine_error": "deny",
+    "mcp_unknown": "ask",
+    "mcp_write": "ask",
+    "db_shell": "ask",
+    "shell_destructive": "deny",
+    "pre_push": "deny"
   }
 }
