@@ -2,10 +2,49 @@
   "version": 1,
   "modes": {
     "db_shell": "ask",
+    "shell_destructive": "deny",
     "mcp_write": "ask",
     "mcp_unknown": "ask",
     "git_commit_format": "deny",
-    "git_commit_unparsed": "allow"
+    "git_commit_unparsed": "allow",
+    "pre_push": "deny"
+  },
+  "shared_destructive_sql": {
+    "deny": [
+      {
+        "id": "drop_database",
+        "pattern": "(?i)\\bdrop\\s+database\\b",
+        "apply": ["db_shell", "shell_destructive"]
+      },
+      {
+        "id": "truncate_table",
+        "pattern": "(?i)\\btruncate\\s+table\\b",
+        "apply": ["db_shell"],
+        "db_requires_sql_carrier": true
+      },
+      {
+        "id": "drop_table",
+        "pattern": "(?i)\\bdrop\\s+table\\b",
+        "apply": ["db_shell"],
+        "db_requires_sql_carrier": true
+      },
+      {
+        "id": "drop_table_or_database_bare",
+        "pattern": "(?i)DROP\\s+(TABLE|DATABASE)\\s+",
+        "apply": ["shell_destructive"]
+      },
+      {
+        "id": "delete_all_rows",
+        "pattern": "(?i)\\bdelete\\s+from\\s+\\w+\\s*(?:;|$)",
+        "apply": ["db_shell"],
+        "db_requires_sql_carrier": true
+      },
+      {
+        "id": "delete_all_rows_bare",
+        "pattern": "(?i)DELETE\\s+FROM\\s+\\w+\\s*;?\\s*$",
+        "apply": ["shell_destructive"]
+      }
+    ]
   },
   "db_shell": {
     "require_db_context": true,
@@ -14,10 +53,6 @@
       "alembic", "flyway", "liquibase", "dbmate", "prisma", "typeorm", "knex", "sequelize-cli"
     ],
     "deny": [
-      { "id": "drop_database", "pattern": "(?i)\\bdrop\\s+database\\b" },
-      { "id": "truncate_table", "pattern": "(?i)\\btruncate\\s+table\\b" },
-      { "id": "drop_table", "pattern": "(?i)\\bdrop\\s+table\\b" },
-      { "id": "delete_all_rows", "pattern": "(?i)\\bdelete\\s+from\\s+\\w+\\s*(?:;|$)", "requires_sql_carrier": true },
       { "id": "alembic_downgrade", "pattern": "(?i)\\balembic\\s+downgrade\\s+-1\\b" },
       { "id": "flyway_clean", "pattern": "(?i)\\bflyway\\s+clean\\b" },
       { "id": "liquibase_rollback", "pattern": "(?i)\\bliquibase\\s+rollback\\b" },
@@ -42,6 +77,19 @@
       { "id": "show", "pattern": "(?i)^\\s*show\\b" },
       { "id": "describe", "pattern": "(?i)^\\s*(describe|desc)\\b" }
     ]
+  },
+  "shell_destructive": {
+    "deny": [
+      { "id": "rm_rf_root", "pattern": "(?i)rm\\s+-rf\\s+/" },
+      { "id": "rm_rf_home", "pattern": "(?i)rm\\s+-rf\\s+\\$" },
+      { "id": "fork_bomb", "pattern": ":\\s*\\(\\s*\\)\\s*\\{\\s*:\\s*\\|" },
+      { "id": "git_reset_hard_origin", "pattern": "(?i)git\\s+reset\\s+--hard\\s+origin" }
+    ]
+  },
+  "pre_push": {
+    "detect_poetry_pyproject": true,
+    "detect_npm_test_script": true,
+    "detect_pytest_ini": true
   },
   "git": {
     "protected_branches": ["main", "master"],

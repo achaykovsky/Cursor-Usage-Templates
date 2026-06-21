@@ -4,18 +4,30 @@
 Usage:
   python hook_policy.py shell-db   # stdin: beforeShellExecution JSON
   python hook_policy.py shell-git
+  python hook_policy.py shell-destructive
+  python hook_policy.py pre-push   # stdin: beforeShellExecution JSON (git push)
   python hook_policy.py mcp        # stdin: beforeMCPExecution JSON
 
 Stdout: single JSON hook response (allow | ask | deny).
-Exit 0 always (hooks fail open on engine errors).
+Stderr: structured audit events via _emit_log (stdlib logger is for debug/trace).
+
+Fail-open by design: invalid stdin JSON, unknown domains, and engine errors
+return allow/ask per policy modes so hooks never hard-block the IDE. Tighten
+defaults via db_shell.modes / git_shell.modes / mcp.modes in hook-policy JSON
+for security-sensitive repos.
+
+Exit 0 always (hooks must not crash Cursor on policy engine errors).
 """
 
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import shlex
+import shutil
+import subprocess
 import sys
 from datetime import datetime, timezone
 from functools import lru_cache
@@ -24,7 +36,15 @@ from typing import Any
 
 from mcp_classify import classify_tool_name, load_mcp_heuristics
 
+logger = logging.getLogger(__name__)
+
 _POLICY_LOAD_FAILURES_KEY = "_policy_load_failures"
+
+_DESTRUCTIVE_USER_MSG = "Blocked: destructive command not allowed."
+_DESTRUCTIVE_AGENT_MSG = (
+    "Command blocked by hook. Use suggest-commands-dont-run-destructive: "
+    "suggest the command for the user to run instead."
+)
 
 
 def _allow_shell() -> dict[str, Any]:
@@ -117,6 +137,7 @@ def _policy_cache_key(project_root: Path | None) -> tuple[Any, ...]:
 
 def clear_policy_cache() -> None:
     """Clear cached policy loads (for tests)."""
+    logger.info("clear_policy_cache", extra={})
     _load_policy_cached.cache_clear()
 
 
@@ -153,9 +174,47 @@ def _load_policy_impl(project_root: Path | None) -> dict[str, Any]:
                 merged = _deep_merge(merged, override)
     if load_failures and had_policy_file and not merged and not mcp_tools:
         _emit_log("error", "policy_empty")
+    _expand_shared_destructive_sql(merged)
     merged["_mcp_tools"] = mcp_tools
     merged[_POLICY_LOAD_FAILURES_KEY] = load_failures
     return merged
+
+
+def _expand_shared_destructive_sql(merged: dict[str, Any]) -> None:
+    """Materialize shared_destructive_sql.deny into db_shell and shell_destructive deny lists."""
+    shared = merged.get("shared_destructive_sql") or {}
+    shared_deny = shared.get("deny") or []
+    if not shared_deny:
+        return
+
+    db_cfg = merged.setdefault("db_shell", {})
+    shell_cfg = merged.setdefault("shell_destructive", {})
+    db_deny = list(db_cfg.get("deny") or [])
+    shell_deny = list(shell_cfg.get("deny") or [])
+    db_ids = {str(rule.get("id")) for rule in db_deny if rule.get("id")}
+    shell_ids = {str(rule.get("id")) for rule in shell_deny if rule.get("id")}
+
+    for rule in shared_deny:
+        pattern = rule.get("pattern")
+        if not pattern:
+            continue
+        apply_to = rule.get("apply") or ["db_shell", "shell_destructive"]
+        rule_id = str(rule.get("id") or "shared")
+
+        if "db_shell" in apply_to and rule_id not in db_ids:
+            db_rule: dict[str, Any] = {"id": rule_id, "pattern": pattern}
+            if rule.get("db_requires_sql_carrier"):
+                db_rule["requires_sql_carrier"] = True
+            db_deny.append(db_rule)
+            db_ids.add(rule_id)
+
+        shell_rule_id = str(rule.get("shell_id") or rule_id)
+        if "shell_destructive" in apply_to and shell_rule_id not in shell_ids:
+            shell_deny.append({"id": shell_rule_id, "pattern": pattern})
+            shell_ids.add(shell_rule_id)
+
+    db_cfg["deny"] = db_deny
+    shell_cfg["deny"] = shell_deny
 
 
 @lru_cache(maxsize=32)
@@ -166,8 +225,17 @@ def _load_policy_cached(cache_key: tuple[Any, ...]) -> str:
 
 
 def load_policy(project_root: Path | None) -> dict[str, Any]:
+    logger.info("load_policy_enter", extra={"has_project_root": project_root is not None})
     raw = _load_policy_cached(_policy_cache_key(project_root))
-    return json.loads(raw)
+    policy = json.loads(raw)
+    logger.info(
+        "load_policy_exit",
+        extra={
+            "mcp_tool_servers": len((policy.get("_mcp_tools") or {}).get("servers", {})),
+            "load_failure_count": len(policy.get(_POLICY_LOAD_FAILURES_KEY) or []),
+        },
+    )
+    return policy
 
 
 def _policy_load_error_response(policy: dict[str, Any]) -> dict[str, Any] | None:
@@ -261,7 +329,7 @@ def _db_binaries(policy: dict[str, Any]) -> set[str]:
     return {b.lower() for b in cfg.get("binaries", [])}
 
 
-def _has_db_context(cmd: str, argv: list[str], binaries: set[str]) -> bool:
+def _has_db_context(argv: list[str], binaries: set[str]) -> bool:
     if not argv:
         return False
     exe = Path(argv[0]).name.lower()
@@ -277,7 +345,7 @@ def _has_db_context(cmd: str, argv: list[str], binaries: set[str]) -> bool:
 def _sql_carrier_segments(cmd: str, argv: list[str], binaries: set[str]) -> list[str]:
     """Return SQL text segments only when carried by a DB client (-c, -e, heredoc)."""
     segments: list[str] = []
-    if not _has_db_context(cmd, argv, binaries):
+    if not _has_db_context(argv, binaries):
         return segments
 
     for i, tok in enumerate(argv):
@@ -303,6 +371,7 @@ def _is_readonly_sql(sql: str, policy: dict[str, Any]) -> bool:
 
 
 def classify_shell_db(payload: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any]:
+    logger.info("classify_shell_db_enter", extra={})
     mode = (policy.get("modes") or {}).get("db_shell", "ask")
     if mode == "off":
         return _allow_shell()
@@ -315,7 +384,7 @@ def classify_shell_db(payload: dict[str, Any], policy: dict[str, Any]) -> dict[s
     binaries = _db_binaries(policy)
     cfg = policy.get("db_shell") or {}
 
-    if cfg.get("require_db_context", True) and not _has_db_context(cmd, argv, binaries):
+    if cfg.get("require_db_context", True) and not _has_db_context(argv, binaries):
         return _allow_shell()
 
     sql_segments = _sql_carrier_segments(cmd, argv, binaries)
@@ -362,9 +431,149 @@ def classify_shell_db(payload: dict[str, Any], policy: dict[str, Any]) -> dict[s
             )
 
     if sql_segments and all(_is_readonly_sql(s, policy) for s in sql_segments if s.strip()):
+        logger.info("classify_shell_db_exit", extra={"decision": "allow", "reason": "readonly_sql"})
         return _allow_shell()
 
+    logger.info("classify_shell_db_exit", extra={"decision": "allow", "reason": "default"})
     return _allow_shell()
+
+
+def classify_shell_destructive(payload: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any]:
+    """Deny known-destructive shell commands on the full command string (no DB-carrier gate)."""
+    logger.info("classify_shell_destructive_enter", extra={})
+    mode = (policy.get("modes") or {}).get("shell_destructive", "deny")
+    if mode == "off":
+        return _allow_shell()
+
+    cmd = _first(payload, ("command",))
+    if not cmd:
+        return _allow_shell()
+
+    cfg = policy.get("shell_destructive") or {}
+    for rule in cfg.get("deny", []):
+        pat = rule.get("pattern")
+        if pat and re.search(pat, cmd):
+            logger.info(
+                "classify_shell_destructive_exit",
+                extra={"decision": "deny", "rule_id": rule.get("id", "deny")},
+            )
+            return _deny_shell(_DESTRUCTIVE_USER_MSG, _DESTRUCTIVE_AGENT_MSG)
+
+    logger.info("classify_shell_destructive_exit", extra={"decision": "allow"})
+    return _allow_shell()
+
+
+def _npm_has_test_script(project_root: Path) -> bool:
+    package_json = project_root / "package.json"
+    if not package_json.is_file():
+        return False
+    try:
+        data = json.loads(package_json.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    scripts = data.get("scripts") or {}
+    return bool(scripts.get("test"))
+
+
+def _detect_pre_push_runner(project_root: Path) -> tuple[str | None, str | None]:
+    """Return (runner_id, missing_tool). runner_id is poetry_pytest | npm_test | pytest_direct."""
+    if (project_root / "pyproject.toml").is_file():
+        if shutil.which("poetry"):
+            return "poetry_pytest", None
+        return None, "poetry"
+
+    if _npm_has_test_script(project_root):
+        if shutil.which("npm"):
+            return "npm_test", None
+        return None, "npm"
+
+    if any((project_root / name).is_file() for name in ("pytest.ini", "setup.cfg", "tox.ini")):
+        if shutil.which("pytest"):
+            return "pytest_direct", None
+        if shutil.which("poetry"):
+            return "poetry_pytest", None
+        return None, "pytest"
+
+    return None, None
+
+
+def _run_pre_push_tests(project_root: Path, runner: str) -> int:
+    cwd = str(project_root)
+    if runner == "poetry_pytest":
+        proc = subprocess.run(
+            ["poetry", "run", "pytest", "-q"],
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+        )
+        return proc.returncode
+    if runner == "npm_test":
+        proc = subprocess.run(["npm", "test"], cwd=cwd, capture_output=True, text=True)
+        return proc.returncode
+    if runner == "pytest_direct":
+        proc = subprocess.run(["pytest", "-q"], cwd=cwd, capture_output=True, text=True)
+        return proc.returncode
+    return 0
+
+
+def classify_pre_push(payload: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any]:
+    """Run configured tests before git push; ask when runner missing, deny on failure by default."""
+    logger.info("classify_pre_push_enter", extra={})
+    mode = (policy.get("modes") or {}).get("pre_push", "deny")
+    if mode in ("off", "allow"):
+        return _allow_shell()
+
+    cmd = _first(payload, ("command",))
+    if not cmd or not re.search(r"\bgit\s+push\b", cmd):
+        return _allow_shell()
+
+    project_root = _project_root(payload)
+    if not project_root or not project_root.is_dir():
+        return _allow_shell()
+
+    runner, missing_tool = _detect_pre_push_runner(project_root)
+    if missing_tool:
+        _emit_log(
+            "warn",
+            "pre_push_runner_missing",
+            tool=missing_tool,
+            project_root=str(project_root),
+        )
+        if mode == "advisory":
+            return _allow_shell()
+        return _ask_shell(
+            f"Push paused: {missing_tool} is not on PATH but this project expects tests before push.",
+            f"Install {missing_tool}, run tests locally, or set modes.pre_push to advisory/off in "
+            ".cursor/hook-policy.json.",
+        )
+
+    if not runner:
+        logger.info("classify_pre_push_exit", extra={"decision": "allow", "reason": "no_test_config"})
+        return _allow_shell()
+
+    exit_code = _run_pre_push_tests(project_root, runner)
+    if exit_code == 0:
+        logger.info("classify_pre_push_exit", extra={"decision": "allow", "runner": runner})
+        return _allow_shell()
+
+    _emit_log(
+        "warn",
+        "pre_push_tests_failed",
+        runner=runner,
+        exit_code=exit_code,
+        project_root=str(project_root),
+    )
+    if mode == "advisory":
+        return _allow_shell()
+    if mode == "ask":
+        return _ask_shell(
+            "Tests failed before push. Confirm you still want to push.",
+            "Run tests locally. Use validate-pre-deploy for the full pre-push checklist.",
+        )
+    return _deny_shell(
+        "Tests failed. Fix before pushing.",
+        "Run tests locally. Use validate-pre-deploy for full pre-push checklist.",
+    )
 
 
 def _is_git_argv(argv: list[str]) -> bool:
@@ -403,6 +612,7 @@ def _extract_commit_message(cmd: str, argv: list[str]) -> str | None:
 
 
 def classify_shell_git(payload: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any]:
+    logger.info("classify_shell_git_enter", extra={})
     cmd = _first(payload, ("command",))
     if not cmd:
         return _allow_shell()
@@ -470,8 +680,6 @@ def classify_shell_git(payload: dict[str, Any], policy: dict[str, Any]) -> dict[
         )
         if has_force and git_root and (git_root / ".git").is_dir():
             try:
-                import subprocess
-
                 branch = subprocess.check_output(
                     ["git", "-C", str(git_root), "branch", "--show-current"],
                     text=True,
@@ -486,7 +694,21 @@ def classify_shell_git(payload: dict[str, Any], policy: dict[str, Any]) -> dict[
                     "Use suggest-commands-dont-run-destructive: suggest the command for the user to run.",
                 )
 
+    logger.info("classify_shell_git_exit", extra={"decision": "allow"})
     return _allow_shell()
+
+
+def _mcp_risk_from_server_prefixes(tool: str, server_cfg: dict[str, Any]) -> str | None:
+    """Apply per-server prefix_read/prefix_write from mcp_tools.json before global heuristics."""
+    for prefix in server_cfg.get("prefix_read") or []:
+        prefix_text = str(prefix)
+        if prefix_text and tool.startswith(prefix_text):
+            return "read"
+    for prefix in server_cfg.get("prefix_write") or []:
+        prefix_text = str(prefix)
+        if prefix_text and tool.startswith(prefix_text):
+            return "write"
+    return None
 
 
 def _mcp_risk_from_catalog(
@@ -522,6 +744,10 @@ def _mcp_risk_from_catalog(
     if base != "unknown":
         return base
 
+    server_prefix_risk = _mcp_risk_from_server_prefixes(tool, server_cfg)
+    if server_prefix_risk is not None:
+        return server_prefix_risk
+
     heuristics = load_mcp_heuristics(policy)
     classified = classify_tool_name(tool, heuristics)
     if classified != "unknown":
@@ -538,7 +764,12 @@ def _mcp_risk_from_catalog(
 def classify_mcp(payload: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any]:
     server = _first(payload, ("server", "server_name", "mcp_server"))
     tool = _first(payload, ("tool_name", "toolName", "name", "mcp_tool_name"))
+    logger.info(
+        "classify_mcp_enter",
+        extra={"server": server or "(unknown)", "tool": tool or "(missing)"},
+    )
     if not tool:
+        logger.info("classify_mcp_exit", extra={"decision": "allow", "reason": "missing_tool"})
         return _allow_shell()
 
     args = payload.get("arguments") or payload.get("tool_input") or payload.get("args") or {}
@@ -548,8 +779,10 @@ def classify_mcp(payload: dict[str, Any], policy: dict[str, Any]) -> dict[str, A
     risk = _mcp_risk_from_catalog(server, tool, args, policy)
     modes = policy.get("modes") or {}
     mcp_cfg = policy.get("mcp") or {}
+    logger.info("classify_mcp_risk", extra={"tool": tool, "risk": risk})
 
     if risk == "read":
+        logger.info("classify_mcp_exit", extra={"decision": "allow", "risk": risk})
         return _allow_shell()
 
     if risk == "unknown":
@@ -586,37 +819,51 @@ def classify_mcp(payload: dict[str, Any], policy: dict[str, Any]) -> dict[str, A
             "Default policy: MCP operations should be read-only unless user explicitly asks for writes.",
         )
 
+    logger.info("classify_mcp_exit", extra={"decision": "allow", "risk": risk})
     return _allow_shell()
 
 
 def classify(domain: str, payload: dict[str, Any], project_root: Path | None) -> dict[str, Any]:
+    logger.info("classify_enter", extra={"domain": domain, "has_project_root": project_root is not None})
     policy = load_policy(project_root)
     load_error = _policy_load_error_response(policy)
     if load_error is not None:
+        logger.info("classify_exit", extra={"domain": domain, "decision": load_error.get("permission")})
         return load_error
     policy = {k: v for k, v in policy.items() if k != _POLICY_LOAD_FAILURES_KEY}
     if domain == "shell-db":
-        return classify_shell_db(payload, policy)
-    if domain == "shell-git":
-        return classify_shell_git(payload, policy)
-    if domain == "mcp":
-        return classify_mcp(payload, policy)
-    return _allow_shell()
+        result = classify_shell_db(payload, policy)
+    elif domain == "shell-git":
+        result = classify_shell_git(payload, policy)
+    elif domain == "shell-destructive":
+        result = classify_shell_destructive(payload, policy)
+    elif domain == "pre-push":
+        result = classify_pre_push(payload, policy)
+    elif domain == "mcp":
+        result = classify_mcp(payload, policy)
+    else:
+        result = _allow_shell()
+    logger.info("classify_exit", extra={"domain": domain, "decision": result.get("permission")})
+    return result
 
 
 def main() -> int:
     if len(sys.argv) < 2:
+        logger.info("main_exit", extra={"decision": "allow", "reason": "missing_domain"})
         print(json.dumps(_allow_shell()), end="")
         return 0
     domain = sys.argv[1]
+    logger.info("main_enter", extra={"domain": domain})
     raw = sys.stdin.read()
     if not raw.strip():
+        logger.info("main_exit", extra={"domain": domain, "decision": "allow", "reason": "empty_payload"})
         print(json.dumps(_allow_shell()), end="")
         return 0
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError:
         _emit_log("warn", "invalid_hook_payload", domain=domain)
+        logger.warning("main_invalid_payload", extra={"domain": domain})
         print(json.dumps(_allow_shell()), end="")
         return 0
     project_root = _project_root(payload)
@@ -626,9 +873,15 @@ def main() -> int:
         policy = load_policy(project_root)
         policy = {k: v for k, v in policy.items() if k != _POLICY_LOAD_FAILURES_KEY}
         result = _policy_engine_error_response(policy, domain, exc)
+        logger.error(
+            "main_classify_failed",
+            extra={"domain": domain, "error_type": type(exc).__name__},
+        )
+    logger.info("main_exit", extra={"domain": domain, "decision": result.get("permission")})
     print(json.dumps(result, separators=(",", ":")), end="")
     return 0
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     raise SystemExit(main())

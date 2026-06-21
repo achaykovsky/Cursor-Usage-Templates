@@ -2,19 +2,26 @@
 
 **Hub:** [USAGE.md](../../USAGE.md) | **Hooks mapping:** [README.md](../README.md) | **User guide:** [HOOKS_USAGE.md](../HOOKS_USAGE.md)
 
-Classifies `beforeShellExecution` (DB/git) and `beforeMCPExecution` (MCP) payloads.
+Classifies `beforeShellExecution` (destructive shell, DB/git) and `beforeMCPExecution` (MCP) payloads.
 
 ## Files
 
 | File | Role |
 |------|------|
-| `hook_policy.py` | Engine CLI: `python hook_policy.py <shell-db\|shell-git\|mcp>` |
+| `hook_policy.py` | Engine CLI: `python hook_policy.py <shell-destructive\|shell-db\|shell-git\|pre-push\|mcp>` |
 | `mcp_classify.py` | Shared MCP tool-name heuristics (used by engine + `sync_mcp_policy.py`) |
-| `default.policy.json` | Default rules, modes, and `mcp.global_*` prefix lists |
-| `mcp_tools.json` | MCP server tool risk catalog |
+| `redact_sensitive.py` | Shared path/content redaction for `redact-sensitive-read` and `log-prompt-context` |
+| `default.policy.json` | Default rules, modes, `shared_destructive_sql`, and `mcp.global_*` prefix lists |
+| `mcp_tools.json` | MCP server tool risk catalog (`tools`, `prefix_read`, `prefix_write`, `default_risk`) |
 | `sync_mcp_policy.py` | Seed/update `mcp_tools.json` from MCP tool descriptors (reads heuristics from `default.policy.json`) |
 
 Edit `default.policy.json` `mcp.global_*` keys once — both the live engine fallback and `sync_mcp_policy.py` use `mcp_classify.py`.
+
+Per-server `prefix_read` / `prefix_write` in `mcp_tools.json` are applied when a tool is not listed in `tools` (before global heuristics). Explicit `tools` entries override prefixes.
+
+**`shared_destructive_sql`:** Single source for overlapping DROP/DELETE rules. At load time, entries are copied into `db_shell.deny` (with optional `db_requires_sql_carrier`) and `shell_destructive.deny` per each rule's `apply` list.
+
+**`pre_push`:** `validate-pre-push` calls `python hook_policy.py pre-push`. Missing test runner (poetry/npm/pytest) → **ask** + stderr `pre_push_runner_missing`. Failed tests → **deny** by default; set `modes.pre_push` to `advisory` to warn-only.
 
 ## Fail-open contract
 
