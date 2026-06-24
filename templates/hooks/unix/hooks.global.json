@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-prompt-context.sh\"",
+        "matcher": "UserPromptSubmit"
+      },
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-resource-usage.sh\"",
+        "matcher": "UserPromptSubmit"
+      },
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/validate-template-consistency.sh\"",
+        "matcher": "UserPromptSubmit"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-cursor-activity.sh\""
+      },
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/validate-git-commands.sh\""
+      },
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/validate-pre-push.sh\""
+      },
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/block-destructive-shell.sh\""
+      },
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/validate-db-shell-operations.sh\""
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-resource-usage.sh\"",
+        "matcher": "Read"
+      }
+    ],
+    "subagentStart": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-resource-usage.sh\""
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-resource-usage.sh\""
+      }
+    ],
+    "beforeMCPExecution": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/validate-mcp-operations.sh\""
+      }
+    ],
+    "beforeReadFile": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/redact-sensitive-read.sh\""
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-cursor-activity.sh\""
+      },
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/format-after-edit.sh\""
+      },
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/validate-template-consistency.sh\""
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-cursor-activity.sh\"",
+        "matcher": "Stop"
+      },
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-resource-usage.sh\"",
+        "matcher": "Stop"
+      },
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/suggest-commit-on-stop.sh\"",
+        "matcher": "Stop"
+      }
+    ],
+    "preCompact": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-resource-usage.sh\""
+      }
+    ],
+    "afterAgentResponse": [
+      {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/log-resource-usage.sh\"",
+        "matcher": "AgentResponse"
+      }
+    ]
+  }
+}
