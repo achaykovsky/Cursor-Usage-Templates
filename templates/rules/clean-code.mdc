@@ -1,0 +1,29 @@
+---
+description: Clean code - naming, functions, DRY, readability, YAGNI
+globs: "**/*.{py,go,ts,tsx,js,jsx,vue,rs,java,kt,swift,c,cpp,h,hpp,cs,rb,php}"
+alwaysApply: false
+---
+
+# Clean Code Standards
+
+**Naming**: Reveal intent (`user_count`, not `n`). One word per concept (`fetch` vs `get` — pick one). Avoid abbreviations and noise (`data`, `info`, `mgr`). Booleans read as questions (`is_active`, `has_permission`).
+
+**Functions**: One job (SRP). One abstraction level per function. Prefer ≤3 parameters; group related args into a struct/DTO when more are needed. No hidden side effects — a `get_*` must not mutate state.
+
+**Size**: Functions < 50 lines; modules stay focused. Extract when a block needs a comment to explain *what* it does. Cyclomatic complexity and nesting limits: see `performance.mdc`.
+
+**Control flow**: Guard clauses and early returns over deep nesting. Prefer polymorphism or lookup maps over long `if/elif` chains when behavior varies by type.
+
+**DRY**: Do not copy-paste logic. Extract shared behavior at the second justified reuse; do not abstract prematurely for one call site.
+
+**Constants**: No magic numbers or unexplained string literals — use named constants or enums at module/package scope.
+
+**Dependencies**: Depend on abstractions (interfaces, protocols), not concrete implementations, at module boundaries. Push I/O and framework details to the edges.
+
+**Dead code**: Remove unused imports, variables, functions, and commented-out blocks in files you touch. Do not leave "just in case" code.
+
+**YAGNI**: Implement what the request requires. No speculative APIs, config flags, or extension points without a stated need.
+
+**Refactors**: Preserve behavior; keep diffs minimal (`ai-guardrails.mdc`). For multi-file renames or structural moves, read **refactor-safely** before editing.
+
+**Precedence**: security/safety → scoped rules → skills → agents. Clean code never overrides security, validation, or error-handling requirements.
