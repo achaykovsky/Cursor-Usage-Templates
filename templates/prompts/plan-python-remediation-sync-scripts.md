@@ -1,5 +1,7 @@
 # Python Remediation: Sync Scripts
 
+> **Historical plan (2026-02).** Implemented in `sync-cursor.py`. Current policy: **`templates/` only** as source; `ToGlobal` removed; `FromGlobal` writes `.cursor/` only; `sync-templates-to-local` hook on `afterFileEdit`. See [`commands/README.md`](../commands/README.md).
+
 **Hub:** [Overview](plan-python-remediation-overview.md) | **Priority:** P2–P3
 
 Plans for `sync-cursor.py` deduplication, structured logging, and test coverage for sync commands. **No code in this document.**
