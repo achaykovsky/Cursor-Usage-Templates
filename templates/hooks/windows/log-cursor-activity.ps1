@@ -3,18 +3,22 @@
 . (Join-Path $PSScriptRoot "hook-common.ps1")
 
 $needsShellJson = $false
+$payload = $null
 try {
-    $raw = Read-HookStdin
-    if ([string]::IsNullOrWhiteSpace($raw)) {
+    $stdinBytes = Read-HookStdinBytes
+    if (-not $stdinBytes -or $stdinBytes.Length -eq 0) {
         exit 0
     }
 
-    $payload = Get-HookPayload $raw
+    $payload = Get-HookPayloadFromBytes $stdinBytes
     $hookEvent = if ($payload) { "$($payload.hook_event_name)" } else { "" }
     $needsShellJson = ($hookEvent -eq "beforeShellExecution")
 
-    $projectRoot = Get-ProjectRootFromPayload $payload
-    if (-not $projectRoot) { exit 0 }
+    $projectRoot = Resolve-ProjectRoot $payload
+    if (-not $projectRoot) {
+        Write-HookError "log-cursor-activity: could not resolve project root"
+        exit 0
+    }
 
     $logDir = Join-Path (Join-Path $projectRoot ".cursor") "logs"
     $null = New-Item -ItemType Directory -Path $logDir -Force
@@ -25,6 +29,10 @@ try {
     $activityScript = Get-CursorActivityScript $projectRoot
     if ($py -and $activityScript) {
         try {
+            $raw = (Get-HookStdinTextCandidates $stdinBytes | Select-Object -First 1)
+            if ([string]::IsNullOrWhiteSpace($raw)) {
+                $raw = [System.Text.Encoding]::UTF8.GetString($stdinBytes)
+            }
             $line = $raw | & $py $activityScript normalize
         } catch {
             Write-HookError $_
@@ -52,6 +60,7 @@ try {
 } catch {
     Write-HookError $_
 } finally {
+    Register-HookExecution -Payload $payload -ScriptFileName (Split-Path -Leaf $PSCommandPath)
     if ($needsShellJson) {
         Write-ShellAllow
     }

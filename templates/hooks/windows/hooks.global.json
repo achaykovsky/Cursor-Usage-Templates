@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-resource-usage.ps1\"",
+        "matcher": "UserPromptSubmit"
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-prompt-context.ps1\"",
+        "matcher": "UserPromptSubmit"
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\validate-template-consistency.ps1\"",
+        "matcher": "UserPromptSubmit"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-cursor-activity.ps1\""
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\validate-git-commands.ps1\""
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\validate-pre-push.ps1\""
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\block-destructive-shell.ps1\""
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\validate-db-shell-operations.ps1\""
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-resource-usage.ps1\"",
+        "matcher": "Read"
+      }
+    ],
+    "subagentStart": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-resource-usage.ps1\""
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-resource-usage.ps1\""
+      }
+    ],
+    "beforeMCPExecution": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\validate-mcp-operations.ps1\""
+      }
+    ],
+    "beforeReadFile": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\redact-sensitive-read.ps1\""
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-cursor-activity.ps1\""
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\format-after-edit.ps1\""
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\validate-template-consistency.ps1\""
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\sync-templates-to-local.ps1\""
+      }
+    ],
+    "stop": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-cursor-activity.ps1\"",
+        "matcher": "Stop"
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-resource-usage.ps1\"",
+        "matcher": "Stop"
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\suggest-commit-on-stop.ps1\"",
+        "matcher": "Stop"
+      }
+    ],
+    "preCompact": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-resource-usage.ps1\""
+      }
+    ],
+    "afterAgentResponse": [
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-resource-usage.ps1\"",
+        "matcher": "AgentResponse"
+      }
+    ]
+  }
+}

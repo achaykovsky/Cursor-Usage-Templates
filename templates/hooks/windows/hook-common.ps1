@@ -43,57 +43,120 @@ function Write-ShellAsk([string]$UserMsg, [string]$AgentMsg) {
     }
 }
 
-function Read-HookStdin() {
+function Read-HookStdinBytes() {
     try {
         $stdin = [Console]::OpenStandardInput()
         try {
             $ms = New-Object System.IO.MemoryStream
             $stdin.CopyTo($ms)
-            $bytes = $ms.ToArray()
+            return $ms.ToArray()
         } finally {
             $stdin.Dispose()
         }
-
-        if ($bytes.Length -eq 0) {
-            return ""
-        }
-
-        # UTF-8 BOM — Cursor on Windows may pipe JSON with EF BB BF; default console
-        # encoding misreads that prefix as garbage (e.g. U+2229) and breaks ConvertFrom-Json.
-        if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
-            return [System.Text.Encoding]::UTF8.GetString($bytes, 3, $bytes.Length - 3)
-        }
-
-        # UTF-16 LE / BE BOM
-        if ($bytes.Length -ge 2 -and $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) {
-            return [System.Text.Encoding]::Unicode.GetString($bytes, 2, $bytes.Length - 2)
-        }
-        if ($bytes.Length -ge 2 -and $bytes[0] -eq 0xFE -and $bytes[1] -eq 0xFF) {
-            return [System.Text.Encoding]::BigEndianUnicode.GetString($bytes, 2, $bytes.Length - 2)
-        }
-
-        # UTF-16 LE without BOM (leading "{" or quote followed by null byte)
-        if ($bytes.Length -ge 2 -and $bytes[1] -eq 0x00 -and ($bytes[0] -eq 0x7B -or $bytes[0] -eq 0x22)) {
-            return [System.Text.Encoding]::Unicode.GetString($bytes)
-        }
-
-        return [System.Text.Encoding]::UTF8.GetString($bytes)
     } catch {
         try {
-            return [Console]::In.ReadToEnd()
+            $text = [Console]::In.ReadToEnd()
+            if ([string]::IsNullOrEmpty($text)) {
+                return [byte[]]@()
+            }
+            return [System.Text.Encoding]::UTF8.GetBytes($text)
         } catch {
-            return ""
+            return [byte[]]@()
         }
+    }
+}
+
+function Get-HookStdinTextCandidates([byte[]]$Bytes) {
+    $candidates = New-Object System.Collections.Generic.List[string]
+    if (-not $Bytes -or $Bytes.Length -eq 0) {
+        return @()
+    }
+
+    # UTF-8 BOM — Cursor on Windows may pipe JSON with EF BB BF; default console
+    # encoding misreads that prefix as garbage (e.g. U+2229) and breaks ConvertFrom-Json.
+    if ($Bytes.Length -ge 3 -and $Bytes[0] -eq 0xEF -and $Bytes[1] -eq 0xBB -and $Bytes[2] -eq 0xBF) {
+        $candidates.Add([System.Text.Encoding]::UTF8.GetString($Bytes, 3, $Bytes.Length - 3)) | Out-Null
+    }
+
+    # UTF-16 LE / BE BOM
+    if ($Bytes.Length -ge 2 -and $Bytes[0] -eq 0xFF -and $Bytes[1] -eq 0xFE) {
+        $candidates.Add([System.Text.Encoding]::Unicode.GetString($Bytes, 2, $Bytes.Length - 2)) | Out-Null
+    }
+    if ($Bytes.Length -ge 2 -and $Bytes[0] -eq 0xFE -and $Bytes[1] -eq 0xFF) {
+        $candidates.Add([System.Text.Encoding]::BigEndianUnicode.GetString($Bytes, 2, $Bytes.Length - 2)) | Out-Null
+    }
+
+    # UTF-16 LE without BOM (leading "{" or quote followed by null byte)
+    if ($Bytes.Length -ge 2 -and $Bytes[1] -eq 0x00 -and ($Bytes[0] -eq 0x7B -or $Bytes[0] -eq 0x22)) {
+        $candidates.Add([System.Text.Encoding]::Unicode.GetString($Bytes)) | Out-Null
+    }
+
+    $candidates.Add([System.Text.Encoding]::UTF8.GetString($Bytes)) | Out-Null
+    $candidates.Add([System.Text.Encoding]::Unicode.GetString($Bytes)) | Out-Null
+
+    return @($candidates | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+}
+
+function Read-HookStdin() {
+    $bytes = Read-HookStdinBytes
+    if ($bytes.Length -eq 0) {
+        return ""
+    }
+
+    $candidates = Get-HookStdinTextCandidates $bytes
+    if ($candidates.Count -gt 0) {
+        return $candidates[0]
+    }
+
+    return [System.Text.Encoding]::UTF8.GetString($bytes)
+}
+
+function Test-PayloadPropertiesCorrupt($payload) {
+    if (-not $payload) { return $false }
+
+    foreach ($prop in $payload.PSObject.Properties) {
+        if ($prop.Name -match "`0") {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function ConvertFrom-HookJsonText([string]$Text) {
+    if ([string]::IsNullOrWhiteSpace($Text)) { return $null }
+
+    try {
+        $payload = $Text.Trim() | ConvertFrom-Json
+        if (Test-PayloadPropertiesCorrupt $payload) {
+            return $null
+        }
+        return $payload
+    } catch {
+        return $null
     }
 }
 
 function Get-HookPayload([string]$Raw) {
     if ([string]::IsNullOrWhiteSpace($Raw)) { return $null }
-    try {
-        return $Raw | ConvertFrom-Json
-    } catch {
-        return $null
+    return ConvertFrom-HookJsonText $Raw
+}
+
+function Get-HookPayloadFromBytes([byte[]]$Bytes) {
+    if (-not $Bytes -or $Bytes.Length -eq 0) { return $null }
+
+    foreach ($text in (Get-HookStdinTextCandidates $Bytes)) {
+        $payload = ConvertFrom-HookJsonText $text
+        if ($payload) {
+            return $payload
+        }
     }
+
+    return $null
+}
+
+function Read-HookPayload() {
+    return Get-HookPayloadFromBytes (Read-HookStdinBytes)
 }
 
 function Write-HookError([object]$Err) {
@@ -120,6 +183,36 @@ function Get-ProjectRootFromPayload($data) {
     $startDir = if ($data.cwd) { "$($data.cwd)" } else { (Get-Location).Path }
     $gitRoot = & git -C $startDir rev-parse --show-toplevel 2>$null
     if ($gitRoot) { return "$gitRoot" }
+    return $null
+}
+
+function Resolve-ProjectRoot($data) {
+    $root = Get-ProjectRootFromPayload $data
+    if ($root -and (Test-Path -LiteralPath (Join-Path $root ".cursor"))) {
+        return $root
+    }
+
+    foreach ($startDir in @(
+        if ($data -and $data.cwd) { "$($data.cwd)" } else { $null }
+        (Get-Location).Path
+    )) {
+        if ([string]::IsNullOrWhiteSpace($startDir)) { continue }
+
+        $gitRoot = & git -C $startDir rev-parse --show-toplevel 2>$null
+        if ($gitRoot -and (Test-Path -LiteralPath (Join-Path $gitRoot ".cursor"))) {
+            return "$gitRoot"
+        }
+    }
+
+    # Hook scripts live at <project>/.cursor/hooks/scripts — infer when payload is corrupt.
+    $scriptRoot = $PSScriptRoot
+    if (-not [string]::IsNullOrWhiteSpace($scriptRoot)) {
+        $cursorDir = Split-Path (Split-Path $scriptRoot -Parent) -Parent
+        if (Test-Path -LiteralPath (Join-Path $cursorDir "hooks.json")) {
+            return $cursorDir
+        }
+    }
+
     return $null
 }
 
@@ -213,6 +306,58 @@ function Get-ResourceLedgerDir([string]$ProjectRoot) {
 
 function Get-ResourceActiveLedgerPath([string]$ProjectRoot) {
     return Join-Path (Get-ResourceLedgerDir $ProjectRoot) "active.json"
+}
+
+function Read-ActiveLedger([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path)) { return $null }
+    try {
+        return Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        return $null
+    }
+}
+
+function Add-HookExecutedEntry($ledger, [string]$EventName, [string]$ScriptFileName) {
+    if (-not $ledger -or [string]::IsNullOrWhiteSpace($EventName) -or [string]::IsNullOrWhiteSpace($ScriptFileName)) {
+        return $ledger
+    }
+
+    $entry = "${EventName}:${ScriptFileName}"
+    $executed = [System.Collections.Generic.List[string]]::new()
+    foreach ($e in @($ledger.hooks_executed)) { Add-UniqueToStringList $executed $e }
+    Add-UniqueToStringList $executed $entry
+    Set-LedgerProperty $ledger "hooks_executed" @($executed | Sort-Object)
+    return $ledger
+}
+
+function Register-HookExecution($payload, [string]$ScriptFileName) {
+    if ([string]::IsNullOrWhiteSpace($ScriptFileName)) { return }
+
+    $event = if ($payload) { "$($payload.hook_event_name)" } else { "" }
+    if ([string]::IsNullOrWhiteSpace($event)) { return }
+
+    $projectRoot = Resolve-ProjectRoot $payload
+    if (-not $projectRoot) { return }
+
+    $activePath = Get-ResourceActiveLedgerPath $projectRoot
+
+    try {
+        $ledger = Read-ActiveLedger $activePath
+        if (-not $ledger) {
+            $ledger = [PSCustomObject][ordered]@{
+                ts              = (Get-Date).ToString("o")
+                generation_id   = if ($payload.generation_id) { "$($payload.generation_id)" } else { "" }
+                conversation_id = if ($payload.conversation_id) { "$($payload.conversation_id)" } else { "" }
+                hooks_executed  = @()
+            }
+        }
+
+        $ledger = Add-HookExecutedEntry $ledger $event $ScriptFileName
+        $ledger.ts = (Get-Date).ToString("o")
+        Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
+    } catch {
+        Write-HookError $_
+    }
 }
 
 function Write-ActiveLedgerAtomic([string]$Path, [object]$Ledger) {
@@ -619,6 +764,28 @@ function Invoke-RedactReadPayload([string]$Raw, [string]$ProjectRoot) {
         $out = $Raw | & $py $script redact-read-payload 2>$null
         if ([string]::IsNullOrWhiteSpace($out)) { return $null }
         return $out | ConvertFrom-Json
+    } catch {
+        return $null
+    }
+}
+
+
+function Invoke-RedactReadPayloadJson([string]$Raw, [string]$ProjectRoot) {
+    # Pass through redact_sensitive.py JSON unchanged — ConvertTo-Json corrupts Unicode in large bodies.
+    $py = Get-PythonExecutable
+    $script = Get-RedactSensitiveScript $ProjectRoot
+    if (-not $py -or -not $script) {
+        return $null
+    }
+
+    try {
+        $out = $Raw | & $py $script redact-read-payload 2>$null
+        if ([string]::IsNullOrWhiteSpace($out)) { return $null }
+        $line = "$out".Trim()
+        if ($line -match "[
+]") { return $null }
+        $null = $line | ConvertFrom-Json
+        return $line
     } catch {
         return $null
     }

@@ -8,12 +8,7 @@ $needsGatedJson = $false
 $gatedEvent = ""
 
 try {
-    $raw = Read-HookStdin
-    if ([string]::IsNullOrWhiteSpace($raw)) {
-        exit 0
-    }
-
-    $payload = Get-HookPayload $raw
+    $payload = Read-HookPayload
     if (-not $payload) {
         exit 0
     }
@@ -29,8 +24,9 @@ try {
         "subagentStart" { $needsGatedJson = $true; $gatedEvent = $event }
     }
 
-    $projectRoot = Get-ProjectRootFromPayload $payload
+    $projectRoot = Resolve-ProjectRoot $payload
     if (-not $projectRoot) {
+        Write-HookError "log-resource-usage: could not resolve project root"
         exit 0
     }
 
@@ -75,19 +71,6 @@ try {
         } catch {
             return @()
         }
-    }
-
-    function Read-ActiveLedger([string]$Path) {
-        if (-not (Test-Path -LiteralPath $Path)) { return $null }
-        try {
-            return Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json
-        } catch {
-            return $null
-        }
-    }
-
-    function Write-ActiveLedger([string]$Path, [hashtable]$Data) {
-        ($Data | ConvertTo-Json -Depth 12) | Set-Content -LiteralPath $Path -Encoding UTF8
     }
 
     function Read-ActiveLedgerObject([string]$Path, $payload, [string]$eventName) {
@@ -210,6 +193,7 @@ try {
                 agents_requested = @($agentsRequested)
                 subagents        = @()
                 hooks_configured = @(Get-HooksConfigured $projectRoot)
+                hooks_executed   = @("beforeSubmitPrompt:log-resource-usage.ps1")
                 tracking_events  = @("beforeSubmitPrompt")
             }
             $ledger = Apply-CharTokenEstimate $ledger $prompt ""
@@ -230,14 +214,6 @@ try {
                     $readPath = "$($toolInput.target_file)"
                 }
             }
-            if ([string]::IsNullOrWhiteSpace($readPath)) {
-                break
-            }
-
-            $skillName = Get-SkillNameFromPath $readPath
-            if (-not $skillName) {
-                break
-            }
 
             $ledger = Read-ActiveLedger $activePath
             if (-not $ledger) {
@@ -249,15 +225,24 @@ try {
                     skills_payload  = @()
                     skills_read     = @()
                     subagents       = @()
+                    hooks_executed  = @()
                     tracking_events = @()
                 }
             }
 
-            $skillsRead = [System.Collections.Generic.List[string]]::new()
-            foreach ($s in @($ledger.skills_read)) { Add-Unique $skillsRead $s }
-            Add-Unique $skillsRead $skillName
-            $ledger.skills_read = @($skillsRead)
-            Append-TrackingEvent $ledger "preToolUse:skill_read"
+            $ledger = Add-HookExecutedEntry $ledger "preToolUse" "log-resource-usage.ps1"
+
+            if (-not [string]::IsNullOrWhiteSpace($readPath)) {
+                $skillName = Get-SkillNameFromPath $readPath
+                if ($skillName) {
+                    $skillsRead = [System.Collections.Generic.List[string]]::new()
+                    foreach ($s in @($ledger.skills_read)) { Add-Unique $skillsRead $s }
+                    Add-Unique $skillsRead $skillName
+                    $ledger.skills_read = @($skillsRead)
+                    Append-TrackingEvent $ledger "preToolUse:skill_read"
+                }
+            }
+
             $ledger.ts = (Get-Date).ToString("o")
             Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
         }
@@ -289,6 +274,7 @@ try {
             $subagents.Add([PSCustomObject]$entry) | Out-Null
             $ledger.subagents = @($subagents)
             $ledger = Update-LedgerModelAndTokens $ledger $payload "subagentStart"
+            $ledger = Add-HookExecutedEntry $ledger "subagentStart" "log-resource-usage.ps1"
             Append-TrackingEvent $ledger "subagentStart"
             $ledger.ts = (Get-Date).ToString("o")
             Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
@@ -330,6 +316,7 @@ try {
             }
             $ledger.subagents = @($updated)
             $ledger = Update-LedgerModelAndTokens $ledger $payload "subagentStop"
+            $ledger = Add-HookExecutedEntry $ledger "subagentStop" "log-resource-usage.ps1"
             Append-TrackingEvent $ledger "subagentStop"
             $ledger.ts = (Get-Date).ToString("o")
             Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
@@ -337,6 +324,7 @@ try {
 
         "preCompact" {
             $ledger = Read-ActiveLedgerObject $activePath $payload "preCompact"
+            $ledger = Add-HookExecutedEntry $ledger "preCompact" "log-resource-usage.ps1"
             Append-TrackingEvent $ledger "preCompact"
             $ledger.ts = (Get-Date).ToString("o")
             Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
@@ -358,6 +346,7 @@ try {
             }
 
             Append-TrackingEvent $ledger "afterAgentResponse"
+            $ledger = Add-HookExecutedEntry $ledger "afterAgentResponse" "log-resource-usage.ps1"
             $ledger.ts = (Get-Date).ToString("o")
             Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
         }
@@ -387,6 +376,7 @@ try {
                 agents_requested = @($ledger.agents_requested)
                 subagents        = @($ledger.subagents)
                 hooks_configured = @($ledger.hooks_configured)
+                hooks_executed   = @($ledger.hooks_executed)
                 tracking_events  = @($ledger.tracking_events)
             }
 
@@ -397,6 +387,7 @@ try {
             $latestPath = Join-Path $ledgerDir "latest.json"
             ($summary | ConvertTo-Json -Depth 12) | Set-Content -LiteralPath $latestPath -Encoding UTF8
             Append-TrackingEvent $ledger "stop"
+            $ledger = Add-HookExecutedEntry $ledger "stop" "log-resource-usage.ps1"
             $ledger.ts = (Get-Date).ToString("o")
             Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
         }

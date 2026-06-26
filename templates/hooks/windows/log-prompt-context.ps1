@@ -4,17 +4,21 @@
 . (Join-Path $PSScriptRoot "hook-common.ps1")
 
 $parseError = $null
+$payload = $null
 try {
-    $raw = Read-HookStdin
-    if ([string]::IsNullOrWhiteSpace($raw)) {
+    $stdinBytes = Read-HookStdinBytes
+    if (-not $stdinBytes -or $stdinBytes.Length -eq 0) {
         Write-PromptAllow
         exit 0
     }
 
-    $payload = Get-HookPayload $raw
+    $payload = Get-HookPayloadFromBytes $stdinBytes
     if (-not $payload) {
         try {
-            $null = $raw | ConvertFrom-Json
+            $fallbackText = (Get-HookStdinTextCandidates $stdinBytes | Select-Object -First 1)
+            if (-not [string]::IsNullOrWhiteSpace($fallbackText)) {
+                $null = $fallbackText | ConvertFrom-Json
+            }
         } catch {
             $parseError = $_.Exception.Message
         }
@@ -25,12 +29,9 @@ try {
         exit 0
     }
 
-    $projectRoot = Get-ProjectRootFromPayload $payload
+    $projectRoot = Resolve-ProjectRoot $payload
     if (-not $projectRoot) {
-        $cwdRoot = & git rev-parse --show-toplevel 2>$null
-        if ($cwdRoot) { $projectRoot = $cwdRoot }
-    }
-    if (-not $projectRoot) {
+        Write-HookError "log-prompt-context: could not resolve project root"
         Write-PromptAllow
         exit 0
     }
@@ -113,6 +114,7 @@ try {
 } catch {
     Write-HookError $_
 } finally {
+    Register-HookExecution -Payload $payload -ScriptFileName (Split-Path -Leaf $PSCommandPath)
     Write-PromptAllow
 }
 

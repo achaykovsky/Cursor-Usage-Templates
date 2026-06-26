@@ -2,6 +2,7 @@
 
 . (Join-Path $PSScriptRoot "hook-common.ps1")
 
+$payload = $null
 try {
     $raw = Read-HookStdin
     if ([string]::IsNullOrWhiteSpace($raw)) {
@@ -15,6 +16,8 @@ try {
 } catch {
     Write-HookError $_
     Write-ShellAllow
+} finally {
+    Register-HookExecution -Payload $payload -ScriptFileName (Split-Path -Leaf $PSCommandPath)
 }
 
 exit 0

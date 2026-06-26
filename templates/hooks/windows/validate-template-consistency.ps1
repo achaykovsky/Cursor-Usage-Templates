@@ -5,6 +5,7 @@
 . (Join-Path $PSScriptRoot "hook-common.ps1")
 
 $hookEvent = ""
+$payload = $null
 try {
     $raw = Read-HookStdin
     if ([string]::IsNullOrWhiteSpace($raw)) {
@@ -76,6 +77,8 @@ try {
     if ($hookEvent -eq "beforeSubmitPrompt") {
         Write-PromptAllow
     }
+} finally {
+    Register-HookExecution -Payload $payload -ScriptFileName (Split-Path -Leaf $PSCommandPath)
 }
 
 exit 0

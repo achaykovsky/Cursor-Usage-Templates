@@ -2,9 +2,10 @@
 # Input (stdin): JSON with content, file_path, hook_event_name
 # Output (stdout): single JSON line with permission (allow/deny); optional content (redacted).
 
-. (Join-Path $PSScriptRoot "hook-common.ps1")
-
+$payload = $null
 try {
+    . (Join-Path $PSScriptRoot "hook-common.ps1")
+
     $raw = Read-HookStdin
     if ([string]::IsNullOrWhiteSpace($raw)) {
         Write-ReadAllow
@@ -13,13 +14,9 @@ try {
 
     $payload = Get-HookPayload $raw
     $root = Get-ProjectRootFromPayload $payload
-    $redacted = Invoke-RedactReadPayload -Raw $raw -ProjectRoot $root
-    if ($redacted) {
-        if ($redacted.content) {
-            Write-ReadAllowWithContent "$($redacted.content)"
-        } else {
-            Write-ReadAllow
-        }
+    $redactedJson = Invoke-RedactReadPayloadJson -Raw $raw -ProjectRoot $root
+    if ($redactedJson) {
+        [Console]::Out.WriteLine($redactedJson)
         exit 0
     }
 
@@ -46,8 +43,14 @@ try {
         Write-ReadAllow
     }
 } catch {
-    Write-HookError $_
-    Write-ReadAllow
+    if (Get-Command Write-HookError -ErrorAction SilentlyContinue) {
+        Write-HookError $_
+    }
+    [Console]::Out.WriteLine('{"permission":"allow"}')
+} finally {
+    if (Get-Command Register-HookExecution -ErrorAction SilentlyContinue) {
+        Register-HookExecution -Payload $payload -ScriptFileName (Split-Path -Leaf $PSCommandPath)
+    }
 }
 
 exit 0
