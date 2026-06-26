@@ -36,9 +36,7 @@ try {
         exit 0
     }
 
-    $logDir = Join-Path (Join-Path $projectRoot ".cursor") "logs"
-    $null = New-Item -ItemType Directory -Path $logDir -Force -ErrorAction SilentlyContinue
-    $logFile = Join-Path $logDir ("cursor-prompt-context-{0:yyyy-MM-dd}.jsonl" -f (Get-Date))
+    $logFile = Get-CursorLogFilePath $projectRoot "cursor-prompt-context"
 
     $prompt = Get-FirstString $payload @(
         "prompt",
