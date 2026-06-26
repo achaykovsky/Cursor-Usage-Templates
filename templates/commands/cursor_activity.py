@@ -268,6 +268,21 @@ def format_generation_summary(gen_id: str, events: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
+def resolve_activity_log_files(log_dir: Path, date: str | None = None) -> list[Path]:
+    """Return activity JSONL paths under date folders (with legacy flat-file fallback)."""
+    if date:
+        safe_date = validate_log_date(date)
+        candidates = [
+            log_dir / safe_date / "cursor-activity.jsonl",
+            log_dir / f"cursor-activity-{safe_date}.jsonl",
+        ]
+        return [path for path in candidates if path.is_file()]
+
+    dated = sorted(log_dir.glob("*/cursor-activity.jsonl"))
+    legacy = sorted(log_dir.glob("cursor-activity-*.jsonl"))
+    return dated + legacy
+
+
 def query_logs(
     project_root: Path,
     date: str | None = None,
@@ -282,11 +297,7 @@ def query_logs(
         },
     )
     log_dir = project_root / ".cursor" / "logs"
-    if date:
-        safe_date = validate_log_date(date)
-        log_files = [log_dir / f"cursor-activity-{safe_date}.jsonl"]
-    else:
-        log_files = sorted(log_dir.glob("cursor-activity-*.jsonl"))
+    log_files = resolve_activity_log_files(log_dir, date)
 
     entries: list[dict[str, Any]] = []
     for path in log_files:
