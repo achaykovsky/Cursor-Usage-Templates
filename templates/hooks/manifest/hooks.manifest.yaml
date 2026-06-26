@@ -1,0 +1,44 @@
+# Canonical hook wiring — edit here; run generate_hooks_json.py to refresh generated/.
+version: 1
+hooks:
+  beforeSubmitPrompt:
+    - script: log-resource-usage
+      matcher: UserPromptSubmit
+    - script: log-prompt-context
+      matcher: UserPromptSubmit
+    - script: validate-template-consistency
+      matcher: UserPromptSubmit
+  beforeShellExecution:
+    - script: log-cursor-activity
+    - script: validate-git-commands
+    - script: validate-pre-push
+    - script: block-destructive-shell
+    - script: validate-db-shell-operations
+  preToolUse:
+    - script: log-resource-usage
+      matcher: Read
+  subagentStart:
+    - script: log-resource-usage
+  subagentStop:
+    - script: log-resource-usage
+  beforeMCPExecution:
+    - script: validate-mcp-operations
+  beforeReadFile:
+    - script: redact-sensitive-read
+  afterFileEdit:
+    - script: log-cursor-activity
+    - script: format-after-edit
+    - script: validate-template-consistency
+    - script: sync-templates-to-local
+  stop:
+    - script: log-cursor-activity
+      matcher: Stop
+    - script: log-resource-usage
+      matcher: Stop
+    - script: suggest-commit-on-stop
+      matcher: Stop
+  preCompact:
+    - script: log-resource-usage
+  afterAgentResponse:
+    - script: log-resource-usage
+      matcher: AgentResponse
