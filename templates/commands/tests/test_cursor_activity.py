@@ -109,7 +109,8 @@ def test_query_logs_groups_by_generation(tmp_path: Path) -> None:
             "status": "completed",
         },
     ]
-    path = log_dir / "cursor-activity-2026-02-25.jsonl"
+    path = log_dir / "2026-02-25" / "cursor-activity.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(json.dumps(row) for row in lines) + "\n", encoding="utf-8")
 
     # Act
@@ -118,6 +119,38 @@ def test_query_logs_groups_by_generation(tmp_path: Path) -> None:
     assert "Generation gen1" in out
     assert "Add logging to the auth module" in out
     assert "src/auth/login.py" in out
+    assert "Status: completed" in out
+
+
+def test_query_logs_reads_legacy_flat_activity_file(tmp_path: Path) -> None:
+    """query_logs still reads pre-migration flat files under .cursor/logs/."""
+    log_dir = tmp_path / ".cursor" / "logs"
+    log_dir.mkdir(parents=True)
+    path = log_dir / "cursor-activity-2026-02-25.jsonl"
+    path.write_text(
+        "\n".join(
+            json.dumps(row)
+            for row in (
+                {
+                    "ts": "2026-02-25T20:11:35Z",
+                    "event": "beforeSubmitPrompt",
+                    "generation_id": "legacy-gen",
+                    "prompt": "legacy prompt",
+                },
+                {
+                    "ts": "2026-02-25T20:11:50Z",
+                    "event": "stop",
+                    "generation_id": "legacy-gen",
+                    "status": "completed",
+                },
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    out = ca.query_logs(tmp_path, date="2026-02-25")
+    assert "Generation legacy-gen" in out
     assert "Status: completed" in out
 
 

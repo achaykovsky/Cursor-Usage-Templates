@@ -78,7 +78,7 @@ def _run_hook(
 
 def _latest_log_line(project_root: Path) -> dict:
     """Read the most recent JSONL row — hooks append one line per beforeSubmitPrompt."""
-    log_file = project_root / ".cursor" / "logs" / f"cursor-prompt-context-{date.today():%Y-%m-%d}.jsonl"
+    log_file = project_root / ".cursor" / "logs" / f"{date.today():%Y-%m-%d}" / "cursor-prompt-context.jsonl"
     assert log_file.is_file(), f"missing log file: {log_file}"
     lines = [ln for ln in log_file.read_text(encoding="utf-8").splitlines() if ln.strip()]
     assert lines, "log file is empty"
