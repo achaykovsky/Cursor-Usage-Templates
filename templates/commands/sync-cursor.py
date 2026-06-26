@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-"""Sync Cursor config between project .cursor/, templates/, and ~/.cursor/.
+"""Sync Cursor config from templates/ into project .cursor/ and ~/.cursor/.
 
 Modes:
   TemplatesToLocal (default) — templates/* → project .cursor/
   TemplatesToGlobal       — templates/* → ~/.cursor/ (user global)
-  ToGlobal                — project .cursor/ → ~/.cursor/
   FromGlobal              — ~/.cursor/ → project .cursor/
 
-Copies agents, rules, hooks, skills, commands, and routing catalogs (USAGE.md, RULES.md, SKILLS.md, HOOKS_USAGE.md, etc.).
+templates/ is the only authoring source. Nothing is ever copied *from* project .cursor/.
+FromGlobal reads ~/.cursor/ (populated via TemplatesToGlobal) into other projects.
+
+Copies agents, rules, hooks, skills, commands (global only), and routing catalogs.
 Does not copy prompts, tests, logs, CI, cache, or other repo-only paths.
-Hook scripts are organized under templates/hooks/windows/ (*.ps1) and templates/hooks/unix/ (*.sh).
-Installed .cursor/hooks/scripts/ is always flat; only scripts for the active OS variant are copied.
-ToGlobal/FromGlobal copy hooks.json plus only *.ps1 (Windows) or *.sh (Unix) matching --hooks-variant auto.
+Hook scripts live under templates/hooks/windows/ (*.ps1) and templates/hooks/unix/ (*.sh).
+Installed .cursor/hooks/scripts/ is flat; only scripts for the active OS variant are copied.
+FromGlobal copies hooks.json plus only *.ps1 (Windows) or *.sh (Unix) matching --hooks-variant auto.
 """
 
 from __future__ import annotations
@@ -122,18 +124,45 @@ def iter_template_hook_scripts(templates_hooks: Path, variant: str) -> list[Path
     return []
 
 
-def resolve_agents_source(project_root: Path, global_cursor: Path) -> Path | None:
+def resolve_agents_source(project_root: Path) -> Path | None:
+    """Return templates/agents/subagents when it contains agent *.md files."""
     logger.info("resolve_agents_source_enter", extra={"project_root": str(project_root)})
     templates_subagents = project_root / "templates" / "agents" / "subagents"
     if templates_subagents.is_dir() and any(templates_subagents.glob("*.md")):
         logger.info("resolve_agents_source_exit", extra={"source": "templates_subagents"})
         return templates_subagents
-    agents_global = global_cursor / "agents"
-    if agents_global.is_dir() and any(agents_global.glob("*.md")):
-        logger.info("resolve_agents_source_exit", extra={"source": "global_agents"})
-        return agents_global
     logger.info("resolve_agents_source_exit", extra={"source": None})
     return None
+
+
+def infer_components_for_template_path(project_root: Path, file_path: Path) -> frozenset[str] | None:
+    """Map an edited path under templates/ to sync components, or None when no .cursor/ update applies."""
+    try:
+        rel = file_path.resolve().relative_to(project_root.resolve())
+    except ValueError:
+        parts = file_path.as_posix().split("templates/", 1)
+        if len(parts) < 2:
+            return None
+        rel = Path("templates") / parts[1]
+
+    rel_posix = rel.as_posix().replace("\\", "/")
+    if not rel_posix.startswith("templates/"):
+        return None
+
+    rest = rel_posix.removeprefix("templates/")
+    if rest.startswith("agents/"):
+        return frozenset({"agents"})
+    if rest.startswith("rules/"):
+        return frozenset({"rules"})
+    if rest.startswith("hooks/"):
+        return frozenset({"hooks"})
+    if rest.startswith("skills/"):
+        return frozenset({"skills"})
+    if rest in CATALOG_SYNC_PATHS:
+        return frozenset({"catalogs"})
+    if rest.startswith(("commands/", "prompts/", "mcp/")):
+        return None
+    return ALL_SYNC_COMPONENTS
 
 
 def sync_agents_from_source(source_dir: Path, dest_cursor: Path) -> int:
@@ -184,7 +213,7 @@ def sync_hooks_tree(
 ) -> int:
     """Copy hooks.json and only hook scripts for the resolved OS (ps1 or sh).
 
-    For ToGlobal/FromGlobal: if the source has no scripts matching this OS (e.g. global was
+    For FromGlobal: if the source has no scripts matching this OS (e.g. global was
     populated on another OS), fall back to templates/hooks/windows|unix/ when project_root is set.
     When falling back to template scripts, hooks.json is taken from the same templates variant
     so commands stay consistent. If hooks.json is missing on the source and we are not using
@@ -360,7 +389,7 @@ def sync_catalogs_from_templates(templates_root: Path, dest_cursor: Path) -> int
 
 
 def sync_catalogs_tree(source_cursor: Path, dest_cursor: Path) -> int:
-    """Copy routing catalogs between .cursor/ trees (ToGlobal / FromGlobal)."""
+    """Copy routing catalogs from ~/.cursor/ into project .cursor/ (FromGlobal)."""
     return _sync_catalog_paths(source_cursor, dest_cursor)
 
 
@@ -461,8 +490,7 @@ def sync_hooks_from_templates(
     hj = resolve_hooks_json_template(templates_hooks, hooks_variant)
     if hj is not None:
         _copy2(hj, dest_cursor / "hooks.json")
-        label = "hooks.json" if hj.name == "hooks.json" else f"hooks.json (from {hj.name})"
-        _write_sync_line(label)
+        _write_sync_line(_hooks_json_sync_label(templates_hooks, hj))
         copied += 1
 
     hook_scripts = iter_template_hook_scripts(templates_hooks, hooks_variant)
@@ -480,20 +508,17 @@ def write_global_hooks_json(
 ) -> int:
     """Install hooks.json with absolute script paths for ~/.cursor."""
     pk = platform_hooks_variant(hooks_variant)
-    if pk == "windows":
-        src = templates_hooks / "hooks.global.windows.json"
-        if not src.is_file():
-            return 0
+    src, label = resolve_global_hooks_json_template(templates_hooks, pk)
+    if src is None:
+        return 0
+    text = src.read_text(encoding="utf-8")
+    # Legacy templates may still use placeholders; generated files bake them in.
+    if "%USERPROFILE%" in text:
         home_json = str(home).replace("\\", "\\\\")
-        text = src.read_text(encoding="utf-8").replace("%USERPROFILE%", home_json)
-        label = "hooks.global.windows.json"
-    else:
-        src = templates_hooks / "hooks.global.unix.json"
-        if not src.is_file():
-            return 0
+        text = text.replace("%USERPROFILE%", home_json)
+    if "$HOME" in text:
         home_json = json.dumps(str(home).replace("\\", "/"))[1:-1]
-        text = src.read_text(encoding="utf-8").replace("$HOME", home_json)
-        label = "hooks.global.unix.json"
+        text = text.replace("$HOME", home_json)
     _ensure_dir(dest_cursor)
     _write_text(dest_cursor / "hooks.json", text)
     _write_sync_line(f"hooks.json (global absolute paths from {label})")
@@ -504,54 +529,115 @@ def sync_templates_to_cursor(
     project_root: Path,
     dest_cursor: Path,
     hooks_variant: str,
-    global_cursor: Path | None = None,
+    components: frozenset[str] | None = None,
 ) -> int:
     """Copy templates/agents, rules, hooks, skills, and routing catalogs into dest_cursor."""
+    active = components or ALL_SYNC_COMPONENTS
     logger.info(
         "sync_templates_to_cursor_enter",
-        extra={"project_root": str(project_root), "dest": str(dest_cursor), "hooks_variant": hooks_variant},
+        extra={
+            "project_root": str(project_root),
+            "dest": str(dest_cursor),
+            "hooks_variant": hooks_variant,
+            "components": sorted(active),
+        },
     )
     copied = 0
-    home_cursor = global_cursor or Path.home() / ".cursor"
     templates_root = project_root / "templates"
 
-    agents_src = resolve_agents_source(project_root, home_cursor)
-    if agents_src is not None:
-        copied += sync_agents_from_source(agents_src, dest_cursor)
+    if "agents" in active:
+        agents_src = resolve_agents_source(project_root)
+        if agents_src is not None:
+            copied += sync_agents_from_source(agents_src, dest_cursor)
 
-    copied += sync_rules_dir(templates_root, dest_cursor)
-    copied += sync_hooks_from_templates(project_root, dest_cursor, hooks_variant)
-    copied += sync_skills_tree(templates_root / "skills", dest_cursor / "skills")
-    copied += sync_catalogs_from_templates(templates_root, dest_cursor)
+    if "rules" in active:
+        copied += sync_rules_dir(templates_root, dest_cursor)
+    if "hooks" in active:
+        copied += sync_hooks_from_templates(project_root, dest_cursor, hooks_variant)
+    if "skills" in active:
+        copied += sync_skills_tree(templates_root / "skills", dest_cursor / "skills")
+    if "catalogs" in active:
+        copied += sync_catalogs_from_templates(templates_root, dest_cursor)
     logger.info("sync_templates_to_cursor_exit", extra={"files_copied": copied})
     return copied
 
 
-def sync_commands_for_project(project_root: Path, *, to_global: bool, global_cursor: Path) -> int:
-    """Sync templates/commands/ between project and ~/.cursor/commands/."""
-    src = project_root / "templates" / "commands"
-    dest = global_cursor / "commands" if to_global else project_root / "templates" / "commands"
-    if to_global:
-        return sync_commands_dir(src, dest)
-    return sync_commands_dir(global_cursor / "commands", dest)
+def sync_commands_to_global(project_root: Path, global_cursor: Path) -> int:
+    """Publish templates/commands/ to ~/.cursor/commands/ (TemplatesToGlobal only)."""
+    return sync_commands_dir(project_root / "templates" / "commands", global_cursor / "commands")
+
+
+ALL_SYNC_COMPONENTS = frozenset({"agents", "rules", "hooks", "skills", "catalogs"})
+
+
+def parse_components(value: str | None) -> frozenset[str]:
+    """Parse --components comma list; default is all template components."""
+    if not value or not value.strip():
+        return ALL_SYNC_COMPONENTS
+    parts = {p.strip().lower() for p in value.split(",") if p.strip()}
+    unknown = parts - ALL_SYNC_COMPONENTS
+    if unknown:
+        valid = ", ".join(sorted(ALL_SYNC_COMPONENTS))
+        raise ValueError(
+            f"Unknown --components: {', '.join(sorted(unknown))}. Valid: {valid}"
+        )
+    return frozenset(parts)
 
 
 def resolve_hooks_json_template(templates_hooks: Path, variant: str) -> Path | None:
-    """Return source hooks.json path under templates/hooks/ for the chosen variant."""
-    unix = templates_hooks / "hooks.unix.json"
-    win = templates_hooks / "hooks.json"
+    """Return source hooks JSON under templates/hooks/{windows|unix}/hooks.json.
+
+    Falls back to legacy generated/ and root-level JSON when OS folders lack hooks.json.
+    """
+    pk = platform_hooks_variant(variant)
+
+    def pick(platform: str) -> Path | None:
+        os_json = templates_hooks / platform / "hooks.json"
+        if os_json.is_file():
+            return os_json
+        gen_flat = templates_hooks / "generated" / f"hooks.{platform}.json"
+        if gen_flat.is_file():
+            return gen_flat
+        if platform == "windows":
+            legacy = templates_hooks / "hooks.json"
+        else:
+            legacy = templates_hooks / "hooks.unix.json"
+            if not legacy.is_file():
+                legacy = templates_hooks / "hooks.json"
+        return legacy if legacy.is_file() else None
+
     if variant == "windows":
-        return win if win.is_file() else None
+        return pick("windows")
     if variant == "unix":
-        if unix.is_file():
-            return unix
-        return win if win.is_file() else None
-    # auto
+        return pick("unix")
     if sys.platform == "win32":
-        return win if win.is_file() else None
-    if unix.is_file():
-        return unix
-    return win if win.is_file() else None
+        return pick("windows")
+    return pick("unix")
+
+
+def resolve_global_hooks_json_template(templates_hooks: Path, pk: str) -> tuple[Path | None, str]:
+    """Return (source path, label) for global hooks.json with absolute script paths."""
+    os_global = templates_hooks / pk / "hooks.global.json"
+    if os_global.is_file():
+        return os_global, f"{pk}/hooks.global.json"
+
+    gen_flat = templates_hooks / "generated" / f"hooks.global.{pk}.json"
+    if gen_flat.is_file():
+        return gen_flat, f"generated/hooks.global.{pk}.json"
+
+    legacy = templates_hooks / f"hooks.global.{pk}.json"
+    if legacy.is_file():
+        return legacy, f"hooks.global.{pk}.json"
+    return None, ""
+
+
+def _hooks_json_sync_label(templates_hooks: Path, src: Path) -> str:
+    """Human-readable sync line for hooks.json copy."""
+    try:
+        rel = src.relative_to(templates_hooks).as_posix()
+    except ValueError:
+        rel = src.name
+    return f"hooks.json (from {rel})"
 
 
 def main() -> int:
@@ -563,14 +649,27 @@ def main() -> int:
     )
     parser.add_argument(
         "--mode",
-        choices=("TemplatesToLocal", "TemplatesToGlobal", "ToGlobal", "FromGlobal"),
+        choices=("TemplatesToLocal", "TemplatesToGlobal", "FromGlobal"),
         default="TemplatesToLocal",
+    )
+    parser.add_argument(
+        "--trigger-file",
+        default="",
+        help="Edited file under templates/ (afterFileEdit hook). Infers --components; no-op when not syncable.",
     )
     parser.add_argument(
         "--hooks-variant",
         choices=("auto", "windows", "unix"),
         default="auto",
-        help="OS hook set: auto (this OS), windows (*.ps1), or unix (*.sh). Used for templates and ToGlobal/FromGlobal.",
+        help="OS hook set: auto (this OS), windows (*.ps1), or unix (*.sh). Used for templates and FromGlobal.",
+    )
+    parser.add_argument(
+        "--components",
+        default="",
+        help=(
+            "Comma-separated template components to sync: agents, rules, hooks, skills, catalogs. "
+            "Default: all. Example: --components hooks or --components hooks,rules"
+        ),
     )
     parser.add_argument("--dry-run", action="store_true", help="Print would-copy paths without writing files.")
     parser.add_argument("--verbose", action="store_true", help="Emit structured JSON logs to stderr.")
@@ -578,6 +677,12 @@ def main() -> int:
     set_sync_options(dry_run=args.dry_run, verbose=args.verbose)
     if args.verbose:
         logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+    try:
+        components = parse_components(args.components)
+    except ValueError as exc:
+        print(exc, file=sys.stderr)
+        return 2
 
     script_dir = Path(__file__).resolve().parent
     if args.project_root:
@@ -591,6 +696,16 @@ def main() -> int:
 
     copied = 0
     mode = args.mode
+    if args.trigger_file:
+        mode = "TemplatesToLocal"
+        inferred = infer_components_for_template_path(project_root, Path(args.trigger_file))
+        if inferred is None:
+            logger.info(
+                "trigger_file_skip",
+                extra={"trigger_file": args.trigger_file, "reason": "not_syncable"},
+            )
+            return 0
+        components = inferred
     logger.info(
         "main_enter",
         extra={
@@ -598,45 +713,44 @@ def main() -> int:
             "project_root": str(project_root),
             "dry_run": args.dry_run,
             "hooks_variant": args.hooks_variant,
+            "components": sorted(components),
         },
     )
 
     if mode == "TemplatesToGlobal":
         print(f"Mode: templates/ -> {global_cursor}")
         pk = platform_hooks_variant(args.hooks_variant)
-        print(f"Hooks: {pk} (from templates/hooks/{pk}/)")
-        copied += sync_templates_to_cursor(project_root, global_cursor, args.hooks_variant, global_cursor)
-        copied += sync_commands_dir(project_root / "templates" / "commands", global_cursor / "commands")
+        if "hooks" in components:
+            print(f"Hooks: {pk} (from templates/hooks/{pk}/)")
+        copied += sync_templates_to_cursor(
+            project_root, global_cursor, args.hooks_variant, components
+        )
+        if "catalogs" in components or components == ALL_SYNC_COMPONENTS:
+            copied += sync_commands_to_global(project_root, global_cursor)
         templates_hooks = project_root / "templates" / "hooks"
-        if templates_hooks.is_dir():
+        if "hooks" in components and templates_hooks.is_dir():
             copied += write_global_hooks_json(global_cursor, templates_hooks, home, args.hooks_variant)
-    elif mode == "ToGlobal":
-        print(f"Mode: project .cursor/ -> {global_cursor}")
-        print(f"Hooks: {platform_hooks_variant(args.hooks_variant)} scripts only")
-        copied += sync_agents_dir(local_cursor, global_cursor)
-        copied += sync_rules_dir(local_cursor, global_cursor)
-        copied += sync_hooks_tree(local_cursor, global_cursor, args.hooks_variant, project_root)
-        templates_hooks = project_root / "templates" / "hooks"
-        if templates_hooks.is_dir():
-            copied += write_global_hooks_json(global_cursor, templates_hooks, home, args.hooks_variant)
-        copied += sync_skills_tree(local_cursor / "skills", global_cursor / "skills")
-        copied += sync_catalogs_tree(local_cursor, global_cursor)
-        copied += sync_commands_for_project(project_root, to_global=True, global_cursor=global_cursor)
     elif mode == "FromGlobal":
         print(f"Mode: {global_cursor} -> project .cursor/")
-        print(f"Hooks: {platform_hooks_variant(args.hooks_variant)} scripts only")
-        copied += sync_agents_dir(global_cursor, local_cursor)
-        copied += sync_rules_dir(global_cursor, local_cursor)
-        copied += sync_hooks_tree(global_cursor, local_cursor, args.hooks_variant, project_root)
-        copied += sync_skills_tree(global_cursor / "skills", local_cursor / "skills")
-        copied += sync_catalogs_tree(global_cursor, local_cursor)
-        copied += sync_commands_for_project(project_root, to_global=False, global_cursor=global_cursor)
+        if "hooks" in components:
+            print(f"Hooks: {platform_hooks_variant(args.hooks_variant)} scripts only")
+        if "agents" in components:
+            copied += sync_agents_dir(global_cursor, local_cursor)
+        if "rules" in components:
+            copied += sync_rules_dir(global_cursor, local_cursor)
+        if "hooks" in components:
+            copied += sync_hooks_tree(global_cursor, local_cursor, args.hooks_variant, project_root)
+        if "skills" in components:
+            copied += sync_skills_tree(global_cursor / "skills", local_cursor / "skills")
+        if "catalogs" in components:
+            copied += sync_catalogs_tree(global_cursor, local_cursor)
     else:
-        print("Mode: templates/ (+ agent fallback) -> project .cursor/")
+        print("Mode: templates/ -> project .cursor/")
         pk = platform_hooks_variant(args.hooks_variant)
-        print(f"Hooks: {pk} (from templates/hooks/{pk}/)")
+        if "hooks" in components:
+            print(f"Hooks: {pk} (from templates/hooks/{pk}/)")
         copied += sync_templates_to_cursor(
-            project_root, local_cursor, args.hooks_variant, global_cursor
+            project_root, local_cursor, args.hooks_variant, components
         )
 
     print("")

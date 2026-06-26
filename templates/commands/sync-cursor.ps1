@@ -3,10 +3,11 @@
 
 param(
     [string] $ProjectRoot = "",
-    [ValidateSet("TemplatesToLocal", "TemplatesToGlobal", "ToGlobal", "FromGlobal")]
+    [ValidateSet("TemplatesToLocal", "TemplatesToGlobal", "FromGlobal")]
     [string] $Mode = "TemplatesToLocal",
     [ValidateSet("auto", "windows", "unix")]
-    [string] $HooksVariant = "auto"
+    [string] $HooksVariant = "auto",
+    [string] $Components = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -38,6 +39,9 @@ if (-not (Test-Path $script)) {
 }
 
 $pyArgs = @($script, "--mode", $Mode, "--hooks-variant", $HooksVariant)
+if ($Components) {
+    $pyArgs += @("--components", $Components)
+}
 if ($ProjectRoot) {
     $pyArgs += @("--project-root", $ProjectRoot)
 }
