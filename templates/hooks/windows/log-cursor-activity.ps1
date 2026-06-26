@@ -20,9 +20,7 @@ try {
         exit 0
     }
 
-    $logDir = Join-Path (Join-Path $projectRoot ".cursor") "logs"
-    $null = New-Item -ItemType Directory -Path $logDir -Force
-    $logFile = Join-Path $logDir ("cursor-activity-{0:yyyy-MM-dd}.jsonl" -f (Get-Date))
+    $logFile = Get-CursorLogFilePath $projectRoot "cursor-activity"
 
     $line = $null
     $py = Get-PythonExecutable

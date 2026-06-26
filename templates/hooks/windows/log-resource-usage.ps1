@@ -1,6 +1,6 @@
 # Resource usage ledger: rules, skills, subagents, hooks.
 # Writes .cursor/logs/resource-ledger/active.json during a generation;
-# on stop, appends summary to cursor-resources-YYYY-MM-DD.jsonl.
+# on stop, appends summary to logs/YYYY-MM-DD/cursor-resources.jsonl.
 
 . (Join-Path $PSScriptRoot "hook-common.ps1")
 
@@ -32,8 +32,6 @@ try {
 
     $ledgerDir = Get-ResourceLedgerDir $projectRoot
     $activePath = Get-ResourceActiveLedgerPath $projectRoot
-    $logDir = Join-Path (Join-Path $projectRoot ".cursor") "logs"
-    $null = New-Item -ItemType Directory -Path $logDir -Force
 
     function Get-SkillNameFromPath([string]$Path) {
         if ([string]::IsNullOrWhiteSpace($Path)) { return $null }
@@ -380,7 +378,7 @@ try {
                 tracking_events  = @($ledger.tracking_events)
             }
 
-            $resourcesLog = Join-Path $logDir ("cursor-resources-{0:yyyy-MM-dd}.jsonl" -f (Get-Date))
+            $resourcesLog = Get-CursorLogFilePath $projectRoot "cursor-resources"
             $line = $summary | ConvertTo-Json -Compress -Depth 12
             Add-Content -Path $resourcesLog -Value $line -Encoding UTF8
 
