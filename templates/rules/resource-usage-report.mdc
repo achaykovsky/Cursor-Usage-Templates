@@ -24,7 +24,7 @@ Use this structure (omit empty rows; do not invent entries):
 | Rules | security.mdc, token-efficiency.mdc | ledger or context |
 | Skills | audit-codebase-cleanup (matched), review-pull-request (read) | ledger |
 | Agents | DOCS — "add test comments", BACKEND_PYTHON — "review pytest style" | ledger or Task tool |
-| Hooks | beforeSubmitPrompt:log-resource-usage.ps1, stop:log-resource-usage.ps1 | ledger only |
+| Hooks (executed) | beforeSubmitPrompt:log-resource-usage.ps1, stop:log-resource-usage.ps1 | ledger only |
 
 ---
 ```
@@ -41,7 +41,7 @@ Then continue with the normal answer after the `---` divider.
   - Format: comma-separated `` `name` (matched) ``, `` `name` (read) ``, or `` `name` (matched, read) `` when both apply.
   - When the user asks for code review, cleanup, duplication, dead code, security review, or architecture review, cross-check that expected skills appear in `skills_matched` or `skills_read`; if matched but not read, **read** the relevant `SKILL.md` before executing (see `ai-guardrails.mdc`).
 - **Agents / subagents**: Prefer `subagents` from the ledger. List **every** spawned subagent as `INVOKE — "task summary"` (use `type` and `task` from the ledger). Also cross-check `agents_requested`: each invoke name there must have a matching spawned subagent before you finish the turn (see `ai-guardrails.mdc`). Self-report only subagents you spawned via the Task tool this turn when the ledger is unavailable.
-- **Hooks**: Prefer `hooks_configured` from the ledger. List **every** hook entry verbatim (`hookEvent:script.ps1`). Do not guess hook names. If the ledger is unavailable, write `Hooks | (unknown) | not observable to agent`.
+- **Hooks (executed)**: Prefer `hooks_executed` from the ledger. List **every** entry verbatim (`hookEvent:script.ps1` or `.sh`). These are hooks that actually ran this generation — not the full manifest. Do not list `hooks_configured` in the agent-facing table (that field is the static wiring snapshot). If `hooks_executed` is missing or empty but the ledger exists, fall back to `tracking_events` only when entries use the `event:script` format. If the ledger is unavailable, write `Hooks (executed) | (unknown) | not observable to agent`.
 - **Source column**: `ledger` when taken from `active.json`; `context` / `Read on SKILL.md` / `Task tool` when self-reported.
 
 ## Enumeration (mandatory)

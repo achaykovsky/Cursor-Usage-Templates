@@ -1,6 +1,6 @@
 # Rules Catalog
 
-Rules sync to `.cursor/rules/`. They load **automatically** when you edit files matching `globs`, or always when `alwaysApply: true`. You do not invoke rules in chat.
+Rules sync to `.cursor/rules/` from `templates/rules/`. They load **automatically** when you edit files matching `globs`, or always when `alwaysApply: true`. You do not invoke rules in chat.
 
 **Precedence:** security/safety → scoped rules (this doc) → skills → agents. See [USAGE.md](../USAGE.md).
 
@@ -31,6 +31,7 @@ Rules sync to `.cursor/rules/`. They load **automatically** when you edit files 
 | `nosql-database.mdc` | models, mongo, dynamodb paths | Access patterns |
 | `api-contract.mdc` | api, openapi, router paths | Status codes, versioning |
 | `architecture.mdc` | `**/*.{py,go,ts,tsx,js,jsx,vue}` | Layers, coupling, ADRs |
+| `clean-code.mdc` | code extensions | Naming, SRP, DRY, readability, YAGNI |
 | `code-review.mdc` | code extensions | Review quality bar |
 | `testing.mdc` | test file patterns | pytest, AAA, coverage, portable Code Runner + CLI entry |
 | `documentation.mdc` | `**/*.md`, docs | README, API docs, ADR shape |
@@ -43,8 +44,8 @@ Rules sync to `.cursor/rules/`. They load **automatically** when you edit files 
 
 ## Overlap notes (efficient routing)
 
-- **Python API file** → `python-backend` + `architecture` + `performance` + always-applied.
-- **TSX component** → `frontend` + `architecture` + `performance` + always-applied.
+- **Python API file** → `python-backend` + `architecture` + `clean-code` + `performance` + always-applied.
+- **TSX component** → `frontend` + `architecture` + `clean-code` + `performance` + always-applied.
 - **OpenAPI / router** → `api-contract` + language rule for implementation files.
 - **Editing a skill** → `skills-consistency` only (plus always-applied).
 

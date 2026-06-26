@@ -13,4 +13,6 @@ alwaysApply: false
 
 **Contracts over defaults**: For API behavior, prefer explicit project contract/policy over framework defaults.
 
+**Authoring path**: Edit `templates/skills/**/SKILL.md`; sync (or `sync-templates-to-local` hook) copies to `.cursor/skills/`.
+
 **No contradictory examples**: Do not include snippets that violate security/rule guidance (e.g., hardcoded secrets, unsafe defaults).
