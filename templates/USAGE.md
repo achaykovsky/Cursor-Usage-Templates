@@ -4,12 +4,14 @@
 
 ## Initialize
 
+**Source of truth:** `templates/` only. Never edit project `.cursor/` as authoring input — it is sync output.
+
 | Scenario | Command |
 |----------|---------|
 | **Templates → global** `~/.cursor/` | `python templates/commands/sync-cursor.py --mode TemplatesToGlobal` |
 | **Global → project** | `python <path>/templates/commands/sync-cursor.py --mode FromGlobal --project-root <project>` |
 | Refresh project from **templates** | `python templates/commands/sync-cursor.py` |
-| Project `.cursor/` → global | `python templates/commands/sync-cursor.py --mode ToGlobal` |
+| **Auto-try in this repo** | Edit `templates/**` — `sync-templates-to-local` hook updates `.cursor/` on save |
 
 | Doc | When to open |
 |-----|----------------|
@@ -111,13 +113,15 @@ Paste prompts when you prefer in-chat reasoning:
 
 ## Template repo maintenance
 
-Source lives under `templates/` in **Cursor-Usage-Templates**. Edit there, then:
+Source lives under `templates/` in **Cursor-Usage-Templates** (single source of truth). Edit there, then:
 
-1. `python templates/commands/sync-cursor.py --mode TemplatesToGlobal` — update `~/.cursor/`
-2. `python templates/commands/sync-cursor.py` — refresh this repo’s `.cursor/` (optional)
-3. In other projects: `FromGlobal` to pull global into `project/.cursor/`
+1. `python templates/commands/sync-cursor.py --mode TemplatesToGlobal` — publish to `~/.cursor/`
+2. `python templates/commands/sync-cursor.py` — refresh this repo’s `.cursor/` from templates (also automatic on `templates/` edits via hook)
+3. In other projects: `FromGlobal --project-root <project>` — pull global into `project/.cursor/`
 
-See `templates/README.md` in the Cursor-Usage-Templates repo.
+Edit only under `templates/` — never publish from `project/.cursor/`.
+
+See `templates/README.md` and `templates/commands/README.md` in the Cursor-Usage-Templates repo.
 
 ## Note
 Codex will review your results for double-check.
