@@ -1,6 +1,6 @@
 # Templates (source)
 
-**Authoring root** for Cursor config. Everything here syncs into `.cursor/` on projects and into `~/.cursor/` for global use.
+**Authoring root** for Cursor config. **Edit only here** — project `.cursor/` is generated output, not a source to publish from.
 
 **Start:** [USAGE.md](USAGE.md) — routing hub (mirrors `.cursor/USAGE.md` after sync).
 
@@ -12,9 +12,9 @@
 | [agents/subagents/*.md](agents/subagents/) | `.cursor/agents/` |
 | [rules/*.mdc](rules/) + [rules/RULES.md](rules/RULES.md) | `.cursor/rules/` |
 | [skills/**/SKILL.md](skills/) + [skills/SKILLS.md](skills/SKILLS.md) | `.cursor/skills/` |
-| [hooks/](hooks/) + [hooks/HOOKS_USAGE.md](hooks/HOOKS_USAGE.md) | `.cursor/hooks/`, `.cursor/hooks.json` |
-| [prompts/*.md](prompts/) | `.cursor/prompts/` |
-| [commands/sync-cursor.py](commands/sync-cursor.py) | *(runs sync; not copied)* |
+| [hooks/](hooks/) + [hooks/HOOKS_USAGE.md](hooks/HOOKS_USAGE.md) | `.cursor/hooks/`, `.cursor/hooks.json`, `.cursor/hooks/policy/` |
+| [prompts/*.md](prompts/) | *(repo-only — not synced)* |
+| [commands/](commands/) | `~/.cursor/commands/` via `TemplatesToGlobal` only |
 
 Base instruction panels (manual copy to Cursor settings): `workspace.md`, `project.md`, `user.md`.
 
@@ -22,8 +22,8 @@ Base instruction panels (manual copy to Cursor settings): `workspace.md`, `proje
 
 ```text
 templates/  ──TemplatesToGlobal──►  ~/.cursor/  ──FromGlobal──►  project/.cursor/
-     │                                      ▲
-     └── TemplatesToLocal ──► project/.cursor/ ──ToGlobal ──────┘
+     │
+     └── TemplatesToLocal (+ afterFileEdit hook) ──► project/.cursor/
 ```
 
 ### 1. Templates → global (once, from this repo)
@@ -32,7 +32,7 @@ templates/  ──TemplatesToGlobal──►  ~/.cursor/  ──FromGlobal──
 python templates/commands/sync-cursor.py --mode TemplatesToGlobal
 ```
 
-Pushes agents, rules, hooks, skills, **USAGE.md**, catalogs, and prompts to `%USERPROFILE%\.cursor\` (Windows) or `~/.cursor/`.
+Pushes agents, rules, hooks, skills, routing catalogs (`USAGE.md`, `RULES.md`, `SKILLS.md`, `HOOKS_USAGE.md`), and `commands/` to `%USERPROFILE%\.cursor\` (Windows) or `~/.cursor/`. Does **not** copy `prompts/`, tests, logs, or cache.
 
 ### 2. Global → any project
 
@@ -43,19 +43,13 @@ python /path/to/Cursor-Usage-Templates/templates/commands/sync-cursor.py \
 
 Creates `your-project/.cursor/` including [`USAGE.md`](USAGE.md) — open that in the project after sync.
 
-### 3. Templates → one project (skip global)
+### 3. Templates → one project (this repo or direct refresh)
 
 ```bash
 python templates/commands/sync-cursor.py
 # default: TemplatesToLocal → project/.cursor/
 ```
 
-### Publish project customizations to global
-
-After editing `project/.cursor/`:
-
-```bash
-python templates/commands/sync-cursor.py --mode ToGlobal
-```
+In **this repo**, `afterFileEdit` runs `sync-templates-to-local` so template edits land in `.cursor/` immediately for trying.
 
 See [commands/README.md](commands/README.md) for OS prerequisites and hook variants.
