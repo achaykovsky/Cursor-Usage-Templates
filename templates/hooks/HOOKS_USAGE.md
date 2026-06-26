@@ -132,8 +132,15 @@ Hooks enforce; skills guide agent reasoning. See [USAGE.md](../USAGE.md).
 
 ## Logs
 
-- Activity: `.cursor/logs/cursor-activity-YYYY-MM-DD.jsonl`
-- Resource ledger: `.cursor/logs/resource-ledger/active.json` (rules/`skills_matched`/`skills_read`/spawned subagents/`hooks_executed` this generation; `hooks_configured` is the static manifest snapshot; archived summaries in `cursor-resources-*.jsonl`). Writes use an exclusive lock + atomic replace (`active.json.lock`, temp file) to avoid lost updates when multiple hook events fire in one generation.
+Per-day folders under `.cursor/logs/YYYY-MM-DD/`:
+
+- Activity: `cursor-activity.jsonl`
+- Prompt context: `cursor-prompt-context.jsonl`
+- Resource summaries (on stop): `cursor-resources.jsonl`
+
+Resource ledger (in-flight generation): `.cursor/logs/resource-ledger/active.json` (rules/`skills_matched`/`skills_read`/spawned subagents/`hooks_executed` this generation; `hooks_configured` is the static manifest snapshot). Writes use an exclusive lock + atomic replace (`active.json.lock`, temp file) to avoid lost updates when multiple hook events fire in one generation.
+
+Legacy flat files (`cursor-*-YYYY-MM-DD.jsonl` directly under `.cursor/logs/`) are still read by `cursor_activity.py query` but new hook writes use date folders only.
 
 Do not commit `.cursor/logs/` if they contain prompts or secrets.
 
