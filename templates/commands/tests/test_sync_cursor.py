@@ -79,7 +79,7 @@ def test_templates_to_global_skips_pycache_in_routing(tmp_project: Path) -> None
 
 
 def test_from_global_skips_pycache_already_in_global(tmp_project: Path) -> None:
-    """FromGlobal must not pull stale __pycache__ from ~/.cursor/commands into the project."""
+    """FromGlobal copies ~/.cursor/ into project .cursor/ only — never templates/commands/."""
     routing = tmp_project / "templates" / "commands" / "routing"
     routing.mkdir()
     (routing / "__init__.py").write_text("# routing\n", encoding="utf-8")
@@ -90,12 +90,103 @@ def test_from_global_skips_pycache_already_in_global(tmp_project: Path) -> None:
     stale.mkdir()
     (stale / "stale.cpython-313.pyc").write_bytes(b"stale")
 
-    shutil.rmtree(tmp_project / "templates" / "commands", ignore_errors=True)
+    shutil.rmtree(tmp_project / ".cursor", ignore_errors=True)
     assert _run_sync(["--project-root", str(tmp_project), "--mode", "FromGlobal"]) == 0
 
-    project_routing = tmp_project / "templates" / "commands" / "routing"
-    assert (project_routing / "__init__.py").is_file()
-    assert not (project_routing / "__pycache__").exists()
+    cursor = tmp_project / ".cursor"
+    assert (cursor / "agents" / "agent_a.md").is_file()
+    assert (tmp_project / "templates" / "commands" / "routing" / "__init__.py").is_file()
+    assert not (tmp_project / "templates" / "commands" / "routing" / "__pycache__").exists()
+
+
+def test_templates_to_global_then_from_global_roundtrip(tmp_project: Path) -> None:
+    """TemplatesToGlobal then FromGlobal restores project .cursor/ from global (templates-derived)."""
+    assert _run_sync(["--project-root", str(tmp_project), "--mode", "TemplatesToGlobal"]) == 0
+    home_cursor = tmp_project / "home" / ".cursor"
+    assert (home_cursor / "agents" / "agent_a.md").is_file()
+
+    shutil.rmtree(tmp_project / ".cursor", ignore_errors=True)
+    assert _run_sync(["--project-root", str(tmp_project), "--mode", "FromGlobal"]) == 0
+
+    local = tmp_project / ".cursor"
+    assert (local / "agents" / "agent_a.md").is_file()
+    assert (local / "rules" / "rule_a.mdc").is_file()
+
+
+def test_trigger_file_syncs_matching_component_only(tmp_project: Path) -> None:
+    """--trigger-file limits TemplatesToLocal to the edited templates subtree."""
+    rule = tmp_project / "templates" / "rules" / "rule_a.mdc"
+    rule.write_text("---\ndescription: x\n---\n# rule\n", encoding="utf-8")
+    shutil.rmtree(tmp_project / ".cursor", ignore_errors=True)
+
+    assert (
+        _run_sync(
+            [
+                "--project-root",
+                str(tmp_project),
+                "--trigger-file",
+                str(rule),
+            ]
+        )
+        == 0
+    )
+    cursor = tmp_project / ".cursor"
+    assert (cursor / "rules" / "rule_a.mdc").is_file()
+    assert not (cursor / "agents").exists()
+
+
+def test_trigger_file_skips_non_syncable_templates_path(tmp_project: Path) -> None:
+    """Edits under templates/commands/ do not materialize .cursor/."""
+    cmd = tmp_project / "templates" / "commands" / "sync-cursor.py"
+    shutil.rmtree(tmp_project / ".cursor", ignore_errors=True)
+    assert (
+        _run_sync(
+            [
+                "--project-root",
+                str(tmp_project),
+                "--trigger-file",
+                str(cmd),
+            ]
+        )
+        == 0
+    )
+    assert not (tmp_project / ".cursor").exists()
+
+
+def test_templates_to_local_hooks_only_skips_agents_and_rules(tmp_project: Path) -> None:
+    """--components hooks copies hooks tree only."""
+    assert _run_sync(["--project-root", str(tmp_project), "--components", "hooks", "--hooks-variant", "windows"]) == 0
+    cursor = tmp_project / ".cursor"
+    assert (cursor / "hooks" / "scripts" / "script.ps1").is_file()
+    assert not (cursor / "agents").exists()
+    assert not (cursor / "rules").exists()
+    assert not (cursor / "skills").exists()
+
+
+def test_templates_to_local_hooks_and_rules(tmp_project: Path) -> None:
+    """--components hooks,rules syncs both bundles."""
+    assert (
+        _run_sync(
+            [
+                "--project-root",
+                str(tmp_project),
+                "--components",
+                "hooks,rules",
+                "--hooks-variant",
+                "windows",
+            ]
+        )
+        == 0
+    )
+    cursor = tmp_project / ".cursor"
+    assert (cursor / "hooks" / "scripts" / "script.ps1").is_file()
+    assert (cursor / "rules" / "rule_a.mdc").is_file()
+    assert not (cursor / "agents").exists()
+
+
+def test_invalid_components_exits_nonzero(tmp_project: Path) -> None:
+    """Unknown --components values return exit code 2."""
+    assert _run_sync(["--project-root", str(tmp_project), "--components", "hooks,invalid"]) == 2
 
 
 def test_templates_to_local_hooks_variant_unix(tmp_project: Path) -> None:
@@ -104,30 +195,6 @@ def test_templates_to_local_hooks_variant_unix(tmp_project: Path) -> None:
     assert _run_sync(["--project-root", str(tmp_project), "--hooks-variant", "unix"]) == 0
     # Assert
     assert (tmp_project / ".cursor" / "hooks" / "scripts" / "script.sh").is_file()
-
-
-def test_to_global_and_from_global_roundtrip(tmp_project: Path) -> None:
-    """ToGlobal then FromGlobal must restore local .cursor and templates/commands."""
-    # Arrange — seed local agents before pushing to global
-    local = tmp_project / ".cursor"
-    local.mkdir()
-    (local / "agents").mkdir()
-    shutil.copy(
-        tmp_project / "templates" / "agents" / "subagents" / "agent_a.md",
-        local / "agents" / "agent_a.md",
-    )
-    # Act — push local customizations to global, wipe local, pull back
-    assert _run_sync(["--project-root", str(tmp_project), "--mode", "ToGlobal"]) == 0
-    home_cursor = tmp_project / "home" / ".cursor"
-    assert (home_cursor / "agents" / "agent_a.md").is_file()
-    assert (home_cursor / "commands" / "sync-cursor.py").is_file()
-
-    shutil.rmtree(local)
-    shutil.rmtree(tmp_project / "templates" / "commands")
-    assert _run_sync(["--project-root", str(tmp_project), "--mode", "FromGlobal"]) == 0
-    # Assert
-    assert (local / "agents" / "agent_a.md").is_file()
-    assert (tmp_project / "templates" / "commands" / "sync-cursor.py").is_file()
 
 
 def test_sync_skills_prunes_stale(tmp_project: Path) -> None:
@@ -141,6 +208,19 @@ def test_sync_skills_prunes_stale(tmp_project: Path) -> None:
     # Assert
     assert not stale.exists()
     assert (tmp_project / ".cursor" / "skills" / "foo" / "SKILL.md").is_file()
+
+
+
+def test_sync_agents_never_reads_global_fallback(tmp_project: Path) -> None:
+    """Agents sync only from templates/subagents — never from ~/.cursor/agents/."""
+    global_agents = tmp_project / "home" / ".cursor" / "agents"
+    global_agents.mkdir(parents=True)
+    (global_agents / "global_only.md").write_text("# global", encoding="utf-8")
+    shutil.rmtree(tmp_project / "templates" / "agents" / "subagents", ignore_errors=True)
+
+    _run_sync(["--project-root", str(tmp_project)])
+    assert not (tmp_project / ".cursor" / "agents" / "global_only.md").exists()
+    assert not (tmp_project / ".cursor" / "agents").exists()
 
 
 def test_sync_agents_prefers_templates_subagents(tmp_project: Path) -> None:
