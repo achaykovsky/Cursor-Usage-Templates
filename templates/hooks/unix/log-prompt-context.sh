@@ -13,6 +13,8 @@ if ! command -v jq >/dev/null 2>&1; then
 fi
 
 raw=$(cat || true)
+_hook_script="$(basename "${BASH_SOURCE[0]}")"
+trap 'register_hook_execution "$raw" "$_hook_script"' EXIT
 if [[ -z "${raw//[[:space:]]/}" ]]; then
   printf '%s\n' '{"continue":true,"permission":"allow"}'
   exit 0

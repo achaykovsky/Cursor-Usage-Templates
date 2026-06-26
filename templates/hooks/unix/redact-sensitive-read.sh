@@ -7,6 +7,8 @@ set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/hook-common.sh"
 
 raw=$(cat || true)
+_hook_script="$(basename "${BASH_SOURCE[0]}")"
+trap 'register_hook_execution "$raw" "$_hook_script"' EXIT
 if [[ -z "${raw//[[:space:]]/}" ]]; then
   printf '%s\n' '{"permission":"allow"}'
   exit 0

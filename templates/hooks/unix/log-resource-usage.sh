@@ -168,6 +168,14 @@ skills_matched_from_prompt() {
   "$py" "$script" skills-match --task "$prompt" 2>/dev/null || printf '[]'
 }
 
+append_hook_executed() {
+  local ledger="$1"
+  local entry="$2"
+  echo "$ledger" | jq --arg e "$entry" '
+    .hooks_executed = ((.hooks_executed // []) + [$e] | unique | sort)
+  '
+}
+
 append_tracking_event() {
   local ledger="$1"
   local track="$2"
@@ -233,6 +241,7 @@ case "$event" in
         agents_requested: $agents_req,
         subagents: [],
         hooks_configured: $hooks,
+        hooks_executed: ["beforeSubmitPrompt:log-resource-usage.sh"],
         tracking_events: ["beforeSubmitPrompt"]
       }')
     write_active_ledger_atomic "$active_path" "$ledger"
@@ -243,29 +252,34 @@ case "$event" in
     tool_name=$(echo "$raw" | jq -r '.tool_name // empty')
     if [[ "$tool_name" == "Read" ]]; then
       read_path=$(echo "$raw" | jq -r '.tool_input.path // .tool_input.target_file // empty')
-      skill_name=$(skill_name_from_path "$read_path")
-      if [[ -n "$skill_name" ]]; then
-        if [[ -f "$active_path" ]]; then
-          ledger=$(cat "$active_path")
-        else
-          ledger=$(echo "$raw" | jq -c '{
-            ts: (now | todate),
-            generation_id: (.generation_id // ""),
-            conversation_id: (.conversation_id // ""),
-            rules: [],
-            skills_payload: [],
-            skills_read: [],
-            subagents: [],
-            tracking_events: []
-          }')
-        fi
-        ledger=$(echo "$ledger" | jq --arg s "$skill_name" '
-          .skills_read = ((.skills_read // []) + [$s] | unique) |
-          .ts = (now | todate)
-        ')
-        ledger=$(append_tracking_event "$ledger" "preToolUse:skill_read")
-        write_active_ledger_atomic "$active_path" "$ledger"
+      if [[ -f "$active_path" ]]; then
+        ledger=$(cat "$active_path")
+      else
+        ledger=$(echo "$raw" | jq -c '{
+          ts: (now | todate),
+          generation_id: (.generation_id // ""),
+          conversation_id: (.conversation_id // ""),
+          rules: [],
+          skills_payload: [],
+          skills_read: [],
+          subagents: [],
+          hooks_executed: [],
+          tracking_events: []
+        }')
       fi
+      ledger=$(append_hook_executed "$ledger" "preToolUse:log-resource-usage.sh")
+      if [[ -n "$read_path" ]]; then
+        skill_name=$(skill_name_from_path "$read_path")
+        if [[ -n "$skill_name" ]]; then
+          ledger=$(echo "$ledger" | jq --arg s "$skill_name" '
+            .skills_read = ((.skills_read // []) + [$s] | unique) |
+            .ts = (now | todate)
+          ')
+          ledger=$(append_tracking_event "$ledger" "preToolUse:skill_read")
+        fi
+      fi
+      ledger=$(echo "$ledger" | jq '.ts = (now | todate)')
+      write_active_ledger_atomic "$active_path" "$ledger"
     fi
     emit_allow "$event"
     ;;
@@ -297,6 +311,7 @@ case "$event" in
       .ts = (now | todate)
     ')
     ledger=$(append_tracking_event "$ledger" "subagentStart")
+    ledger=$(append_hook_executed "$ledger" "subagentStart:log-resource-usage.sh")
     write_active_ledger_atomic "$active_path" "$ledger"
     emit_allow "$event"
     ;;
@@ -335,6 +350,7 @@ case "$event" in
       end
       ')
     ledger=$(append_tracking_event "$ledger" "subagentStop")
+    ledger=$(append_hook_executed "$ledger" "subagentStop:log-resource-usage.sh")
     write_active_ledger_atomic "$active_path" "$ledger"
     ;;
 
@@ -371,6 +387,7 @@ case "$event" in
       .tracking_events = ((.tracking_events // []) + [$ev] | unique) |
       .ts = (now | todate)
     ')
+    ledger=$(append_hook_executed "$ledger" "${event}:log-resource-usage.sh")
     if [[ "$event" == "afterAgentResponse" ]]; then
       response=$(echo "$raw" | jq -r '[.text, .response, .content, .message] | map(select(. != null and . != "")) | .[0] // ""')
       response_chars=${#response}
@@ -427,12 +444,14 @@ case "$event" in
         agents_requested: (.agents_requested // []),
         subagents: (.subagents // []),
         hooks_configured: (.hooks_configured // []),
+        hooks_executed: (.hooks_executed // []),
         tracking_events: ((.tracking_events // []) + ["stop"] | unique)
       }')
     resources_log="${log_dir}/cursor-resources-$(date +%Y-%m-%d).jsonl"
     printf '%s\n' "$summary" >>"$resources_log"
     printf '%s\n' "$summary" | jq '.' >"${ledger_dir}/latest.json"
     ledger=$(append_tracking_event "$ledger" "stop")
+    ledger=$(append_hook_executed "$ledger" "stop:log-resource-usage.sh")
     write_active_ledger_atomic "$active_path" "$ledger"
     ;;
 

@@ -3,11 +3,11 @@
   "hooks": {
     "beforeSubmitPrompt": [
       {
-        "command": "bash .cursor/hooks/scripts/log-prompt-context.sh",
+        "command": "bash .cursor/hooks/scripts/log-resource-usage.sh",
         "matcher": "UserPromptSubmit"
       },
       {
-        "command": "bash .cursor/hooks/scripts/log-resource-usage.sh",
+        "command": "bash .cursor/hooks/scripts/log-prompt-context.sh",
         "matcher": "UserPromptSubmit"
       },
       {
@@ -67,6 +67,9 @@
       },
       {
         "command": "bash .cursor/hooks/scripts/validate-template-consistency.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/sync-templates-to-local.sh"
       }
     ],
     "stop": [

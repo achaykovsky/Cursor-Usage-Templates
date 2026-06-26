@@ -99,6 +99,55 @@ invoke_redact_text() {
   printf '%s' "$out"
 }
 
+read_active_ledger() {
+  local path="$1"
+  if [[ ! -f "$path" ]]; then
+    return 1
+  fi
+  cat "$path"
+}
+
+register_hook_execution() {
+  local raw="$1"
+  local script_file="$2"
+  local event project_root active_path ledger entry
+
+  if [[ -z "$script_file" ]] || ! command -v jq >/dev/null 2>&1; then
+    return 0
+  fi
+
+  event=$(printf '%s' "$raw" | jq -r '.hook_event_name // empty' 2>/dev/null || true)
+  if [[ -z "$event" ]]; then
+    return 0
+  fi
+
+  project_root=$(project_root_from_payload "$raw")
+  if [[ -z "$project_root" ]]; then
+    return 0
+  fi
+
+  active_path="${project_root}/.cursor/logs/resource-ledger/active.json"
+  mkdir -p "$(dirname "$active_path")"
+  entry="${event}:${script_file}"
+
+  if read_active_ledger "$active_path" >/dev/null 2>&1; then
+    ledger=$(cat "$active_path")
+  else
+    ledger=$(printf '%s' "$raw" | jq -c '{
+      ts: (now | todate),
+      generation_id: (.generation_id // ""),
+      conversation_id: (.conversation_id // ""),
+      hooks_executed: []
+    }')
+  fi
+
+  ledger=$(echo "$ledger" | jq --arg e "$entry" '
+    .hooks_executed = ((.hooks_executed // []) + [$e] | unique | sort) |
+    .ts = (now | todate)
+  ')
+  write_active_ledger_atomic "$active_path" "$ledger"
+}
+
 write_active_ledger_atomic() {
   local path="$1"
   local content="$2"

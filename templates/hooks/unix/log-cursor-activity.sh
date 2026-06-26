@@ -4,6 +4,9 @@
 
 set -euo pipefail
 
+# shellcheck source=hook-common.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/hook-common.sh"
+
 allow_shell() {
   printf '%s\n' '{"continue":true,"permission":"allow"}'
 }
@@ -39,6 +42,8 @@ find_activity_script() {
 }
 
 raw=$(cat || true)
+_hook_script="$(basename "${BASH_SOURCE[0]}")"
+trap 'register_hook_execution "$raw" "$_hook_script"' EXIT
 if [[ -z "${raw//[[:space:]]/}" ]]; then
   allow_shell
   exit 0
