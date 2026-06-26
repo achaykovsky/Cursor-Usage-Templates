@@ -1,0 +1,42 @@
+name: Hooks release
+
+on:
+  push:
+    tags:
+      - "hooks-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Verify hooks JSON is current
+        run: python templates/hooks/manifest/generate_hooks_json.py --check
+
+      - name: Build release zip bundles
+        run: |
+          VERSION="${GITHUB_REF_NAME#hooks-v}"
+          python templates/hooks/manifest/build_release_zips.py --version "$VERSION" --output-dir dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            dist/cursor-hooks-windows-v*.zip
+            dist/cursor-hooks-unix-v*.zip
+            dist/release-manifest.json
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
