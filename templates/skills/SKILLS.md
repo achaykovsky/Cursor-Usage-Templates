@@ -1,6 +1,6 @@
 # Skills Catalog
 
-Skills sync to `.cursor/skills/**/SKILL.md`. The agent **reads a skill when the task matches** its YAML `description` — you rarely need to paste skill bodies.
+Skills sync to `.cursor/skills/**/SKILL.md` from `templates/skills/**/SKILL.md`. **Author under `templates/skills/`** — the agent **reads a skill when the task matches** its YAML `description` — you rarely need to paste skill bodies.
 
 **Start:** [USAGE.md](../USAGE.md) intent table. **Multi-FE:** use `orchestrate-frontend-delivery` first.
 
