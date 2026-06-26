@@ -178,11 +178,11 @@ Prompt + CLI deliverables complete. Tests: `test_routing.py` (6 cases).
 |------|-----------|--------|
 | **P2-5** Dedup `sync_templates_to_cursor` | [x] helpers: `resolve_agents_source`, `sync_hooks_from_templates`, `_sync_catalog_paths` |
 | **P2-5** `--dry-run`, `--verbose` | [x] |
-| **P3-7** `test_sync_cursor.py` | [x] 9 tests |
+| **P3-7** `test_sync_cursor.py` | [x] 17+ tests (incl. `FromGlobal`, `--trigger-file`, no global agent fallback) |
 | **P3-7** `test_sync_mcp_policy.py` | [x] 4 tests |
 | **P3-7** Hermetic fixtures | [x] `minimal_templates/` |
 
-**Note:** `sync-cursor.py` does **not** copy `templates/prompts/` → `.cursor/prompts/` (repo-only authoring).
+**Note:** `sync-cursor.py` does **not** copy `templates/prompts/` → `.cursor/prompts/` (repo-only authoring). **`templates/` is the only sync source** — nothing is copied from project `.cursor/`. Modes: `TemplatesToLocal`, `TemplatesToGlobal`, `FromGlobal` (no `ToGlobal`).
 
 ---
 
