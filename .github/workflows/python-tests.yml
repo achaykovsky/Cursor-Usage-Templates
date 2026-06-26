@@ -35,3 +35,6 @@ jobs:
 
       - name: Run pytest
         run: poetry run pytest templates/hooks/tests templates/commands/tests -q
+
+      - name: Verify hooks JSON is current
+        run: poetry run python templates/hooks/manifest/generate_hooks_json.py --check
