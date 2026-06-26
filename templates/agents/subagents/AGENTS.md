@@ -125,7 +125,14 @@ Tie-breaks:
 
 ## SYNC
 
-Run `python templates/commands/sync-cursor.py` to copy into `.cursor/` (agents, rules, hooks, skills, **USAGE.md**, catalogs, prompts). For global: `--mode TemplatesToGlobal`. See `templates/README.md`.
+Author under `templates/agents/subagents/*.md` only. Run:
+
+```bash
+python templates/commands/sync-cursor.py              # full templates → .cursor/
+python templates/commands/sync-cursor.py --mode TemplatesToGlobal   # templates → ~/.cursor/
+```
+
+In **this repo**, `sync-templates-to-local` (`afterFileEdit`) copies agent changes into `.cursor/agents/` automatically. `templates/prompts/` stays repo-only. See `templates/README.md` and `templates/commands/README.md`.
 
 ## Note:
 Codex will review your results of the review for double-check.
