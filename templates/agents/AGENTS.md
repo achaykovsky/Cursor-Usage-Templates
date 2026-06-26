@@ -1,6 +1,6 @@
 # Agents (source tree)
 
-Subagent prompts are authored under [`subagents/`](subagents/).
+Subagent prompts are authored under [`subagents/`](subagents/). **Do not author in `.cursor/agents/`** — edit `templates/agents/subagents/*.md` and sync.
 
 | Doc | Purpose |
 |-----|---------|
