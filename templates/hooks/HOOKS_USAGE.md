@@ -19,17 +19,30 @@ beforeSubmitPrompt → … agent work … → beforeReadFile / preToolUse / befo
 
 | Event | Scripts | You may see |
 |-------|---------|-------------|
-| `beforeSubmitPrompt` | `log-prompt-context`, `log-resource-usage`, `validate-template-consistency` | Silent; logs under `.cursor/logs/` |
+| `beforeSubmitPrompt` | `log-resource-usage`, `log-prompt-context`, `validate-template-consistency` | Silent; logs under `.cursor/logs/` |
 | `beforeReadFile` | `redact-sensitive-read` | `.env`, keys redacted before model |
 | `preToolUse` (Read) | `log-resource-usage` | Silent ledger update |
 | `beforeShellExecution` | `log-cursor-activity`, `validate-git-commands`, `validate-pre-push`, `block-destructive-shell`, `validate-db-shell-operations` | **Deny** on force-push main, destructive shell, bad commit msg; tests before push |
 | `beforeMCPExecution` | `validate-mcp-operations` | **Confirm** on state-changing MCP tools |
-| `afterFileEdit` | `log-cursor-activity`, `format-after-edit`, `validate-template-consistency` | Auto-format (black/prettier/gofmt) |
+| `afterFileEdit` | `log-cursor-activity`, `format-after-edit`, `validate-template-consistency`, `sync-templates-to-local` | Auto-format; templates/ → `.cursor/` for immediate try |
 | `subagentStart` / `subagentStop` | `log-resource-usage` | Silent |
 | `preCompact` / `afterAgentResponse` | `log-resource-usage` | Silent; context/token ledger updates |
 | `stop` | `log-cursor-activity`, `log-resource-usage`, `suggest-commit-on-stop` | Commit suggestions in hooks channel |
 
-Unix variant: same scripts as `.sh` via `hooks.unix.json` when sync `--hooks-variant auto` on macOS/Linux.
+Unix variant: same scripts as `.sh` via `unix/hooks.json` when sync `--hooks-variant auto` on macOS/Linux.
+
+### Hooks-only install
+
+```bash
+# From this repo (templates)
+python templates/commands/sync-cursor.py --components hooks
+
+# From a GitHub release (tag hooks-vX.Y.Z)
+unzip cursor-hooks-unix-vX.Y.Z.zip -d .cursor/    # macOS/Linux
+Expand-Archive cursor-hooks-windows-vX.Y.Z.zip -DestinationPath .cursor   # Windows
+```
+
+Prerequisites: Windows needs `pwsh`; Unix needs `bash`, `jq`, and `python3` for policy hooks. See [`templates/commands/README.md`](../commands/README.md).
 
 ---
 
@@ -111,7 +124,7 @@ Default `default.policy.json` stays fail-open on engine errors so personal/dev m
 | Sensitive reads / output | `redact-sensitive-in-output`, `sensitive-data-handling` |
 | Session end / commits | `prepare-atomic-commit` |
 | Pre-push / deploy | `validate-pre-deploy` |
-| Template edits | `skills-consistency` rule + `validate-template-consistency` hook |
+| Template edits | `skills-consistency` rule + `validate-template-consistency` hook + `sync-templates-to-local` (templates → `.cursor/`) |
 
 Hooks enforce; skills guide agent reasoning. See [USAGE.md](../USAGE.md).
 
@@ -120,7 +133,7 @@ Hooks enforce; skills guide agent reasoning. See [USAGE.md](../USAGE.md).
 ## Logs
 
 - Activity: `.cursor/logs/cursor-activity-YYYY-MM-DD.jsonl`
-- Resource ledger: `.cursor/logs/resource-ledger/active.json` (rules/`skills_matched`/`skills_read`/spawned subagents/hooks used this turn; archived summaries in `cursor-resources-*.jsonl`). Writes use an exclusive lock + atomic replace (`active.json.lock`, temp file) to avoid lost updates when multiple hook events fire in one generation.
+- Resource ledger: `.cursor/logs/resource-ledger/active.json` (rules/`skills_matched`/`skills_read`/spawned subagents/`hooks_executed` this generation; `hooks_configured` is the static manifest snapshot; archived summaries in `cursor-resources-*.jsonl`). Writes use an exclusive lock + atomic replace (`active.json.lock`, temp file) to avoid lost updates when multiple hook events fire in one generation.
 
 Do not commit `.cursor/logs/` if they contain prompts or secrets.
 
@@ -129,4 +142,13 @@ Do not commit `.cursor/logs/` if they contain prompts or secrets.
 ## Global vs project hooks
 
 - **Project:** `.cursor/hooks.json` — relative paths; open repo root as workspace.
-- **Global:** `~/.cursor/hooks.json` — use `sync-cursor.py --mode ToGlobal` (absolute paths on Windows via `hooks.global.windows.json`).
+- **Global:** `~/.cursor/hooks.json` — use `sync-cursor.py --mode TemplatesToGlobal` (absolute paths from `{windows|unix}/hooks.global.json`).
+
+## Template → `.cursor/` auto-sync
+
+In repos with a `templates/` tree (this template repo), `sync-templates-to-local` on `afterFileEdit`:
+
+1. Detects edits under `templates/` (skips `templates/commands/` and `templates/prompts/`).
+2. Runs `sync-cursor.py --trigger-file <path>` to copy only the matching component(s) into `.cursor/`.
+
+Run `python templates/commands/sync-cursor.py` manually after clone, when hooks are off, or for a full rebuild.
