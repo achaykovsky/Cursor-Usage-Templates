@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Resource usage ledger: rules, skills, subagents, hooks.
 # Writes .cursor/logs/resource-ledger/active.json during a generation;
-# on stop, appends summary to cursor-resources-YYYY-MM-DD.jsonl.
+# on stop, appends summary to logs/YYYY-MM-DD/cursor-resources.jsonl.
 # Requires: jq
 
 set -euo pipefail
@@ -66,8 +66,7 @@ if [[ -z "$project_root" ]]; then
 fi
 
 ledger_dir="${project_root}/.cursor/logs/resource-ledger"
-log_dir="${project_root}/.cursor/logs"
-mkdir -p "$ledger_dir" "$log_dir"
+mkdir -p "$ledger_dir"
 active_path="${ledger_dir}/active.json"
 
 get_hooks_configured() {
@@ -447,7 +446,7 @@ case "$event" in
         hooks_executed: (.hooks_executed // []),
         tracking_events: ((.tracking_events // []) + ["stop"] | unique)
       }')
-    resources_log="${log_dir}/cursor-resources-$(date +%Y-%m-%d).jsonl"
+    resources_log=$(cursor_log_file_path "$project_root" "cursor-resources")
     printf '%s\n' "$summary" >>"$resources_log"
     printf '%s\n' "$summary" | jq '.' >"${ledger_dir}/latest.json"
     ledger=$(append_tracking_event "$ledger" "stop")

@@ -44,9 +44,7 @@ if [[ -z "$project_root" ]]; then
   exit 0
 fi
 
-log_dir="${project_root}/.cursor/logs"
-mkdir -p "$log_dir"
-log_file="${log_dir}/cursor-prompt-context-$(date +%Y-%m-%d).jsonl"
+log_file=$(cursor_log_file_path "$project_root" "cursor-prompt-context")
 
 prompt=$(echo "$raw" | jq -r '
   def first_str($keys):

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Log Cursor activity: structured JSONL per event type.
-# Writes to project/.cursor/logs/cursor-activity-YYYY-MM-DD.jsonl
+# Writes to project/.cursor/logs/YYYY-MM-DD/cursor-activity.jsonl
 
 set -euo pipefail
 
@@ -76,9 +76,7 @@ if [[ -z "$project_root" ]]; then
   exit 0
 fi
 
-log_dir="${project_root}/.cursor/logs"
-mkdir -p "$log_dir"
-log_file="${log_dir}/cursor-activity-$(date +%Y-%m-%d).jsonl"
+log_file=$(cursor_log_file_path "$project_root" "cursor-activity")
 
 line=""
 if py=$(find_python); then

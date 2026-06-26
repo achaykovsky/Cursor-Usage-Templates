@@ -99,6 +99,23 @@ invoke_redact_text() {
   printf '%s' "$out"
 }
 
+cursor_logs_date_dir() {
+  local project_root="$1"
+  local date_folder
+  date_folder=$(date +%Y-%m-%d)
+  local dir="${project_root}/.cursor/logs/${date_folder}"
+  mkdir -p "$dir"
+  printf '%s\n' "$dir"
+}
+
+cursor_log_file_path() {
+  local project_root="$1"
+  local log_base_name="$2"
+  local dir
+  dir=$(cursor_logs_date_dir "$project_root")
+  printf '%s\n' "${dir}/${log_base_name}.jsonl"
+}
+
 read_active_ledger() {
   local path="$1"
   if [[ ! -f "$path" ]]; then
