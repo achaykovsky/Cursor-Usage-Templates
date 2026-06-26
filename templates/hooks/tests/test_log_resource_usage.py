@@ -75,6 +75,11 @@ def _deploy_hooks(hook_project: Path, templates_root: Path) -> None:
     for name in ("hook-common.ps1", "log-resource-usage.ps1"):
         src = templates_root / "hooks" / "windows" / name
         shutil.copy2(src, scripts_dst / name)
+    hooks_json = templates_root / "hooks" / "windows" / "hooks.json"
+    if not hooks_json.is_file():
+        hooks_json = templates_root / "hooks" / "hooks.json"
+    if hooks_json.is_file():
+        shutil.copy2(hooks_json, hook_project / ".cursor" / "hooks.json")
 
 
 def _deploy_subagent_catalog(hook_project: Path, templates_root: Path) -> None:
@@ -104,6 +109,58 @@ def hook_project(tmp_path: Path) -> Path:
     _deploy_hooks(project, templates_root)
     _deploy_routing(project, templates_root)
     return project
+
+
+def test_before_submit_prompt_records_hooks_executed(hook_project: Path) -> None:
+    """beforeSubmitPrompt must seed hooks_executed with this hook's event:script entry."""
+    code, _, stderr = _run_hook(hook_project, _payload(hook_project))
+    assert code == 0, stderr
+
+    ledger = json.loads(
+        (hook_project / ".cursor" / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
+    )
+    executed = ledger.get("hooks_executed") or []
+    assert "beforeSubmitPrompt:log-resource-usage.ps1" in executed
+    configured = ledger.get("hooks_configured") or []
+    assert len(configured) > len(executed)
+
+
+def _run_hook_script(project_root: Path, script_name: str, stdin_bytes: bytes) -> tuple[int, str, str]:
+    script = project_root / ".cursor" / "hooks" / "scripts" / script_name
+    if not script.is_file():
+        pytest.skip(f"{script_name} not deployed")
+    proc = subprocess.run(
+        [_pwsh(), "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(script)],
+        input=stdin_bytes,
+        capture_output=True,
+        cwd=str(project_root),
+        timeout=30,
+    )
+    return proc.returncode, proc.stdout.decode("utf-8", errors="replace"), proc.stderr.decode(
+        "utf-8", errors="replace"
+    )
+
+
+def test_register_hook_execution_appends_from_other_scripts(hook_project: Path) -> None:
+    """Non-ledger hooks must append to hooks_executed via Register-HookExecution."""
+    templates_root = Path(__file__).resolve().parents[2]
+    scripts_dst = hook_project / ".cursor" / "hooks" / "scripts"
+    for name in ("hook-common.ps1", "log-resource-usage.ps1", "log-prompt-context.ps1"):
+        shutil.copy2(templates_root / "hooks" / "windows" / name, scripts_dst / name)
+
+    payload_bytes = _payload(hook_project)
+    code, _, stderr = _run_hook(hook_project, payload_bytes)
+    assert code == 0, stderr
+
+    code, _, stderr = _run_hook_script(hook_project, "log-prompt-context.ps1", payload_bytes)
+    assert code == 0, stderr
+
+    ledger = json.loads(
+        (hook_project / ".cursor" / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
+    )
+    executed = set(ledger.get("hooks_executed") or [])
+    assert "beforeSubmitPrompt:log-resource-usage.ps1" in executed
+    assert "beforeSubmitPrompt:log-prompt-context.ps1" in executed
 
 
 def test_before_submit_prompt_records_model_and_token_estimate(hook_project: Path) -> None:
@@ -152,6 +209,33 @@ def test_before_submit_prompt_records_skills_matched(hook_project: Path) -> None
     assert "audit-codebase-cleanup" in matched
     assert "review-pull-request" in matched
     assert "security-scan-changes" in matched
+
+
+def test_before_submit_prompt_utf8_bom_stdin(hook_project: Path) -> None:
+    """UTF-8 BOM stdin must still populate active.json (Windows Cursor hook pipe)."""
+    payload = b"\xef\xbb\xbf" + _payload(hook_project)
+    code, stdout, stderr = _run_hook(hook_project, payload)
+    assert code == 0, stderr
+    assert "allow" in stdout
+
+    ledger = json.loads(
+        (hook_project / ".cursor" / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
+    )
+    assert ledger["generation_id"] == "gen-test-1"
+    assert ledger["prompt_chars"] > 0
+
+
+def test_before_submit_prompt_utf16_le_stdin(hook_project: Path) -> None:
+    """UTF-16-LE stdin without BOM must still populate active.json."""
+    payload = _payload(hook_project).decode("utf-8").encode("utf-16-le")
+    code, _, stderr = _run_hook(hook_project, payload)
+    assert code == 0, stderr
+
+    ledger = json.loads(
+        (hook_project / ".cursor" / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
+    )
+    assert ledger["generation_id"] == "gen-test-1"
+    assert ledger["prompt_chars"] > 0
 
 
 if __name__ == "__main__":
