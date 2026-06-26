@@ -1,6 +1,8 @@
 # Cursor Usage Templates
 
-Centralized Markdown templates for Cursor instructions at multiple scopes: base templates, subagents, rules, hooks, and skills. Sync into `.cursor/` for any project.
+Centralized Markdown templates for Cursor instructions at multiple scopes: base templates, subagents, rules, hooks, and skills.
+
+**Source of truth:** edit only under `templates/`. Project `.cursor/` is a **sync output** — never publish from it. See [`templates/commands/README.md`](templates/commands/README.md).
 
 **Navigation:** Start at [`templates/USAGE.md`](templates/USAGE.md) (syncs to `.cursor/USAGE.md`). Templates index: [`templates/README.md`](templates/README.md).
 
@@ -20,28 +22,28 @@ python %USERPROFILE%\cursor\Cursor-Usage-Templates\templates\commands\sync-curso
 
 Then open **`project/.cursor/USAGE.md`**.
 
-### C. Sync templates directly into a project
+### C. Sync templates directly into a project (this repo)
 
-1. **Sync Cursor config** into your project (requires **Python 3.10+** on `PATH`):
+1. **Edit under `templates/`** — in this repo, the `sync-templates-to-local` hook (`afterFileEdit`) copies changed components into `.cursor/` automatically for trying.
+2. **Manual refresh** (first sync, hooks off, or full rebuild):
    ```bash
    python templates/commands/sync-cursor.py
    ```
-   On Windows you can also run `.\templates\commands\sync-cursor.ps1` (it calls the same script). Copies agents, rules, hooks, and skills from `templates/` to `.cursor/`. **Hooks:** default sync uses PowerShell on Windows and bash on macOS/Linux (`--hooks-variant auto`). See `templates/commands/README.md` for OS prerequisites (`pwsh`, `jq`, etc.).
-   If you run sync from a central templates repo in another project, use the global path:
+   On Windows: `.\templates\commands\sync-cursor.ps1` (same script). Copies agents, rules, hooks, skills, and routing catalogs from `templates/` to `.cursor/`. **Hooks:** default `--hooks-variant auto` (PowerShell on Windows, bash on macOS/Linux). See `templates/commands/README.md` for `pwsh`, `jq`, etc.
+3. **Other projects without a local `templates/` tree** — run from the central repo:
    `& "$env:USERPROFILE\cursor\Cursor-Usage-Templates\templates\commands\sync-cursor.ps1" -Mode FromGlobal`
-
-2. **Copy base templates** into your Cursor instructions panel:
+4. **Copy base templates** into your Cursor instructions panel:
    - `templates/workspace.md` – organization-wide rules
    - `templates/project.md` – project-specific objectives
    - `templates/user.md` – personal preferences
 
-3. **Invoke subagents** in Chat or Composer via `@agent(NAME)`:
+5. **Invoke subagents** in Chat or Composer via `@agent(NAME)`:
    ```
    @agent(REVIEWER) review this function
    @agent(PM) break down this feature into tasks
    ```
 
-4. **Replace placeholders** in templates with concrete details.
+6. **Replace placeholders** in templates with concrete details.
 
 ## What Gets Synced
 
@@ -49,12 +51,17 @@ Then open **`project/.cursor/USAGE.md`**.
 |--------|-------------|
 | `templates/agents/subagents/*.md` | `.cursor/agents/` |
 | `templates/rules/*.mdc` | `.cursor/rules/` |
-| `templates/hooks/hooks.json` or `hooks.unix.json` (see sync `--hooks-variant`) | `.cursor/hooks.json` |
+| `templates/hooks/windows/hooks.json` or `unix/hooks.json` (see sync `--hooks-variant`) | `.cursor/hooks.json` |
 | `templates/hooks/windows/*.ps1` or `templates/hooks/unix/*.sh` | `.cursor/hooks/scripts/` (flat; OS only) |
+| `templates/hooks/policy/` | `.cursor/hooks/policy/` |
 | `templates/skills/**/SKILL.md` | `.cursor/skills/**/` |
-| `templates/USAGE.md`, `rules/RULES.md`, `skills/SKILLS.md`, `hooks/HOOKS_USAGE.md`, `hooks/README.md`, `prompts/*.md` | `.cursor/` (same relative paths) |
+| `templates/USAGE.md`, `rules/RULES.md`, `skills/SKILLS.md`, `hooks/HOOKS_USAGE.md`, `hooks/README.md` | `.cursor/` (same relative paths) |
 
-See `templates/commands/README.md` for global use (submodule, symlink, `--project-root`) and OS-specific hook dependencies.
+**Not synced:** `templates/prompts/` (repo-only planning prompts), `tests/`, logs, `__pycache__`, `.pytest_cache`.
+
+See `templates/commands/README.md` for global use (submodule, symlink, `--project-root`), `--components hooks`, and OS-specific hook dependencies.
+
+**Hooks-only releases:** GitHub tags `hooks-v*` publish `cursor-hooks-windows-v*.zip` and `cursor-hooks-unix-v*.zip`. Extract into `.cursor/` or use `sync-cursor.py --components hooks`.
 
 ## Base Templates
 
@@ -151,21 +158,20 @@ templates/
 │   └── *.mdc
 ├── hooks/                   # .cursor/hooks.json + hooks/scripts/
 │   ├── HOOKS_USAGE.md
-│   ├── hooks.json
-│   ├── hooks.unix.json
-│   ├── windows/*.ps1
-│   └── unix/*.sh
+│   ├── manifest/hooks.manifest.yaml
+│   ├── windows/*.ps1, hooks.json, hooks.global.json
+│   └── unix/*.sh, hooks.json, hooks.global.json
 ├── skills/                  # .cursor/skills/
 │   ├── SKILLS.md
 │   └── **/SKILL.md
 ├── mcp/
 │   └── README.md            # recommended MCP servers and safety defaults
-└── prompts/                 # .cursor/prompts/ (planning prompts)
+└── prompts/                 # repo-only planning prompts (not synced to .cursor/)
     └── *.md
 ```
 
 ## Troubleshooting
 
-**Subagents not recognized:** Run `python templates/commands/sync-cursor.py`. Ensure files exist in `templates/agents/subagents/` or `~/.cursor/agents/` (Windows: `%USERPROFILE%\.cursor\agents\`).
+**Subagents not recognized:** Run `python templates/commands/sync-cursor.py`. Ensure agent `*.md` files exist in `templates/agents/subagents/` (not only in `.cursor/agents/`). For other projects, run `FromGlobal` after `TemplatesToGlobal` populated `~/.cursor/`.
 
 **Template conflicts:** `user.md` = global; `project.md` = project-only; `workspace.md` = org-wide.
