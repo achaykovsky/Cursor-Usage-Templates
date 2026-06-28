@@ -25,13 +25,16 @@ Then open **`project/.cursor/USAGE.md`**.
 ### C. Sync templates directly into a project (this repo)
 
 1. **Edit under `templates/`** — in this repo, the `sync-templates-to-local` hook (`afterFileEdit`) copies changed components into `.cursor/` automatically for trying.
+   
 2. **Manual refresh** (first sync, hooks off, or full rebuild):
    ```bash
    python templates/commands/sync-cursor.py
    ```
    On Windows: `.\templates\commands\sync-cursor.ps1` (same script). Copies agents, rules, hooks, skills, and routing catalogs from `templates/` to `.cursor/`. **Hooks:** default `--hooks-variant auto` (PowerShell on Windows, bash on macOS/Linux). See `templates/commands/README.md` for `pwsh`, `jq`, etc.
+   
 3. **Other projects without a local `templates/` tree** — run from the central repo:
    `& "$env:USERPROFILE\cursor\Cursor-Usage-Templates\templates\commands\sync-cursor.ps1" -Mode FromGlobal`
+   
 4. **Copy base templates** into your Cursor instructions panel:
    - `templates/workspace.md` – organization-wide rules
    - `templates/project.md` – project-specific objectives
