@@ -21,6 +21,7 @@ Configure these servers in your local Cursor MCP settings:
 
 ## Safety defaults
 
+- CLI-first token routing: see **CLI vs MCP (token routing)** in [mcp-integrations.mdc](../rules/mcp-integrations.mdc) before reaching for MCP.
 - Read-only by default.
 - State-changing calls require explicit user request/approval.
 - Never log secrets or tokens from MCP output.
