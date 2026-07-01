@@ -18,10 +18,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-logger = logging.getLogger(__name__)
-
-_ROOT = Path(__file__).resolve().parent
-_MANIFEST_SCHEMA = _ROOT / "bots" / "manifest.schema.json"
 _POLICY_REQUIRED_MODES = frozenset(
     {
         "tool_read",
@@ -61,12 +57,6 @@ def _load_json(path: Path) -> Any:
         raise ValueError(f"invalid JSON in {path}: {exc}") from exc
 
 
-def _require_mapping(data: Any, label: str) -> dict[str, Any]:
-    if not isinstance(data, dict):
-        raise ValueError(f"{label} must be a JSON object")
-    return data
-
-
 def validate_manifest(data: Any, *, path: str = "<manifest>") -> list[str]:
     """Return list of validation errors (empty if valid)."""
     errors: list[str] = []
@@ -100,6 +90,9 @@ def validate_manifest(data: Any, *, path: str = "<manifest>") -> list[str]:
         for key in ("tone", "disclosure"):
             if key not in persona:
                 errors.append(f"{path}: persona missing '{key}'")
+        sys_ref = persona.get("system_prompt_ref")
+        if sys_ref is not None and (not isinstance(sys_ref, str) or len(sys_ref) > 256):
+            errors.append(f"{path}: persona.system_prompt_ref must be string <= 256 chars")
     elif persona is not None:
         errors.append(f"{path}: persona must be an object")
 
@@ -108,6 +101,14 @@ def validate_manifest(data: Any, *, path: str = "<manifest>") -> list[str]:
         for key in ("provider", "name"):
             if key not in model:
                 errors.append(f"{path}: model missing '{key}'")
+        max_tokens = model.get("max_tokens_per_turn")
+        if max_tokens is not None and (
+            isinstance(max_tokens, bool)
+            or not isinstance(max_tokens, int)
+            or max_tokens < 1
+            or max_tokens > 128000
+        ):
+            errors.append(f"{path}: model.max_tokens_per_turn must be integer between 1 and 128000")
     elif model is not None:
         errors.append(f"{path}: model must be an object")
 
@@ -128,12 +129,20 @@ def validate_manifest(data: Any, *, path: str = "<manifest>") -> list[str]:
 
     escalation = data.get("escalation")
     if isinstance(escalation, dict):
+        enabled = escalation.get("enabled")
         if "enabled" not in escalation:
             errors.append(f"{path}: escalation missing 'enabled'")
+        elif not isinstance(enabled, bool):
+            errors.append(f"{path}: escalation.enabled must be a boolean")
+
         if "sla_minutes" not in escalation:
             errors.append(f"{path}: escalation missing 'sla_minutes'")
         elif not isinstance(escalation["sla_minutes"], int) or escalation["sla_minutes"] < 1:
             errors.append(f"{path}: escalation.sla_minutes must be positive integer")
+
+        esc_channel = escalation.get("channel")
+        if esc_channel is not None and esc_channel not in {"slack", "email", "ticket", "api"}:
+            errors.append(f"{path}: escalation.channel must be slack|email|ticket|api")
     elif escalation is not None:
         errors.append(f"{path}: escalation must be an object")
 
@@ -199,8 +208,16 @@ def validate_corpus(data: Any, *, path: str = "<corpus>") -> list[str]:
         if chunking.get("strategy") not in _VALID_CHUNK_STRATEGIES:
             errors.append(f"{path}: chunking.strategy invalid")
         max_tokens = chunking.get("max_tokens")
-        if not isinstance(max_tokens, int) or max_tokens < 64:
+        if isinstance(max_tokens, bool) or not isinstance(max_tokens, int) or max_tokens < 64:
             errors.append(f"{path}: chunking.max_tokens must be integer >= 64")
+        overlap_tokens = chunking.get("overlap_tokens")
+        if overlap_tokens is not None and (
+            isinstance(overlap_tokens, bool)
+            or not isinstance(overlap_tokens, int)
+            or overlap_tokens < 0
+            or overlap_tokens > 1024
+        ):
+            errors.append(f"{path}: chunking.overlap_tokens must be integer between 0 and 1024")
     elif chunking is not None:
         errors.append(f"{path}: chunking must be an object")
 
@@ -209,16 +226,24 @@ def validate_corpus(data: Any, *, path: str = "<corpus>") -> list[str]:
         for key in ("provider", "model", "dimensions"):
             if key not in embedding:
                 errors.append(f"{path}: embedding missing '{key}'")
+        dimensions = embedding.get("dimensions")
+        if dimensions is not None and (
+            isinstance(dimensions, bool)
+            or not isinstance(dimensions, int)
+            or dimensions < 1
+            or dimensions > 4096
+        ):
+            errors.append(f"{path}: embedding.dimensions must be integer between 1 and 4096")
     elif embedding is not None:
         errors.append(f"{path}: embedding must be an object")
 
     retrieval = data.get("retrieval")
     if isinstance(retrieval, dict):
         top_k = retrieval.get("top_k")
-        if not isinstance(top_k, int) or top_k < 1:
+        if isinstance(top_k, bool) or not isinstance(top_k, int) or top_k < 1:
             errors.append(f"{path}: retrieval.top_k must be positive integer")
         min_score = retrieval.get("min_score")
-        if not isinstance(min_score, (int, float)) or min_score < 0 or min_score > 1:
+        if isinstance(min_score, bool) or not isinstance(min_score, (int, float)) or min_score < 0 or min_score > 1:
             errors.append(f"{path}: retrieval.min_score must be 0-1")
     elif retrieval is not None:
         errors.append(f"{path}: retrieval must be an object")
@@ -239,6 +264,10 @@ def validate_golden(data: Any, *, path: str = "<golden>") -> list[str]:
     for key in ("schema_version", "corpus_id", "questions"):
         if key not in data:
             errors.append(f"{path}: missing required field '{key}'")
+
+    schema_version = data.get("schema_version")
+    if schema_version is not None and (not isinstance(schema_version, int) or schema_version < 1):
+        errors.append(f"{path}: schema_version must be integer >= 1")
 
     corpus_id = data.get("corpus_id")
     if corpus_id is not None and (not isinstance(corpus_id, str) or not _CORPUS_ID_RE.match(corpus_id)):
@@ -277,10 +306,17 @@ def validate_audit_event(data: Any, *, path: str = "<audit>") -> list[str]:
     if outcome is not None and outcome not in _VALID_OUTCOMES:
         errors.append(f"{path}: invalid outcome '{outcome}'")
 
+    channel = data.get("channel")
+    if channel is not None and channel not in _VALID_CHANNELS:
+        errors.append(f"{path}: invalid channel '{channel}'")
+
     actor = data.get("actor")
     if isinstance(actor, dict):
+        actor_type = actor.get("type")
         if "type" not in actor:
             errors.append(f"{path}: actor missing 'type'")
+        elif actor_type not in {"user", "bot", "system", "human_agent"}:
+            errors.append(f"{path}: actor.type invalid")
     elif actor is not None:
         errors.append(f"{path}: actor must be an object")
 
