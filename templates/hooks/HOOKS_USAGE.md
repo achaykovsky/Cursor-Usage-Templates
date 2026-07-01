@@ -19,12 +19,13 @@ beforeSubmitPrompt → … agent work … → beforeReadFile / preToolUse / befo
 
 | Event | Scripts | You may see |
 |-------|---------|-------------|
-| `beforeSubmitPrompt` | `log-resource-usage`, `log-prompt-context`, `validate-template-consistency` | Silent; logs under `.cursor/logs/` |
-| `beforeReadFile` | `redact-sensitive-read` | `.env`, keys redacted before model |
+| `beforeSubmitPrompt` | `log-resource-usage`, `log-prompt-context`, `validate-template-consistency` | Silent; logs under `logs/` |
+| `beforeReadFile` | `redact-sensitive-read` | `.env`, keys, `*.log` redacted before model |
 | `preToolUse` (Read) | `log-resource-usage` | Silent ledger update |
+| `preToolUse` (Write) | `block-secret-in-write` | **Deny** on hardcoded secrets in write content |
 | `beforeShellExecution` | `log-cursor-activity`, `validate-git-commands`, `validate-pre-push`, `block-destructive-shell`, `validate-db-shell-operations` | **Deny** on force-push main, destructive shell, bad commit msg; tests before push |
 | `beforeMCPExecution` | `validate-mcp-operations` | **Confirm** on state-changing MCP tools |
-| `afterFileEdit` | `log-cursor-activity`, `format-after-edit`, `validate-template-consistency`, `sync-templates-to-local` | Auto-format; templates/ → `.cursor/` for immediate try |
+| `afterFileEdit` | `log-cursor-activity`, `format-after-edit`, `validate-template-consistency`, `scan-logs-in-edit`, `validate-bot-manifest`, `validate-ai-policy-schema`, `validate-rag-artifacts`, `sync-templates-to-local` | Auto-format; manifest/policy/RAG validation; log-secret and corpus-PII warnings |
 | `subagentStart` / `subagentStop` | `log-resource-usage` | Silent |
 | `preCompact` / `afterAgentResponse` | `log-resource-usage` | Silent; context/token ledger updates |
 | `stop` | `log-cursor-activity`, `log-resource-usage`, `suggest-commit-on-stop` | Commit suggestions in hooks channel |
@@ -122,6 +123,7 @@ Default `default.policy.json` stays fail-open on engine errors so personal/dev m
 |--------------|-------|
 | Destructive shell | `suggest-commands-dont-run-destructive` |
 | Sensitive reads / output | `redact-sensitive-in-output`, `sensitive-data-handling` |
+| RAG corpus edits | `rag-pipeline` rule, `orchestrate-rag-delivery`, `sensitive-data-handling` |
 | Session end / commits | `prepare-atomic-commit` |
 | Pre-push / deploy | `validate-pre-deploy` |
 | Template edits | `skills-consistency` rule + `validate-template-consistency` hook + `sync-templates-to-local` (templates → `.cursor/`) |
@@ -132,17 +134,17 @@ Hooks enforce; skills guide agent reasoning. See [USAGE.md](../USAGE.md).
 
 ## Logs
 
-Per-day folders under `.cursor/logs/YYYY-MM-DD/`:
+Per-day folders under `logs/YYYY-MM-DD/` (project root, parallel to `src/` or `templates/`):
 
 - Activity: `cursor-activity.jsonl`
 - Prompt context: `cursor-prompt-context.jsonl`
 - Resource summaries (on stop): `cursor-resources.jsonl`
 
-Resource ledger (in-flight generation): `.cursor/logs/resource-ledger/active.json` (rules/`skills_matched`/`skills_read`/spawned subagents/`hooks_executed` this generation; `hooks_configured` is the static manifest snapshot). Writes use an exclusive lock + atomic replace (`active.json.lock`, temp file) to avoid lost updates when multiple hook events fire in one generation.
+Resource ledger (in-flight generation): `logs/resource-ledger/active.json` (rules/`skills_matched`/`skills_read`/spawned subagents/`hooks_executed` this generation; `hooks_configured` is the static manifest snapshot). Writes use an exclusive lock + atomic replace (`active.json.lock`, temp file) to avoid lost updates when multiple hook events fire in one generation.
 
-Legacy flat files (`cursor-*-YYYY-MM-DD.jsonl` directly under `.cursor/logs/`) are still read by `cursor_activity.py query` but new hook writes use date folders only.
+Legacy flat files (`cursor-*-YYYY-MM-DD.jsonl` directly under `logs/` or `.cursor/logs/`) are still read by `cursor_activity.py query` but new hook writes use date folders only.
 
-Do not commit `.cursor/logs/` if they contain prompts or secrets.
+Do not commit `logs/` if they contain prompts or secrets.
 
 ---
 
