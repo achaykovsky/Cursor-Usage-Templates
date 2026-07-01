@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "corpus_id": "product-docs",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "How do I reset my password?",
+      "expected_doc_ids": ["docs-readme"],
+      "must_cite": true,
+      "must_not_contain": ["internal-admin-only"]
+    },
+    {
+      "id": "q2",
+      "question": "What is the API rate limit?",
+      "expected_doc_ids": ["api-reference"],
+      "must_cite": true
+    }
+  ]
+}

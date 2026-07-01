@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "modes": {
+    "tool_read": "allow",
+    "tool_write": "ask",
+    "tool_destructive": "deny",
+    "tool_unknown": "ask",
+    "injection_suspected": "ask",
+    "rate_limit_exceeded": "deny",
+    "pii_in_output": "deny"
+  },
+  "injection": {
+    "max_user_message_chars": 16000,
+    "log_suspected": true
+  },
+  "output": {
+    "block_patterns": [
+      { "id": "stack_trace", "pattern": "(?i)traceback \\(most recent" },
+      { "id": "internal_host", "pattern": "(?i)\\b(internal|staging)\\.[^\\s]+\\.(local|internal)\\b" }
+    ]
+  },
+  "handoff": {
+    "required_when": ["user_requests_human", "policy_violation", "tool_write_denied"],
+    "max_turns_before_offer": 8
+  },
+  "audit": {
+    "log_tool_calls": true,
+    "log_policy_decisions": true,
+    "store_message_bodies": false
+  }
+}

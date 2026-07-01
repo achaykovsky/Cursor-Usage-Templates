@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConversationAuditEvent",
+  "type": "object",
+  "required": ["timestamp", "conversation_id", "turn_id", "actor", "action", "outcome"],
+  "additionalProperties": false,
+  "properties": {
+    "timestamp": { "type": "string", "format": "date-time" },
+    "trace_id": { "type": "string", "maxLength": 64 },
+    "conversation_id": { "type": "string", "maxLength": 64 },
+    "turn_id": { "type": "string", "maxLength": 64 },
+    "bot_id": { "type": "string", "maxLength": 64 },
+    "channel": { "type": "string", "enum": ["slack", "web", "api"] },
+    "actor": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["user", "bot", "system", "human_agent"] },
+        "id_hash": { "type": "string", "maxLength": 128 }
+      }
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "message_received",
+        "message_sent",
+        "tool_invoked",
+        "policy_blocked",
+        "handoff_initiated",
+        "handoff_completed",
+        "rate_limited",
+        "error"
+      ]
+    },
+    "outcome": { "type": "string", "enum": ["success", "failure", "blocked", "escalated"] },
+    "tool_name": { "type": "string", "maxLength": 64 },
+    "policy_rule_id": { "type": "string", "maxLength": 64 },
+    "chunk_ids": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 64 }
+    },
+    "corpus_version": { "type": "string", "maxLength": 64 },
+    "retrieval_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "maxLength": 256 }
+    }
+  }
+}
