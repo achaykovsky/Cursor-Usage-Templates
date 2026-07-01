@@ -1,0 +1,21 @@
+---
+description: RAG pipeline — idempotent ingest, chunk metadata, embedding version lock, hybrid retrieval, cite-or-abstain
+globs: **/rag/**,**/retrieval/**,**/embeddings/**,**/vector/**
+alwaysApply: false
+---
+
+# RAG Pipeline Standards
+
+**Ingest**: Idempotent upserts by `chunk_id`; version sources; follow `data-pipelines.mdc` for bulk jobs.
+
+**Chunk metadata**: Every chunk stores `source_id`, `doc_version`, `chunk_id`, `heading_path`, `created_at`, `pii_class` when applicable.
+
+**Embedding**: Pin provider, model, and dimensions in corpus manifest; re-embed entire corpus on model change.
+
+**Index**: Namespace per corpus version; metadata filters for tenant/doc_type; no cross-tenant leakage in queries.
+
+**Retrieval**: Hybrid search when keywords matter; rerank after recall; enforce `min_score`; return citations.
+
+**Generation handoff**: Cite-or-abstain — never invent when retrieval is empty. Sanitize chunks per `add-prompt-injection-defenses`.
+
+**PII / safety**: Index-time rules in `ai-pii.mdc`; corpus allowlist in `ai-safety.mdc`.

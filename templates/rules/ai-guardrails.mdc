@@ -23,3 +23,9 @@ alwaysApply: true
 **Subagents when mentioned**: When the user names a subagent via `@agent(NAME)`, a path to `templates/agents/subagents/*.md` or `.cursor/agents/*.md`, or `agents_requested` in the resource ledger lists invoke names, **spawn** each subagent with the **Task** tool (`subagent_type` = that invoke name, e.g. `DOCS`, `BACKEND_PYTHON`) and delegate the relevant work. Do **not** substitute reading the agent `.md` in the parent agent. Spawn all mentioned agents; run in parallel when their tasks are independent. Before your final reply, every `agents_requested` entry must have a matching spawned subagent recorded in the ledger.
 
 **Skills when task matches**: When `skills_matched` in the resource ledger lists skills, or the user asks for code review, cleanup, duplication/dead code, security review, or architecture fit, **read** each applicable `SKILL.md` with the Read tool before doing the work (do not substitute agent `.md` files for skills). Typical pairs: `audit-codebase-cleanup` + `review-pull-request` for repo cleanup/review; `security-scan-changes` for vuln/security checks; `review-architecture-fit` for module boundaries/ADRs. Subagents and skills complement each other — use both when the prompt requests agents **and** the task matches workflow skills.
+
+**Customer-facing bot / AI runtime code** (paths: `**/bots/**`, `**/ai-runtime/**`, `**/ai-gateway/**`):
+- Define a **human handoff path** before shipping; never silent dead-ends for end users.
+- **No silent destructive tool execution** — write/destructive tools require policy `ask` or `deny` at runtime (mirror `validate-mcp-operations` semantics).
+- **Ground truth for tool responses** — do not invent tool results; surface errors to operators, generic messages to customers.
+- Read `orchestrate-ai-bot-delivery` or `design-customer-facing-agent` when building multi-step bot platforms.

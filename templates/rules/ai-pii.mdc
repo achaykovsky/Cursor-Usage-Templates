@@ -1,0 +1,19 @@
+---
+description: PII minimization for LLM bots — context, retention, redaction
+globs: **/bots/**,**/ai-gateway/**,**/rag/**
+alwaysApply: false
+---
+
+# AI PII Standards
+
+**Context**: Minimize PII in LLM context. Prefer IDs over names/emails. Hash user identifiers in logs and audit.
+
+**Retention**: Define deletion windows in bot manifest `data.retention_days`. No indefinite chat storage without policy approval.
+
+**RAG**: Do not index regulated or third-party PII without explicit controls. Document corpus sources. Index-time detail: `rag-pipeline.mdc`.
+
+**Output**: Never echo one user's PII to another. Redact before customer-visible responses.
+
+**Audit**: Audit logs record action and resource IDs — not full message bodies unless opted in.
+
+**Cross-reference**: `sensitive-data-handling` skill, `security.mdc`, HIPAA/GDPR where applicable.

@@ -1,0 +1,17 @@
+---
+description: Customer-facing bot output — tone, disclaimers, no internal leakage, escalation
+globs: **/bots/**,**/ai-runtime/**,**/ai-gateway/**
+alwaysApply: false
+---
+
+# AI Customer-Facing Standards
+
+**Tone**: Clear, respectful, on-brand per bot manifest `persona.tone`. State AI identity when appropriate.
+
+**Disclaimers**: No guaranteed outcomes for legal, medical, or financial advice. Refuse harmful requests with brief reason and handoff offer.
+
+**No internal leakage**: Customer-visible text must not include stack traces, internal hostnames, tenant IDs, other users' data, unreleased features, or policy engine internals.
+
+**Escalation**: Implement handoff triggers from `templates/ai-runtime/guardrails/human-handoff.md`. Never silent failure.
+
+**Errors**: Generic user message; log details server-side only. Follow `redact-sensitive-in-output` skill for channel copy.
