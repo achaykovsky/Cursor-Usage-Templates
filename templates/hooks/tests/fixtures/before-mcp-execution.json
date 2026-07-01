@@ -1,0 +1,8 @@
+{
+  "hook_event_name": "beforeMCPExecution",
+  "generation_id": "gen-test-1",
+  "conversation_id": "conv-test-1",
+  "workspace_roots": ["__PROJECT_ROOT__"],
+  "server": "user-github",
+  "tool_name": "list_releases"
+}

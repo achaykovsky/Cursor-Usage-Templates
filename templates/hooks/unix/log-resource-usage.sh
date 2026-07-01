@@ -239,6 +239,7 @@ case "$event" in
         skills_read: [],
         agents_requested: $agents_req,
         subagents: [],
+        mcp: [],
         hooks_configured: $hooks,
         hooks_executed: ["beforeSubmitPrompt:log-resource-usage.sh"],
         tracking_events: ["beforeSubmitPrompt"]
@@ -442,6 +443,7 @@ case "$event" in
         skills_read: (.skills_read // []),
         agents_requested: (.agents_requested // []),
         subagents: (.subagents // []),
+        mcp: (.mcp // []),
         hooks_configured: (.hooks_configured // []),
         hooks_executed: (.hooks_executed // []),
         tracking_events: ((.tracking_events // []) + ["stop"] | unique)

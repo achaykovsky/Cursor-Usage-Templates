@@ -140,7 +140,7 @@ Per-day folders under `logs/YYYY-MM-DD/` (project root, parallel to `src/` or `t
 - Prompt context: `cursor-prompt-context.jsonl`
 - Resource summaries (on stop): `cursor-resources.jsonl`
 
-Resource ledger (in-flight generation): `logs/resource-ledger/active.json` (rules/`skills_matched`/`skills_read`/spawned subagents/`hooks_executed` this generation; `hooks_configured` is the static manifest snapshot). Writes use an exclusive lock + atomic replace (`active.json.lock`, temp file) to avoid lost updates when multiple hook events fire in one generation.
+Resource ledger (in-flight generation): `logs/resource-ledger/active.json` (rules/`skills_matched`/`skills_read`/spawned subagents/`mcp`/`hooks_executed` this generation; `hooks_configured` is the static manifest snapshot). `mcp` is populated by `validate-mcp-operations` on `beforeMCPExecution` (`server` + `tool` per call). Writes use an exclusive lock + atomic replace (`active.json.lock`, temp file) to avoid lost updates when multiple hook events fire in one generation.
 
 Legacy flat files (`cursor-*-YYYY-MM-DD.jsonl` directly under `logs/` or `.cursor/logs/`) are still read by `cursor_activity.py query` but new hook writes use date folders only.
 

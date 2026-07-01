@@ -347,6 +347,45 @@ function Add-HookExecutedEntry($ledger, [string]$EventName, [string]$ScriptFileN
     return $ledger
 }
 
+function Get-McpFieldsFromPayload($payload) {
+    if (-not $payload) { return $null }
+
+    $server = Get-FirstString $payload @("server", "server_name", "mcp_server")
+    $tool = Get-FirstString $payload @("tool_name", "toolName", "name", "mcp_tool_name")
+    if ([string]::IsNullOrWhiteSpace($server) -and [string]::IsNullOrWhiteSpace($tool)) {
+        return $null
+    }
+
+    return [PSCustomObject]@{
+        server = $server
+        tool   = $tool
+    }
+}
+
+function Add-McpLedgerEntry($ledger, $payload) {
+    if (-not $ledger) { return $ledger }
+
+    $mcpCall = Get-McpFieldsFromPayload $payload
+    if (-not $mcpCall) { return $ledger }
+
+    $mcpList = [System.Collections.Generic.List[object]]::new()
+    foreach ($m in @($ledger.mcp)) { $mcpList.Add($m) | Out-Null }
+
+    $dup = $false
+    foreach ($m in $mcpList) {
+        if ("$($m.server)" -eq $mcpCall.server -and "$($m.tool)" -eq $mcpCall.tool) {
+            $dup = $true
+            break
+        }
+    }
+    if (-not $dup) {
+        $mcpList.Add($mcpCall) | Out-Null
+    }
+
+    Set-LedgerProperty $ledger "mcp" @($mcpList)
+    return $ledger
+}
+
 function Register-HookExecution($payload, [string]$ScriptFileName) {
     if ([string]::IsNullOrWhiteSpace($ScriptFileName)) { return }
 
@@ -370,6 +409,9 @@ function Register-HookExecution($payload, [string]$ScriptFileName) {
         }
 
         $ledger = Add-HookExecutedEntry $ledger $event $ScriptFileName
+        if ($event -eq "beforeMCPExecution") {
+            $ledger = Add-McpLedgerEntry $ledger $payload
+        }
         $ledger.ts = (Get-Date).ToString("o")
         Write-ActiveLedgerAtomic -Path $activePath -Ledger $ledger
     } catch {
