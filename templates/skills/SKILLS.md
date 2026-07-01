@@ -162,6 +162,36 @@ Format: `skill-name` | trigger phrases | optional `@agent`
 | `add-tests-for-change` | add tests after change | `TESTER` |
 | `reproduce-and-document-failure` | paste error, reproduce bug | `INCIDENT` |
 
+## ai-infra-workflows
+
+| Skill | Triggers | Agent |
+|-------|----------|-------|
+| `orchestrate-ai-bot-delivery` | **multi-step bot**, customer agent, chatbot platform | routes AI_* / BOT_* |
+| `design-customer-facing-agent` | support bot, chatbot spec, FAQ agent | `BOT_DESIGNER` |
+| `implement-bot-gateway` | bot gateway, webhooks, LLM API service | `AI_PLATFORM` |
+| `add-prompt-injection-defenses` | prompt injection, jailbreak, untrusted input | `AI_SAFETY` |
+| `design-ai-observability` | LLM traces, bot audit, eval pipeline | `AI_OBSERVABILITY` |
+| `implement-human-handoff` | escalate to human, ticket, handoff | `BOT_DESIGNER` |
+| `evaluate-ai-safety-policy` | content policy, PII in context, retention | `AI_SAFETY` |
+| `design-multi-agent-routing` | router bot, specialist delegation | `AI_PLATFORM` |
+| `implement-ai-rate-limiting` | rate limit, abuse, cost cap | `AI_PLATFORM` |
+| `monitor-ai-quality` | eval regression, drift, thumbs feedback | `AI_OBSERVABILITY` |
+
+## rag-workflows
+
+| Skill | Triggers | Agent |
+|-------|----------|-------|
+| `orchestrate-rag-delivery` | **multi-step RAG**, knowledge base, vector search | routes RAG_ENGINEER / delegates |
+| `design-rag-architecture` | corpus design, hybrid retrieval, vector store | `RAG_ENGINEER` |
+| `implement-rag-ingest-and-index` | ingest, chunk, embed, index | `RAG_ENGINEER` |
+| `implement-retrieval-pipeline` | retrieve, rerank, cite, search_knowledge_base | `RAG_ENGINEER` |
+
+## langchain-workflows (optional)
+
+| Skill | Triggers | Agent |
+|-------|----------|-------|
+| `implement-rag-with-langchain-stack` | LangChain/LangGraph/LangSmith RAG | `RAG_ENGINEER` |
+
 ---
 
 ## Escalation (avoid duplicate work)

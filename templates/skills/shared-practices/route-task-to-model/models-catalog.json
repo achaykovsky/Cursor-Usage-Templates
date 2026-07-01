@@ -56,7 +56,12 @@
     "DATABASE_NOSQL": "lightweight",
     "FE_UI_ENGINEER": "lightweight",
     "FE_STATE_ENGINEER": "lightweight",
-    "FE_TEST_ENGINEER": "lightweight"
+    "FE_TEST_ENGINEER": "lightweight",
+    "AI_PLATFORM": "lightweight",
+    "BOT_DESIGNER": "mid_tier",
+    "AI_SAFETY": "frontier",
+    "AI_OBSERVABILITY": "mid_tier",
+    "RAG_ENGINEER": "lightweight"
   },
   "sources": [
     {

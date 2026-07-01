@@ -17,6 +17,7 @@ Apply **`security.mdc`** for secrets, credentials, PII, and auth policy. This sk
    - **Repro steps / tickets:** Generalize machine-specific paths (`/home/me/...` → "project root" or `<repo-root>`).
    - **User-facing docs / API examples:** No internal stack traces or verbose server errors — log server-side only.
    - **Release notes / changelog:** No internal hostnames, tenant names, or operational secrets.
+   - **Customer bot channels (Slack, web, API):** No stack traces, internal IDs, other users' data, or unreleased features; use generic error copy per [output-policy.md](../../../ai-runtime/guardrails/output-policy.md).
 
 3. **When in doubt**
    - Recommend redaction or minimal exposure. For regulated data paths in code, use **sensitive-data-handling** (security-workflows).
