@@ -1,6 +1,6 @@
 ---
 description: LLM gateway resilience — timeouts, retries, circuit breakers, structured errors
-globs: "**/ai-gateway/**,**/bots/**/gateway/**"
+globs: **/ai-gateway/**,**/bots/**/gateway/**
 alwaysApply: false
 ---
 

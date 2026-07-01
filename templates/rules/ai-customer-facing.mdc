@@ -1,6 +1,6 @@
 ---
 description: Customer-facing bot output — tone, disclaimers, no internal leakage, escalation
-globs: "**/bots/**,**/ai-runtime/**,**/ai-gateway/**"
+globs: **/bots/**,**/ai-runtime/**,**/ai-gateway/**
 alwaysApply: false
 ---
 

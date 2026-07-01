@@ -1,6 +1,6 @@
 ---
 description: RAG pipeline — idempotent ingest, chunk metadata, embedding version lock, hybrid retrieval, cite-or-abstain
-globs: "**/rag/**,**/retrieval/**,**/embeddings/**,**/vector/**"
+globs: **/rag/**,**/retrieval/**,**/embeddings/**,**/vector/**
 alwaysApply: false
 ---
 

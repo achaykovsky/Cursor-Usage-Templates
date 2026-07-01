@@ -1,6 +1,6 @@
 ---
 description: PII minimization for LLM bots — context, retention, redaction
-globs: "**/bots/**,**/ai-gateway/**,**/rag/**"
+globs: **/bots/**,**/ai-gateway/**,**/rag/**
 alwaysApply: false
 ---
 

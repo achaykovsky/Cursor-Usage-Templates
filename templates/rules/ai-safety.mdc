@@ -1,6 +1,6 @@
 ---
 description: AI safety — input validation, system/user boundary, tool allowlists, injection defense
-globs: "**/bots/**,**/ai-runtime/**,**/ai-gateway/**,**/prompts/**"
+globs: **/bots/**,**/ai-runtime/**,**/ai-gateway/**,**/prompts/**
 alwaysApply: false
 ---
 
