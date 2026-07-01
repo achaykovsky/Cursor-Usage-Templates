@@ -181,7 +181,7 @@ Format: `skill-name` | trigger phrases | optional `@agent`
 
 | Skill | Triggers | Agent |
 |-------|----------|-------|
-| `orchestrate-rag-delivery` | **multi-step RAG**, knowledge base, vector search | routes RAG_* / delegates |
+| `orchestrate-rag-delivery` | **multi-step RAG**, knowledge base, vector search | routes RAG_ENGINEER / delegates |
 | `design-rag-architecture` | corpus design, hybrid retrieval, vector store | `RAG_ENGINEER` |
 | `implement-rag-ingest-and-index` | ingest, chunk, embed, index | `RAG_ENGINEER` |
 | `implement-retrieval-pipeline` | retrieve, rerank, cite, search_knowledge_base | `RAG_ENGINEER` |
