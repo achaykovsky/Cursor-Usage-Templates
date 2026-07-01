@@ -369,7 +369,11 @@ function Add-McpLedgerEntry($ledger, $payload) {
     if (-not $mcpCall) { return $ledger }
 
     $mcpList = [System.Collections.Generic.List[object]]::new()
-    foreach ($m in @($ledger.mcp)) { $mcpList.Add($m) | Out-Null }
+    foreach ($m in @($ledger.mcp)) {
+        if ($null -ne $m) {
+            $mcpList.Add($m) | Out-Null
+        }
+    }
 
     $dup = $false
     foreach ($m in $mcpList) {

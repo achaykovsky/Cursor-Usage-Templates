@@ -178,8 +178,8 @@ register_hook_execution() {
     if [[ -n "$mcp_entry" && "$mcp_entry" != '{"server":"","tool":""}' ]]; then
       ledger=$(echo "$ledger" | jq --argjson entry "$mcp_entry" '
         .mcp = (
-          (.mcp // []) + [$entry]
-          | unique_by(.server + "|" + .tool)
+          ((.mcp // []) | map(select(. != null))) + [$entry]
+          | unique_by((.server // "") + "|" + (.tool // ""))
         )
       ')
     fi
