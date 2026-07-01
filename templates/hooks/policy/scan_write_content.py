@@ -50,11 +50,16 @@ _CORPUS_PII_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ),
 )
 
-# Allowlist for stdout — CodeQL flags echoing scan input; we emit rule IDs only.
-_KNOWN_RULE_IDS: frozenset[str] = frozenset(
-    rule_id
-    for patterns in (_WRITE_BLOCK_PATTERNS, _LOG_SECRET_PATTERNS, _CORPUS_PII_PATTERNS)
-    for rule_id, _ in patterns
+# Fixed literals for stdout — CodeQL treats loop variable as constant, not scanned-input taint.
+_RULE_ID_LITERALS: tuple[str, ...] = (
+    "hardcoded_api_key",
+    "aws_access_key",
+    "private_key_block",
+    "log_password",
+    "fstring_secret_log",
+    "corpus_email",
+    "corpus_ssn_like",
+    "corpus_api_key",
 )
 
 _VALID_EDIT_SCAN_MODES: frozenset[str] = frozenset({"log-scan", "corpus-pii-scan"})
@@ -139,8 +144,12 @@ def scan_edit_payload(payload: dict[str, Any], scan_mode: str) -> list[str]:
 
 
 def _emit_scan_result(issue_ids: list[str]) -> None:
-    """Write JSON result with allowlisted rule IDs only — never echo scanned secret text."""
-    safe_ids = [rule_id for rule_id in issue_ids if rule_id in _KNOWN_RULE_IDS]
+    """Write JSON with fixed rule-id literals only — scanned stdin never reaches stdout."""
+    matched = set(issue_ids)
+    safe_ids: list[str] = []
+    for literal in _RULE_ID_LITERALS:
+        if literal in matched:
+            safe_ids.append(literal)
     sys.stdout.write(json.dumps({"issues": safe_ids}))
 
 
