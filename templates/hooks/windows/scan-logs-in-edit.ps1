@@ -20,20 +20,13 @@ try {
     $scanner = Join-Path (Split-Path $PSScriptRoot -Parent) "policy\scan_write_content.py"
     if (-not $py -or -not (Test-Path -LiteralPath $scanner)) { exit 0 }
 
-    $edits = $payload.edits
-    if (-not $edits) { exit 0 }
-
-    $issues = @()
+    # Single Python invocation for all edits — avoids per-edit process spawn overhead.
     $scanMode = if ($isCorpusEdit) { "corpus-pii-scan" } else { "log-scan" }
-    foreach ($edit in @($edits)) {
-        $newString = if ($edit.new_string) { "$($edit.new_string)" } elseif ($edit.newString) { "$($edit.newString)" } else { "" }
-        if ([string]::IsNullOrWhiteSpace($newString)) { continue }
-        $out = $newString | & $py $scanner $scanMode 2>$null
-        if ([string]::IsNullOrWhiteSpace($out)) { continue }
+    $out = $raw | & $py $scanner edit-payload $scanMode 2>$null
+    $issues = @()
+    if (-not [string]::IsNullOrWhiteSpace($out)) {
         $parsed = $out | ConvertFrom-Json
-        foreach ($id in @($parsed.issues)) {
-            if ($issues -notcontains $id) { $issues += $id }
-        }
+        $issues = @($parsed.issues)
     }
 
     if ($issues.Count -gt 0) {

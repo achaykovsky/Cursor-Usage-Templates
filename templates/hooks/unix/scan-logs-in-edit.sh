@@ -28,16 +28,9 @@ project_root=$(project_root_from_payload "$raw")
 if ! py=$(find_python); then exit 0; fi
 if ! scanner=$(find_scan_write_script "$project_root"); then exit 0; fi
 
-collected=""
-while IFS= read -r new_string; do
-  [[ -z "$new_string" ]] && continue
-  out=$(printf '%s' "$new_string" | "$py" "$scanner" "$scan_mode" 2>/dev/null) || continue
-  row=$(echo "$out" | jq -r '.issues[]? // empty' 2>/dev/null | head -n 3 | paste -sd ", " - 2>/dev/null || true)
-  if [[ -n "$row" ]]; then
-    collected="$row"
-    break
-  fi
-done < <(echo "$raw" | jq -r '.edits[]? | .new_string // .newString // empty' 2>/dev/null)
+# Single Python invocation for all edits — avoids per-line process spawn overhead.
+out=$(printf '%s' "$raw" | "$py" "$scanner" edit-payload "$scan_mode" 2>/dev/null) || exit 0
+collected=$(echo "$out" | jq -r '.issues // [] | join(", ")' 2>/dev/null || true)
 
 if [[ -n "$collected" ]]; then
   if [[ "$scan_mode" == "corpus-pii-scan" ]]; then
