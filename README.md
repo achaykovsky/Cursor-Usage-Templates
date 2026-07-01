@@ -112,6 +112,22 @@ See [`templates/agents/subagents/AGENTS.md`](templates/agents/subagents/AGENTS.m
 
 Frontend agents are FE-prefixed (`FE_*`) and backend agents are BE/domain-prefixed (`BACKEND_*`, `DATABASE_*`) to keep boundaries explicit.
 
+### AI Infrastructure Agents
+
+| Invoke | File | Purpose |
+|--------|------|---------|
+| AI_PLATFORM | ai_platform_engineer.md | Bot gateway, scaling, channels, rate limits |
+| BOT_DESIGNER | bot_conversation_designer.md | Conversation flows, handoff, end-user tone |
+| AI_SAFETY | ai_safety_engineer.md | Prompt injection, content policy, OWASP LLM |
+| AI_OBSERVABILITY | ai_observability_engineer.md | Traces, audit logs, evals, SLOs |
+| RAG_ENGINEER | rag_engineer.md | RAG ingest, index, retrieval, citations |
+
+Customer-facing bot **personas** live in [`templates/ai-runtime/bots/examples/`](templates/ai-runtime/bots/examples/) as runtime manifests — not as `@agent()` entries.
+
+## AI Runtime (customer-facing bots)
+
+Portable templates for deployed bots: [`templates/ai-runtime/README.md`](templates/ai-runtime/README.md). Planning prompt: [`templates/prompts/plan-ai-infrastructure.md`](templates/prompts/plan-ai-infrastructure.md). Entry skill: `orchestrate-ai-bot-delivery`.
+
 ## Rules
 
 Rules sync to `.cursor/rules/`. Catalog: [`templates/rules/RULES.md`](templates/rules/RULES.md).
@@ -156,6 +172,13 @@ templates/
 │       ├── AGENTS_USAGE.md
 │       ├── product_manager.md
 │       └── ...
+├── ai-runtime/              # Customer bot runtime templates (not full .cursor sync)
+│   ├── README.md
+│   ├── bots/
+│   ├── policy/
+│   ├── guardrails/
+│   ├── observability/
+│   └── channels/
 ├── rules/                   # .cursor/rules/
 │   ├── RULES.md
 │   └── *.mdc

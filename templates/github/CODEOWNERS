@@ -1,0 +1,3 @@
+# Copy to .github/CODEOWNERS in each repo.
+# Pair with default-branch-protection.json (User bypass + require_code_owner_review).
+* @achaykovsky

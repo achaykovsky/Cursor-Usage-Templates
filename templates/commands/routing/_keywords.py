@@ -41,6 +41,10 @@ FILE_SCOPED_RULES: tuple[RuleEntry, ...] = (
     RuleEntry("devops.mdc", ("**/Dockerfile", "**/.github/**", "**/*.tf", "**/ci/**")),
     RuleEntry("data-pipelines.mdc", ("**/dags/**", "**/pipelines/**", "**/etl/**")),
     RuleEntry("skills-consistency.mdc", ("**/.cursor/skills/**/SKILL.md", "**/templates/skills/**/SKILL.md")),
+    RuleEntry("ai-customer-facing.mdc", ("**/bots/**", "**/ai-runtime/**", "**/ai-gateway/**")),
+    RuleEntry("ai-safety.mdc", ("**/bots/**", "**/ai-runtime/**", "**/ai-gateway/**", "**/prompts/**")),
+    RuleEntry("ai-pii.mdc", ("**/bots/**", "**/ai-gateway/**", "**/rag/**")),
+    RuleEntry("rag-pipeline.mdc", ("**/rag/**", "**/retrieval/**", "**/embeddings/**", "**/vector/**")),
 )
 
 # Distinctive phrases per skill — avoid bare terms shared across domains (e.g. "release", "cleanup").
@@ -193,6 +197,69 @@ SKILL_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ),
     # testing-workflows
     ("add-tests-for-change", ("add tests", "pytest", "test coverage", "unit test")),
+    # ai-infra-workflows
+    (
+        "orchestrate-ai-bot-delivery",
+        ("customer bot", "chatbot", "support bot", "ai platform", "bot delivery", "multi-step bot"),
+    ),
+    (
+        "design-customer-facing-agent",
+        ("customer-facing agent", "support bot spec", "chatbot design", "faq bot", "conversation flow"),
+    ),
+    (
+        "implement-bot-gateway",
+        ("bot gateway", "llm gateway", "webhook bot", "fastapi bot", "chat api"),
+    ),
+    (
+        "add-prompt-injection-defenses",
+        ("prompt injection", "jailbreak", "untrusted input", "injection defense"),
+    ),
+    (
+        "design-ai-observability",
+        ("llm traces", "bot audit", "ai observability", "eval pipeline"),
+    ),
+    (
+        "implement-human-handoff",
+        ("human handoff", "escalate to human", "talk to agent", "human queue"),
+    ),
+    (
+        "evaluate-ai-safety-policy",
+        ("ai safety policy", "content policy", "pii in context", "bot retention"),
+    ),
+    (
+        "design-multi-agent-routing",
+        ("router bot", "multi-agent", "specialist bot", "agent routing"),
+    ),
+    (
+        "implement-ai-rate-limiting",
+        ("rate limit bot", "abuse control", "cost cap", "token budget"),
+    ),
+    (
+        "monitor-ai-quality",
+        ("ai quality", "eval regression", "bot drift", "thumbs feedback"),
+    ),
+    # rag-workflows
+    (
+        "orchestrate-rag-delivery",
+        ("rag pipeline", "knowledge base", "vector search", "document corpus", "build rag"),
+    ),
+    (
+        "design-rag-architecture",
+        ("rag architecture", "corpus design", "vector store choice", "hybrid retrieval"),
+    ),
+    (
+        "implement-rag-ingest-and-index",
+        ("ingest documents", "chunk documents", "embed corpus", "vector index", "reindex"),
+    ),
+    (
+        "implement-retrieval-pipeline",
+        ("retrieval pipeline", "rerank", "semantic search", "search_knowledge_base"),
+    ),
+    # langchain-workflows (optional)
+    (
+        "implement-rag-with-langchain-stack",
+        ("langchain rag", "langgraph rag", "langsmith eval", "langchain retrieval"),
+    ),
 )
 
 AGENT_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -218,6 +285,11 @@ AGENT_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("PM", ("plan", "roadmap", "acceptance criteria", "priorit")),
     ("REVIEWER", ("review", "pr", "pull request")),
     ("DATA_ENGINEER", ("etl", "pipeline", "airflow", "spark")),
+    ("AI_PLATFORM", ("bot gateway", "llm gateway", "ai platform", "rate limit bot")),
+    ("BOT_DESIGNER", ("conversation design", "chatbot flow", "bot persona", "handoff")),
+    ("AI_SAFETY", ("prompt injection", "jailbreak", "llm security", "ai safety")),
+    ("AI_OBSERVABILITY", ("llm trace", "bot audit", "ai eval", "bot slo")),
+    ("RAG_ENGINEER", ("rag", "knowledge base", "vector search", "embedding index", "retrieval pipeline")),
 )
 
 MODEL_CATEGORY_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -244,7 +316,7 @@ PROMPT_RULE_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("sql-database.mdc", ("sql", "postgres", "migration", "alembic")),
     ("devops.mdc", ("terraform", "docker", "kubernetes", "ci/cd", "pipeline", "deploy")),
     ("architecture.mdc", ("architecture", "adr", "tradeoff", "system design")),
-    ("code-review.mdc", ("code review", "pull request", " pr ", "review")),
+    ("rag-pipeline.mdc", ("rag", "knowledge base", "vector", "embedding", "retrieval", "corpus")),
 )
 
 
