@@ -17,6 +17,8 @@ hooks:
   preToolUse:
     - script: log-resource-usage
       matcher: Read
+    - script: block-secret-in-write
+      matcher: Write
   subagentStart:
     - script: log-resource-usage
   subagentStop:
@@ -29,6 +31,10 @@ hooks:
     - script: log-cursor-activity
     - script: format-after-edit
     - script: validate-template-consistency
+    - script: scan-logs-in-edit
+    - script: validate-bot-manifest
+    - script: validate-ai-policy-schema
+    - script: validate-rag-artifacts
     - script: sync-templates-to-local
   stop:
     - script: log-cursor-activity
