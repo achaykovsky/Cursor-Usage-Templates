@@ -53,6 +53,7 @@ htmlcov/
 .hypothesis/
 *.cover
 *.log
+/logs/
 
 # Jupyter Notebook
 .ipynb_checkpoints

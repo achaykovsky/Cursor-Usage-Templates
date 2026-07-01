@@ -9,7 +9,7 @@ Before the main body of **every user-facing reply**, prepend a **Resources used*
 
 ## Before composing the reply
 
-1. **Read** `.cursor/logs/resource-ledger/active.json` when the workspace has a project root (skip in Ask/read-only mode if the read is blocked).
+1. **Read** `logs/resource-ledger/active.json` when the workspace has a project root (skip in Ask/read-only mode if the read is blocked).
 2. If the file is missing, stale, or unreadable, fall back to self-reported data only (see below).
 
 ## Format

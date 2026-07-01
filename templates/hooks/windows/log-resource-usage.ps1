@@ -1,5 +1,5 @@
 # Resource usage ledger: rules, skills, subagents, hooks.
-# Writes .cursor/logs/resource-ledger/active.json during a generation;
+# Writes logs/resource-ledger/active.json during a generation;
 # on stop, appends summary to logs/YYYY-MM-DD/cursor-resources.jsonl.
 
 . (Join-Path $PSScriptRoot "hook-common.ps1")

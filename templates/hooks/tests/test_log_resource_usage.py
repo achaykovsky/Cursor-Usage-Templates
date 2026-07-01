@@ -117,7 +117,7 @@ def test_before_submit_prompt_records_hooks_executed(hook_project: Path) -> None
     assert code == 0, stderr
 
     ledger = json.loads(
-        (hook_project / ".cursor" / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
+        (hook_project / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
     )
     executed = ledger.get("hooks_executed") or []
     assert "beforeSubmitPrompt:log-resource-usage.ps1" in executed
@@ -156,7 +156,7 @@ def test_register_hook_execution_appends_from_other_scripts(hook_project: Path) 
     assert code == 0, stderr
 
     ledger = json.loads(
-        (hook_project / ".cursor" / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
+        (hook_project / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
     )
     executed = set(ledger.get("hooks_executed") or [])
     assert "beforeSubmitPrompt:log-resource-usage.ps1" in executed
@@ -171,7 +171,7 @@ def test_before_submit_prompt_records_model_and_token_estimate(hook_project: Pat
     assert "allow" in stdout
 
     # Assert — ledger fields used for log archival (not shown in agent Resources used table)
-    active = hook_project / ".cursor" / "logs" / "resource-ledger" / "active.json"
+    active = hook_project / "logs" / "resource-ledger" / "active.json"
     assert active.is_file()
     ledger = json.loads(active.read_text(encoding="utf-8"))
 
@@ -191,7 +191,7 @@ def test_before_submit_prompt_records_agents_requested(hook_project: Path) -> No
     assert code == 0, stderr
 
     ledger = json.loads(
-        (hook_project / ".cursor" / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
+        (hook_project / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
     )
     requested = set(ledger.get("agents_requested") or [])
     assert {"DOCS", "BACKEND_PYTHON", "TESTER"}.issubset(requested)
@@ -203,7 +203,7 @@ def test_before_submit_prompt_records_skills_matched(hook_project: Path) -> None
     assert code == 0, stderr
 
     ledger = json.loads(
-        (hook_project / ".cursor" / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
+        (hook_project / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
     )
     matched = set(ledger.get("skills_matched") or [])
     assert "audit-codebase-cleanup" in matched
@@ -219,7 +219,7 @@ def test_before_submit_prompt_utf8_bom_stdin(hook_project: Path) -> None:
     assert "allow" in stdout
 
     ledger = json.loads(
-        (hook_project / ".cursor" / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
+        (hook_project / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
     )
     assert ledger["generation_id"] == "gen-test-1"
     assert ledger["prompt_chars"] > 0
@@ -232,7 +232,7 @@ def test_before_submit_prompt_utf16_le_stdin(hook_project: Path) -> None:
     assert code == 0, stderr
 
     ledger = json.loads(
-        (hook_project / ".cursor" / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
+        (hook_project / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
     )
     assert ledger["generation_id"] == "gen-test-1"
     assert ledger["prompt_chars"] > 0

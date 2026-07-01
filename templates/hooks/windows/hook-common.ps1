@@ -298,9 +298,15 @@ function Get-FirstString($data, [string[]]$keys) {
     return ""
 }
 
+function Get-CursorLogsDir([string]$ProjectRoot) {
+    $dir = Join-Path $ProjectRoot "logs"
+    $null = New-Item -ItemType Directory -Path $dir -Force
+    return $dir
+}
+
 function Get-CursorDailyLogDir([string]$ProjectRoot) {
     $dateFolder = (Get-Date).ToString("yyyy-MM-dd")
-    $dir = Join-Path (Join-Path (Join-Path $ProjectRoot ".cursor") "logs") $dateFolder
+    $dir = Join-Path (Get-CursorLogsDir $ProjectRoot) $dateFolder
     $null = New-Item -ItemType Directory -Path $dir -Force
     return $dir
 }
@@ -310,7 +316,7 @@ function Get-CursorLogFilePath([string]$ProjectRoot, [string]$LogBaseName) {
 }
 
 function Get-ResourceLedgerDir([string]$ProjectRoot) {
-    $dir = Join-Path (Join-Path (Join-Path $ProjectRoot ".cursor") "logs") "resource-ledger"
+    $dir = Join-Path (Get-CursorLogsDir $ProjectRoot) "resource-ledger"
     $null = New-Item -ItemType Directory -Path $dir -Force
     return $dir
 }

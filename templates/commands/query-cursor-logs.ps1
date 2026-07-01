@@ -17,7 +17,7 @@ Usage:
   .\templates\commands\query-cursor-logs.ps1 -GenerationId <id>
   .\templates\commands\query-cursor-logs.ps1 -ProjectRoot C:\path\to\project
 
-Reads .cursor/logs/YYYY-MM-DD/cursor-activity.jsonl
+Reads logs/YYYY-MM-DD/cursor-activity.jsonl (falls back to legacy .cursor/logs/)
 "@
     exit 0
 }

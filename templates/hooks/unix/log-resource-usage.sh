@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Resource usage ledger: rules, skills, subagents, hooks.
-# Writes .cursor/logs/resource-ledger/active.json during a generation;
+# Writes logs/resource-ledger/active.json during a generation;
 # on stop, appends summary to logs/YYYY-MM-DD/cursor-resources.jsonl.
 # Requires: jq
 
@@ -65,7 +65,7 @@ if [[ -z "$project_root" ]]; then
   exit 0
 fi
 
-ledger_dir="${project_root}/.cursor/logs/resource-ledger"
+ledger_dir="$(cursor_logs_root_dir "$project_root")/resource-ledger"
 mkdir -p "$ledger_dir"
 active_path="${ledger_dir}/active.json"
 
