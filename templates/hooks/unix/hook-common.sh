@@ -76,6 +76,21 @@ find_redact_script() {
   return 1
 }
 
+find_scan_write_script() {
+  local project_root="${1:-}"
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  if [[ -n "$project_root" && -f "${project_root}/.cursor/hooks/policy/scan_write_content.py" ]]; then
+    printf '%s\n' "${project_root}/.cursor/hooks/policy/scan_write_content.py"
+    return 0
+  fi
+  if [[ -f "${script_dir}/policy/scan_write_content.py" ]]; then
+    printf '%s\n' "${script_dir}/policy/scan_write_content.py"
+    return 0
+  fi
+  return 1
+}
+
 invoke_redact_text() {
   local text="$1"
   local project_root="${2:-}"
