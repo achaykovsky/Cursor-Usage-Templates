@@ -36,6 +36,10 @@
       {
         "command": "bash .cursor/hooks/scripts/log-resource-usage.sh",
         "matcher": "Read"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/block-secret-in-write.sh",
+        "matcher": "Write"
       }
     ],
     "subagentStart": [
@@ -67,6 +71,18 @@
       },
       {
         "command": "bash .cursor/hooks/scripts/validate-template-consistency.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/scan-logs-in-edit.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/validate-bot-manifest.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/validate-ai-policy-schema.sh"
+      },
+      {
+        "command": "bash .cursor/hooks/scripts/validate-rag-artifacts.sh"
       },
       {
         "command": "bash .cursor/hooks/scripts/sync-templates-to-local.sh"

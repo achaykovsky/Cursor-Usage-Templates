@@ -36,6 +36,10 @@
       {
         "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\log-resource-usage.ps1\"",
         "matcher": "Read"
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\block-secret-in-write.ps1\"",
+        "matcher": "Write"
       }
     ],
     "subagentStart": [
@@ -67,6 +71,18 @@
       },
       {
         "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\validate-template-consistency.ps1\""
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\scan-logs-in-edit.ps1\""
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\validate-bot-manifest.ps1\""
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\validate-ai-policy-schema.ps1\""
+      },
+      {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\validate-rag-artifacts.ps1\""
       },
       {
         "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"%USERPROFILE%\\.cursor\\hooks\\scripts\\sync-templates-to-local.ps1\""

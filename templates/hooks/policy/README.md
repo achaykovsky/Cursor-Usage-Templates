@@ -11,6 +11,7 @@ Classifies `beforeShellExecution` (destructive shell, DB/git) and `beforeMCPExec
 | `hook_policy.py` | Engine CLI: `python hook_policy.py <shell-destructive\|shell-db\|shell-git\|pre-push\|mcp>` |
 | `mcp_classify.py` | Shared MCP tool-name heuristics (used by engine + `sync_mcp_policy.py`) |
 | `redact_sensitive.py` | Shared path/content redaction for `redact-sensitive-read` and `log-prompt-context` |
+| `scan_write_content.py` | Secret/PII scan for `block-secret-in-write` and `scan-logs-in-edit` |
 | `default.policy.json` | Default rules, modes, `shared_destructive_sql`, and `mcp.global_*` prefix lists |
 | `mcp_tools.json` | MCP server tool risk catalog (`tools`, `prefix_read`, `prefix_write`, `default_risk`) |
 | `sync_mcp_policy.py` | Seed/update `mcp_tools.json` from MCP tool descriptors (reads heuristics from `default.policy.json`) |

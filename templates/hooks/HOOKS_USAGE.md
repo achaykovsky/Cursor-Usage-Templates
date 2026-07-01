@@ -59,6 +59,10 @@ Prerequisites: Windows needs `pwsh`; Unix needs `bash`, `jq`, and `python3` for 
 | Push with missing test runner | `validate-pre-push` | Install poetry/npm/pytest or set `modes.pre_push` to `advisory` |
 | DB write without DB client | (fixed) | `grep update` / `terraform apply` no longer gated |
 | MCP read tool misclassified | (fixed) | Catalog in `hooks/policy/mcp_tools.json` |
+| Hardcoded secret in Write | `block-secret-in-write` | Remove password/token/secret literals from write content |
+| Invalid bot manifest JSON | `validate-bot-manifest` | Fix schema errors in `**/bots/**/*.json` per `manifest.schema.json` |
+| Invalid AI policy JSON | `validate-ai-policy-schema` | Fix `default.bot.policy.json` or tool-risk catalog shape |
+| Invalid RAG corpus/golden JSON | `validate-rag-artifacts` | Run `validate_bot_runtime.py corpus|golden` on the file |
 
 ---
 
@@ -124,6 +128,7 @@ Default `default.policy.json` stays fail-open on engine errors so personal/dev m
 | Destructive shell | `suggest-commands-dont-run-destructive` |
 | Sensitive reads / output | `redact-sensitive-in-output`, `sensitive-data-handling` |
 | RAG corpus edits | `rag-pipeline` rule, `orchestrate-rag-delivery`, `sensitive-data-handling` |
+| Bot manifest / AI policy edits | `ai-customer-facing` rule, `evaluate-ai-safety-policy`, `orchestrate-ai-bot-delivery` |
 | Session end / commits | `prepare-atomic-commit` |
 | Pre-push / deploy | `validate-pre-deploy` |
 | Template edits | `skills-consistency` rule + `validate-template-consistency` hook + `sync-templates-to-local` (templates → `.cursor/`) |

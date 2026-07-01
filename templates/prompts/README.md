@@ -59,7 +59,7 @@ Partial  ░░░░░░░░░░░░░░░░░░░░░░░�
 | [plan-python-remediation-foundation.md](plan-python-remediation-foundation.md) | Python | **[x] Done** | pyproject, CI, fail-open stderr |
 | [plan-python-remediation-hook-policy.md](plan-python-remediation-hook-policy.md) | Python | **[~] Partial** | MCP/cache/log done; test/coverage gaps |
 | [plan-python-remediation-sync-scripts.md](plan-python-remediation-sync-scripts.md) | Python | **[x] Done** | Dedup, dry-run, sync tests |
-| [plan-ai-infrastructure.md](plan-ai-infrastructure.md) | AI platform | **[x] Done** | `ai-runtime/`, `ai-infra-workflows/`, 4 subagents, hooks; **§ RAG optional track** |
+| [plan-ai-infrastructure.md](plan-ai-infrastructure.md) | AI platform | **[x] Done** | `ai-runtime/`, `ai-infra-workflows/`, `rag-workflows/`, `langchain-workflows/`, 5 subagents, AI validation hooks; RAG track complete |
 
 ---
 
@@ -99,6 +99,9 @@ Prompt + CLI deliverables complete. Tests: `test_routing.py` (6 cases).
 | `scan-logs-in-edit` | [x] | `scan-logs-in-edit.ps1` / `.sh` |
 | `block-log-edit-secrets` | [x] | Covered by `scan-logs-in-edit` (advisory) |
 | `block-secret-in-write` (preToolUse) | [x] | `block-secret-in-write.ps1` / `.sh` |
+| `validate-bot-manifest` | [x] | `validate-bot-manifest.ps1` / `.sh` |
+| `validate-ai-policy-schema` | [x] | `validate-ai-policy-schema.ps1` / `.sh` |
+| `validate-rag-artifacts` | [x] | `validate-rag-artifacts.ps1` / `.sh` |
 | `audit-log-patterns` (stop) | [ ] | No script |
 | `redact-logs-before-read` (*.log) | [x] | `redact_sensitive.py` `is_log_path` |
 
