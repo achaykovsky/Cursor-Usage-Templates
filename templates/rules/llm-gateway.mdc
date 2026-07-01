@@ -1,0 +1,19 @@
+---
+description: LLM gateway resilience — timeouts, retries, circuit breakers, structured errors
+globs: "**/ai-gateway/**,**/bots/**/gateway/**"
+alwaysApply: false
+---
+
+# LLM Gateway Standards
+
+**Timeouts**: Set per LLM call, tool call, and total request budget. Propagate cancellation on client disconnect.
+
+**Retries**: Idempotent reads only; exponential backoff with jitter; cap attempts. Never blind-retry write tools.
+
+**Circuit breaker**: Open on sustained LLM/provider failures; fail fast with user-friendly message and audit event.
+
+**Errors**: Structured internal errors with `trace_id`; map to generic customer responses. No provider stack traces outward.
+
+**Rate limits**: Enforce per user/session/org before LLM invocation. Return 429 with Retry-After where applicable.
+
+**Logging**: Log latency, model id, token counts (aggregated) — not full prompts in production info logs.

@@ -15,3 +15,5 @@ alwaysApply: false
 **Schema**: Validate at ingestion (Pydantic, Great Expectations). Version schemas. Additive changes only (new columns nullable or with default).
 
 **Orchestration**: Airflow DAGs - task dependencies via `>>`. Idempotent tasks. Retries in task def. XCom for small data only; use external store for large payloads.
+
+**RAG bulk ingest** jobs under `**/rag/**` follow the same idempotency, watermark, and dead-letter rules.

@@ -16,3 +16,15 @@ alwaysApply: true
 **Input validation**: Validate at boundaries. Pydantic/struct validation. Max lengths, allowlists. Reject invalid early.
 
 **Dependencies**: `pip-audit`, `go list -m -u`, `npm audit`. Pin versions. Track CVEs.
+
+**OWASP LLM Top 10** (customer-facing bots and LLM gateways):
+- **Prompt injection** — treat user input as hostile; separate system/user channels; validate tool args.
+- **Insecure output** — no secrets, stack traces, or internal IDs in customer-visible text.
+- **Training data poisoning** — validate RAG sources; version corpora; audit retrieval.
+- **Model denial of service** — rate limits, token caps, timeouts, cost budgets.
+- **Supply chain** — pin model/provider SDK versions; audit dependencies.
+- **Sensitive information disclosure** — minimize PII in context; redact logs and audit exports.
+- **Insecure plugin/tool design** — tool allowlists + risk tiers (`deny`/`ask`/`allow`).
+- **Excessive agency** — scope tools narrowly; confirm before state-changing actions.
+- **Overreliance** — disclaimers for high-stakes domains; human handoff triggers.
+- **Model theft** — protect API keys; no model weights in client bundles.

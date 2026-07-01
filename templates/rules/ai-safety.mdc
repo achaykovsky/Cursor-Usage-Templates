@@ -1,0 +1,19 @@
+---
+description: AI safety — input validation, system/user boundary, tool allowlists, injection defense
+globs: "**/bots/**,**/ai-runtime/**,**/ai-gateway/**,**/prompts/**"
+alwaysApply: false
+---
+
+# AI Safety Standards
+
+**Input**: Treat user text as hostile. Max message length at gateway. Validate attachments against allowlist.
+
+**System boundary**: Fixed system instructions; user content in delimited blocks. User text cannot override safety policy.
+
+**Tools**: Allowlist only; map to risk tiers in `tool-risk-catalog.json`. Write/destructive tools require `ask` or `deny` — never silent execution.
+
+**Injection**: Log suspected injection; block or escalate per policy mode. Test with red-team cases when changing prompts or tools.
+
+**RAG**: Version corpora; sanitize retrieved chunks; no executable content in context. Corpus allowlist: see `rag-pipeline.mdc`.
+
+**Reference**: `templates/ai-runtime/guardrails/input-sanitization.md`, OWASP LLM section in `security.mdc`.
