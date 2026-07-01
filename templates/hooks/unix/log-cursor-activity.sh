@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Log Cursor activity: structured JSONL per event type.
-# Writes to project/.cursor/logs/YYYY-MM-DD/cursor-activity.jsonl
+# Writes to project/logs/YYYY-MM-DD/cursor-activity.jsonl
 
 set -euo pipefail
 
