@@ -13,13 +13,13 @@ Paste prompts from this folder when routing is unclear. Open [USAGE.md](../USAGE
 | Metric | Value |
 |--------|-------|
 | Plans tracked | **12** |
-| **Done** | **8** (67%) |
+| **Done** | **9** (75%) |
 | **Partial** | **3** (25%) |
 | **Open** (within partial plans) | **8** acceptance items |
 
 ```
-Done     ████████████████████░░░░░░░  7/11 plans
-Partial  ░░░░░░░░░░░░░░░░░░░░███████  3/11 plans
+Done     ████████████████████████░░░  9/12 plans
+Partial  ░░░░░░░░░░░░░░░░░░░░░░░███  3/12 plans
 ```
 
 ### At a glance

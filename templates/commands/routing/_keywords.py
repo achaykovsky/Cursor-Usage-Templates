@@ -316,6 +316,7 @@ PROMPT_RULE_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("sql-database.mdc", ("sql", "postgres", "migration", "alembic")),
     ("devops.mdc", ("terraform", "docker", "kubernetes", "ci/cd", "pipeline", "deploy")),
     ("architecture.mdc", ("architecture", "adr", "tradeoff", "system design")),
+    ("code-review.mdc", ("code review", "pull request", " pr ", "review")),
     ("rag-pipeline.mdc", ("rag", "knowledge base", "vector", "embedding", "retrieval", "corpus")),
 )
 
