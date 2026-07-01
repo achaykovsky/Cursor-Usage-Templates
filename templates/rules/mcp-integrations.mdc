@@ -25,16 +25,18 @@ alwaysApply: true
 - One MCP call replaces a fragile multi-step shell workflow.
 - User or project docs explicitly target that MCP server for the task.
 
-| Need | First try |
-|------|-----------|
-| PR/checks/issues | `gh` |
-| Git history/diff | `git` |
-| Code search | `grep` / semantic search |
-| Confluence/spec | Docs MCP |
-| Jira/Linear status | MCP or vendor CLI if installed |
-| Remote DB schema | Database MCP or `psql` if local |
+| Need | Primary (CLI/Shell) | Fallback (MCP) |
+|------|---------------------|----------------|
+| PR/checks/issues | `gh` | GitHub MCP |
+| Git history/diff | `git` | (none — local) |
+| Code search | `grep` / semantic search | (none) |
+| Confluence/spec | (none) | Docs MCP |
+| Jira/Linear status | Vendor CLI (if installed) | Jira/Linear MCP |
+| Remote DB schema | `psql` (if local) | Database MCP |
 
-**Do not**: author scripts, wrappers, or pipelines solely to bypass MCP; read MCP tool schemas when the CLI path is already known. Scripts are for deliverables, not for routing tool choice.
+**Do not**:
+- Author scripts, wrappers, or pipelines solely to bypass MCP. Scripts are for deliverables, not for routing tool choice.
+- Read MCP tool schemas when the CLI path is already known.
 
 **Read-only by default**: Treat MCP operations as read-only unless the user explicitly requests state changes (create/update/delete/deploy/publish/migrations).
 
