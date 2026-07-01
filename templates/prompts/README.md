@@ -12,14 +12,14 @@ Paste prompts from this folder when routing is unclear. Open [USAGE.md](../USAGE
 
 | Metric | Value |
 |--------|-------|
-| Plans tracked | **11** |
-| **Done** | **7** (64%) |
-| **Partial** | **3** (27%) |
+| Plans tracked | **12** |
+| **Done** | **9** (75%) |
+| **Partial** | **3** (25%) |
 | **Open** (within partial plans) | **8** acceptance items |
 
 ```
-Done     ████████████████████░░░░░░░  7/11 plans
-Partial  ░░░░░░░░░░░░░░░░░░░░███████  3/11 plans
+Done     ████████████████████████░░░  9/12 plans
+Partial  ░░░░░░░░░░░░░░░░░░░░░░░███  3/12 plans
 ```
 
 ### At a glance
@@ -28,6 +28,7 @@ Partial  ░░░░░░░░░░░░░░░░░░░░███�
 |--------|-------|
 | [x] **Done** | session-map, agents-routing, skills-routing, model-routing, rules-audit, python-remediation (overview, foundation, sync-scripts) |
 | [~] **Partial** | cursor-hooks, cursor-activity-logging, python-remediation-hook-policy |
+| [x] **Done** | plan-ai-infrastructure (templates shipped) |
 | [ ] **Open** | *(no plan fully untouched)* |
 
 ---
@@ -52,12 +53,13 @@ Partial  ░░░░░░░░░░░░░░░░░░░░███�
 | [plan-cursor-skills-routing.md](plan-cursor-skills-routing.md) | Routing | **[x] Done** | `route-skill.ps1` → `routing.py skill` |
 | [plan-cursor-model-routing.md](plan-cursor-model-routing.md) | Routing | **[x] Done** | `route-model.ps1` → `models-catalog.json` |
 | [plan-cursor-rules-audit.md](plan-cursor-rules-audit.md) | Routing | **[x] Done** | `route-rules.ps1` → `RULES.md` globs |
-| [plan-cursor-hooks.md](plan-cursor-hooks.md) | Hooks | **[~] Partial** | 13 core scripts; 5 planned log hooks missing |
-| [plan-cursor-activity-logging.md](plan-cursor-activity-logging.md) | Observability | **[~] Partial** | Steps 1–5 done; stop summary + prompt redaction open |
+| [plan-cursor-hooks.md](plan-cursor-hooks.md) | Hooks | **[~] Partial** | 17 scripts; `audit-log-patterns` still open |
+| [plan-cursor-activity-logging.md](plan-cursor-activity-logging.md) | Observability | **[~] Partial** | Steps 1–5 + prompt redaction done; stop summary optional |
 | [plan-python-remediation-overview.md](plan-python-remediation-overview.md) | Hub | **[x] Done** | P0–P3 Python scope complete |
 | [plan-python-remediation-foundation.md](plan-python-remediation-foundation.md) | Python | **[x] Done** | pyproject, CI, fail-open stderr |
 | [plan-python-remediation-hook-policy.md](plan-python-remediation-hook-policy.md) | Python | **[~] Partial** | MCP/cache/log done; test/coverage gaps |
 | [plan-python-remediation-sync-scripts.md](plan-python-remediation-sync-scripts.md) | Python | **[x] Done** | Dedup, dry-run, sync tests |
+| [plan-ai-infrastructure.md](plan-ai-infrastructure.md) | AI platform | **[x] Done** | `ai-runtime/`, `ai-infra-workflows/`, 4 subagents, hooks; **§ RAG optional track** |
 
 ---
 
@@ -94,11 +96,11 @@ Prompt + CLI deliverables complete. Tests: `test_routing.py` (6 cases).
 | `log-cursor-activity` | [x] | → `cursor_activity.py normalize` |
 | `log-resource-usage` / `log-prompt-context` | [x] | `log-resource-usage.ps1`, `log-prompt-context.ps1` |
 | `validate-template-consistency` | [x] | `validate-template-consistency.ps1` / `.sh` |
-| `scan-logs-in-edit` | [ ] | No script |
-| `block-log-edit-secrets` | [ ] | No script |
-| `block-secret-in-write` (preToolUse) | [ ] | No script |
+| `scan-logs-in-edit` | [x] | `scan-logs-in-edit.ps1` / `.sh` |
+| `block-log-edit-secrets` | [x] | Covered by `scan-logs-in-edit` (advisory) |
+| `block-secret-in-write` (preToolUse) | [x] | `block-secret-in-write.ps1` / `.sh` |
 | `audit-log-patterns` (stop) | [ ] | No script |
-| `redact-logs-before-read` (*.log) | [ ] | `redact-sensitive-read` has no `*.log` glob |
+| `redact-logs-before-read` (*.log) | [x] | `redact_sensitive.py` `is_log_path` |
 
 **Plan status:** core table **done**; planned log-hooks section **open** (5 items).
 
@@ -114,7 +116,7 @@ Prompt + CLI deliverables complete. Tests: `test_routing.py` (6 cases).
 | 4. Per-event schema (not raw dump) | [x] | `normalize_activity_entry()` per event type |
 | 5. Query script | [x] | `query-cursor-logs.ps1` + `cursor_activity.py query` |
 | 6. Session summary at `stop` | [ ] | Optional per plan; query covers grouping |
-| Prompt secret redaction | [~] | File-path redaction [x]; prompt text patterns [ ] |
+| Prompt secret redaction | [x] | `log-prompt-context` + `redact_sensitive.redact_text` |
 
 **Tests:** `test_cursor_activity.py` (6 cases). **Hooks:** `log-cursor-activity.ps1` / `.sh` wired via `Get-CursorActivityScript`.
 
@@ -190,10 +192,9 @@ Prompt + CLI deliverables complete. Tests: `test_routing.py` (6 cases).
 
 | Priority | Plan | Open items |
 |----------|------|------------|
-| P2 | [plan-cursor-hooks.md](plan-cursor-hooks.md) | 5 planned log hooks + `*.log` redaction |
-| P2 | [plan-cursor-activity-logging.md](plan-cursor-activity-logging.md) | Stop summary; prompt secret redaction |
 | P3 | [plan-python-remediation-hook-policy.md](plan-python-remediation-hook-policy.md) | `fixtures/policies/`, `test_custom_deny_rule`, pytest-cov gate, unittest migration |
 | P3 | hook-policy | Optional: align `delete_all_rows` regex with plan spec |
+| P3 | [plan-cursor-hooks.md](plan-cursor-hooks.md) | `audit-log-patterns` stop hook (optional) |
 
 ---
 

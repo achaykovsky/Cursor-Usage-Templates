@@ -66,8 +66,10 @@ What do you need?
 | Architecture | `@agent(ARCHITECT)` | `evaluate-architecture-tradeoffs` |
 | Infra / CI | `@agent(DEVOPS)` | devops-workflows skills |
 | DB | `@agent(DATABASE_SQL)` / `DATABASE_NOSQL` | sql/nosql rules on edit |
+| Customer bot / AI platform | `orchestrate-ai-bot-delivery` | `BOT_DESIGNER`, `AI_PLATFORM`, `AI_SAFETY`, `AI_OBSERVABILITY` |
+| RAG / knowledge base | `orchestrate-rag-delivery` | `RAG_ENGINEER`; escalate `DATA_ENGINEER`, `AI_SAFETY` |
 
-**One agent per turn** unless sequencing. **Reference files** (`@path`), don't paste catalogs.
+**One agent per turn** unless sequencing. **Reference files** (`@path`), don't paste catalogs. **AI runtime hub:** [ai-runtime/README.md](ai-runtime/README.md).
 
 ---
 
@@ -107,6 +109,7 @@ Paste prompts when you prefer in-chat reasoning:
 | [plan-cursor-rules-audit.md](prompts/plan-cursor-rules-audit.md) | Rules for given files (chat) |
 | [plan-cursor-hooks.md](prompts/plan-cursor-hooks.md) | Extend hooks |
 | [plan-cursor-activity-logging.md](prompts/plan-cursor-activity-logging.md) | Activity logs |
+| [plan-ai-infrastructure.md](prompts/plan-ai-infrastructure.md) | Customer-facing bot / AI platform (greenfield) |
 | [plan-python-remediation-overview.md](prompts/plan-python-remediation-overview.md) | Python hooks/sync remediation (P0–P3) |
 
 ---
