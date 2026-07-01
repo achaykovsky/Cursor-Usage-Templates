@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "tools": {
+    "lookup_order_status": "read",
+    "search_knowledge_base": "read",
+    "create_support_ticket": "write",
+    "update_billing_address": "write",
+    "cancel_subscription": "destructive",
+    "delete_account": "destructive",
+    "send_email": "write",
+    "refund_payment": "destructive"
+  },
+  "risk_to_mode": {
+    "read": "tool_read",
+    "write": "tool_write",
+    "destructive": "tool_destructive",
+    "unknown": "tool_unknown"
+  }
+}

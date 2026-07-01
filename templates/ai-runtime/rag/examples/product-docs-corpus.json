@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "id": "product-docs",
+  "display_name": "Product documentation corpus",
+  "sources": [
+    {
+      "source_id": "docs-readme",
+      "type": "markdown",
+      "uri": "docs/README.md",
+      "version": "2026-07-01"
+    },
+    {
+      "source_id": "api-reference",
+      "type": "markdown",
+      "uri": "docs/api/",
+      "version": "2026-07-01"
+    }
+  ],
+  "chunking": {
+    "strategy": "structure_aware",
+    "max_tokens": 512,
+    "overlap_tokens": 64
+  },
+  "embedding": {
+    "provider": "openai",
+    "model": "text-embedding-3-small",
+    "dimensions": 1536
+  },
+  "retrieval": {
+    "top_k": 8,
+    "min_score": 0.72,
+    "hybrid": true,
+    "rerank": true
+  },
+  "freshness": {
+    "sla_hours": 24,
+    "reindex_on_source_change": true
+  },
+  "index": {
+    "backend": "pgvector",
+    "namespace": "product-docs-v1"
+  }
+}

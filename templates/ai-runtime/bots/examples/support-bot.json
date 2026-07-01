@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "id": "support-bot",
+  "display_name": "Customer Support Assistant",
+  "channels": ["slack", "web"],
+  "persona": {
+    "tone": "helpful, professional, concise",
+    "disclosure": "I'm an AI assistant. I can help with orders and billing; a human agent can take over if needed.",
+    "system_prompt_ref": "prompts/support-system.md"
+  },
+  "model": {
+    "provider": "openai",
+    "name": "gpt-4.1-mini",
+    "max_tokens_per_turn": 2048
+  },
+  "tools": [
+    { "name": "lookup_order_status", "risk": "read", "description": "Fetch order status by order ID" },
+    { "name": "search_knowledge_base", "risk": "read", "description": "Search help articles" },
+    { "name": "create_support_ticket", "risk": "write", "description": "Open a ticket for human follow-up" }
+  ],
+  "escalation": {
+    "enabled": true,
+    "sla_minutes": 30,
+    "channel": "ticket",
+    "triggers": ["user_requests_human", "billing_dispute", "policy_violation"]
+  },
+  "data": {
+    "retention_days": 90,
+    "store_full_prompts": false
+  },
+  "rate_limits": {
+    "requests_per_minute": 20,
+    "tokens_per_day": 500000
+  }
+}
