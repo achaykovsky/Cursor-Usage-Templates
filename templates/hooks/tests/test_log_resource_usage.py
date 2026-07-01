@@ -163,6 +163,64 @@ def test_register_hook_execution_appends_from_other_scripts(hook_project: Path) 
     assert "beforeSubmitPrompt:log-prompt-context.ps1" in executed
 
 
+def test_before_mcp_execution_records_mcp_usage(hook_project: Path) -> None:
+    """beforeMCPExecution via validate-mcp-operations must populate mcp in active.json."""
+    templates_root = Path(__file__).resolve().parents[2]
+    scripts_dst = hook_project / ".cursor" / "hooks" / "scripts"
+    fixture = Path(__file__).resolve().parent / "fixtures" / "before-mcp-execution.json"
+    for name in ("hook-common.ps1", "log-resource-usage.ps1", "validate-mcp-operations.ps1"):
+        shutil.copy2(templates_root / "hooks" / "windows" / name, scripts_dst / name)
+    policy_dir = hook_project / ".cursor" / "hooks" / "policy"
+    policy_dir.mkdir(parents=True, exist_ok=True)
+    for name in ("hook_policy.py", "mcp_classify.py", "mcp_tools.json"):
+        src = templates_root / "hooks" / "policy" / name
+        if src.is_file():
+            shutil.copy2(src, policy_dir / name)
+
+    code, _, stderr = _run_hook(hook_project, _payload(hook_project))
+    assert code == 0, stderr
+
+    mcp_payload = _payload(hook_project, fixture)
+    code, _, stderr = _run_hook_script(hook_project, "validate-mcp-operations.ps1", mcp_payload)
+    assert code == 0, stderr
+
+    ledger = json.loads(
+        (hook_project / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
+    )
+    mcp = ledger.get("mcp") or []
+    assert {"server": "user-github", "tool": "list_releases"} in [
+        {"server": entry.get("server"), "tool": entry.get("tool")} for entry in mcp
+    ]
+    executed = set(ledger.get("hooks_executed") or [])
+    assert "beforeMCPExecution:validate-mcp-operations.ps1" in executed
+
+
+def test_before_mcp_execution_without_prior_ledger_seed(hook_project: Path) -> None:
+    """MCP ledger append must not insert null when mcp was never initialized."""
+    templates_root = Path(__file__).resolve().parents[2]
+    scripts_dst = hook_project / ".cursor" / "hooks" / "scripts"
+    fixture = Path(__file__).resolve().parent / "fixtures" / "before-mcp-execution.json"
+    for name in ("hook-common.ps1", "validate-mcp-operations.ps1"):
+        shutil.copy2(templates_root / "hooks" / "windows" / name, scripts_dst / name)
+    policy_dir = hook_project / ".cursor" / "hooks" / "policy"
+    policy_dir.mkdir(parents=True, exist_ok=True)
+    for name in ("hook_policy.py", "mcp_classify.py", "mcp_tools.json"):
+        src = templates_root / "hooks" / "policy" / name
+        if src.is_file():
+            shutil.copy2(src, policy_dir / name)
+
+    code, _, stderr = _run_hook_script(
+        hook_project, "validate-mcp-operations.ps1", _payload(hook_project, fixture)
+    )
+    assert code == 0, stderr
+
+    ledger = json.loads(
+        (hook_project / "logs" / "resource-ledger" / "active.json").read_text(encoding="utf-8")
+    )
+    mcp = ledger.get("mcp") or []
+    assert mcp == [{"server": "user-github", "tool": "list_releases"}]
+
+
 def test_before_submit_prompt_records_model_and_token_estimate(hook_project: Path) -> None:
     """beforeSubmitPrompt must populate active.json with model slug and char-based token estimate."""
     # Act

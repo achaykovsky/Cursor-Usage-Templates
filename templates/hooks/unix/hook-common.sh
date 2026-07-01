@@ -169,6 +169,22 @@ register_hook_execution() {
     .hooks_executed = ((.hooks_executed // []) + [$e] | unique | sort) |
     .ts = (now | todate)
   ')
+
+  if [[ "$event" == "beforeMCPExecution" ]]; then
+    mcp_entry=$(printf '%s' "$raw" | jq -c '{
+      server: (.server // .server_name // .mcp_server // ""),
+      tool: (.tool_name // .toolName // .name // .mcp_tool_name // "")
+    }' 2>/dev/null || true)
+    if [[ -n "$mcp_entry" && "$mcp_entry" != '{"server":"","tool":""}' ]]; then
+      ledger=$(echo "$ledger" | jq --argjson entry "$mcp_entry" '
+        .mcp = (
+          ((.mcp // []) | map(select(. != null))) + [$entry]
+          | unique_by((.server // "") + "|" + (.tool // ""))
+        )
+      ')
+    fi
+  fi
+
   write_active_ledger_atomic "$active_path" "$ledger"
 }
 
