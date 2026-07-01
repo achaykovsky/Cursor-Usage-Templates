@@ -28,6 +28,9 @@ SENSITIVE_PATH_PATTERNS = [
 ]
 
 PREVIEW_CHARS = 80
+
+PROJECT_LOGS_DIR = "logs"
+LEGACY_LOGS_DIR = Path(".cursor") / "logs"
 PROMPT_MAX = 50_000
 FULL_EDITS_MAX_BYTES = 2048
 LOG_DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -234,7 +237,7 @@ def group_by_generation(entries: list[dict[str, Any]]) -> dict[str, list[dict[st
 def format_generation_summary(gen_id: str, events: list[dict[str, Any]]) -> str:
     events = sorted(events, key=lambda e: e.get("ts", ""))
     prompt_event = next((e for e in events if e.get("event") == "beforeSubmitPrompt"), None)
-    ts = prompt_event.get("ts", events[0].get("ts", "")) if events else ""
+    ts = (prompt_event.get("ts") if prompt_event else events[0].get("ts", "")) if events else ""
     ts_display = ts.replace("T", " ")[:19] if ts else ""
 
     lines = [f"Generation {gen_id} ({ts_display})"]
@@ -268,6 +271,20 @@ def format_generation_summary(gen_id: str, events: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
+def resolve_project_log_dirs(project_root: Path) -> list[Path]:
+    """Return log roots to search: project ``logs/`` first, then legacy ``.cursor/logs/``."""
+    primary = project_root / PROJECT_LOGS_DIR
+    legacy = project_root / LEGACY_LOGS_DIR
+    if primary.is_dir():
+        dirs = [primary]
+        if legacy.is_dir():
+            dirs.append(legacy)
+        return dirs
+    if legacy.is_dir():
+        return [legacy]
+    return [primary]
+
+
 def resolve_activity_log_files(log_dir: Path, date: str | None = None) -> list[Path]:
     """Return activity JSONL paths under date folders (with legacy flat-file fallback)."""
     if date:
@@ -296,8 +313,14 @@ def query_logs(
             "has_generation_filter": generation_id is not None,
         },
     )
-    log_dir = project_root / ".cursor" / "logs"
-    log_files = resolve_activity_log_files(log_dir, date)
+    log_files: list[Path] = []
+    seen: set[Path] = set()
+    for log_dir in resolve_project_log_dirs(project_root):
+        for path in resolve_activity_log_files(log_dir, date):
+            if path in seen:
+                continue
+            seen.add(path)
+            log_files.append(path)
 
     entries: list[dict[str, Any]] = []
     for path in log_files:
@@ -365,7 +388,7 @@ def build_parser() -> argparse.ArgumentParser:
     query_p = sub.add_parser("query", help="Query cursor-activity JSONL logs")
     query_p.add_argument("--date", help="Log date yyyy-MM-dd")
     query_p.add_argument("--generation-id", dest="generation_id", help="Filter by generation_id")
-    query_p.add_argument("--project-root", default=".", help="Project root containing .cursor/logs")
+    query_p.add_argument("--project-root", default=".", help="Project root containing logs/")
     return parser
 
 

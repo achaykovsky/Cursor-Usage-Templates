@@ -87,7 +87,7 @@ def test_sensitive_path_redacted() -> None:
 def test_query_logs_groups_by_generation(tmp_path: Path) -> None:
     """query_logs must correlate prompt, edits, and stop events under one generation_id."""
     # Arrange — synthetic JSONL mimicking a single agent turn
-    log_dir = tmp_path / ".cursor" / "logs"
+    log_dir = tmp_path / "logs"
     log_dir.mkdir(parents=True)
     lines = [
         {
@@ -123,7 +123,7 @@ def test_query_logs_groups_by_generation(tmp_path: Path) -> None:
 
 
 def test_query_logs_reads_legacy_flat_activity_file(tmp_path: Path) -> None:
-    """query_logs still reads pre-migration flat files under .cursor/logs/."""
+    """query_logs still reads pre-migration flat files under legacy .cursor/logs/."""
     log_dir = tmp_path / ".cursor" / "logs"
     log_dir.mkdir(parents=True)
     path = log_dir / "cursor-activity-2026-02-25.jsonl"

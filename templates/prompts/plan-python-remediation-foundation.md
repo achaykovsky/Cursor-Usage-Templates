@@ -109,7 +109,7 @@ Resolve the intentional fail-open design (documented in `hook_policy.py` module 
 | Classifier bug (`Exception`) | `allow` (default) | `ERROR` with domain + exception | Yes → `modes.policy_engine_error: ask` |
 | Missing Python / script (shell wrapper) | `allow` | Already none — add wrapper log to activity JSONL optional | Future |
 
-**Minimum viable (P0):** Keep fail-open stdout; add **structured JSON lines on stderr** from `hook_policy.py`; stop suppressing stderr in shell wrappers (or tee to `.cursor/logs/hook-policy-errors.jsonl`).
+**Minimum viable (P0):** Keep fail-open stdout; add **structured JSON lines on stderr** from `hook_policy.py`; stop suppressing stderr in shell wrappers (or tee to `logs/hook-policy-errors.jsonl`).
 
 ### Files to touch
 
