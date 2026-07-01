@@ -28,6 +28,11 @@ Subagents live in `.cursor/agents/` and appear in **Settings > Subagents**. Invo
 | PERFORMANCE | performance_engineer.md | claude-4.6-sonnet-medium-thinking |
 | DATA_ENGINEER | data_engineer.md | composer-2.5-fast |
 | INCIDENT | incident_responder.md | claude-4.6-sonnet-medium-thinking |
+| AI_PLATFORM | ai_platform_engineer.md | composer-2.5-fast |
+| BOT_DESIGNER | bot_conversation_designer.md | claude-4.6-sonnet-medium-thinking |
+| AI_SAFETY | ai_safety_engineer.md | claude-opus-4-8-thinking-high |
+| AI_OBSERVABILITY | ai_observability_engineer.md | claude-4.6-sonnet-medium-thinking |
+| RAG_ENGINEER | rag_engineer.md | composer-2.5-fast |
 
 ## CORE SUBAGENTS
 
@@ -100,6 +105,23 @@ ETL/ELT, pipelines, data quality. Idempotent, incremental, Airflow/Prefect/Dagst
 
 ### INCIDENT (incident_responder.md)
 Debugging and production incidents. Reproduce, isolate, evidence-driven RCA. Mitigation vs remediation. Logs, metrics, traces; minimal repro; postmortem structure. Redact secrets in evidence.
+
+## AI INFRASTRUCTURE SUBAGENTS
+
+### AI_PLATFORM (ai_platform_engineer.md)
+Bot gateway, channel adapters, sessions, rate limits, policy middleware, scaling.
+
+### BOT_DESIGNER (bot_conversation_designer.md)
+Customer conversation flows, persona, handoff, end-user tone. Runtime personas live in `templates/ai-runtime/bots/examples/`.
+
+### AI_SAFETY (ai_safety_engineer.md)
+Prompt injection, content policy, tool risk, OWASP LLM, red-team review.
+
+### AI_OBSERVABILITY (ai_observability_engineer.md)
+LLM traces, audit logs, evals, SLOs, incident correlation.
+
+### RAG_ENGINEER (rag_engineer.md)
+Corpus ingest, chunking, embeddings, vector index, hybrid retrieval, citations. Escalates ETL to `DATA_ENGINEER`.
 
 ## RULES (TECHNICAL STANDARDS)
 
