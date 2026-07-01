@@ -1,5 +1,5 @@
 ---
-description: MCP integration policy - data sources, safety boundaries, and fallback behavior
+description: MCP integration policy — CLI-first token routing, safety boundaries, and fallback behavior
 alwaysApply: true
 ---
 
@@ -12,11 +12,37 @@ alwaysApply: true
 - Docs KB MCP (Confluence/Notion/internal docs) for ADR/spec/doc sync.
 - Database MCP in read-only mode for schema/data validation and diagnostics.
 
+**CLI vs MCP (token routing)**: Prefer a direct shell command when an equivalent official CLI exists and returns narrow output in one step. MCP adds schema reads and verbose payloads — use it when CLI is missing, unauthenticated, or clearly more round-trips.
+
+**Prefer shell when**:
+- Local repo facts → `git`, `grep`, Read/Glob (never MCP).
+- GitHub → `gh` with `--json` / `--jq` for minimal fields.
+- Tests, deps, builds → project CLI (`pytest`, `poetry`, `npm`, `go`).
+- DB diagnostics when shell access exists → CLI or migrations before Database MCP.
+
+**Prefer MCP when**:
+- No stable CLI for that service (docs KB, some incident tools).
+- One MCP call replaces a fragile multi-step shell workflow.
+- User or project docs explicitly target that MCP server for the task.
+
+| Need | Primary (CLI/Shell) | Fallback (MCP) |
+|------|---------------------|----------------|
+| PR/checks/issues | `gh` | GitHub MCP |
+| Git history/diff | `git` | (none — local) |
+| Code search | `grep` / semantic search | (none) |
+| Confluence/spec | (none) | Docs MCP |
+| Jira/Linear status | Vendor CLI (if installed) | Jira/Linear MCP |
+| Remote DB schema | `psql` (if local) | Database MCP |
+
+**Do not**:
+- Author scripts, wrappers, or pipelines solely to bypass MCP. Scripts are for deliverables, not for routing tool choice.
+- Read MCP tool schemas when the CLI path is already known.
+
 **Read-only by default**: Treat MCP operations as read-only unless the user explicitly requests state changes (create/update/delete/deploy/publish/migrations).
 
 **Approval on risky tools**: If MCP tool name implies write/deploy/destructive behavior, require explicit user confirmation before execution. **Uncataloged MCP tools** also require confirmation (`mcp_unknown: ask`).
 
-**Evidence first**: When MCP data exists, use it as primary evidence for review/signoff/incidents instead of guessing.
+**Evidence first**: Use the leanest tool that returns authoritative data (CLI, MCP, or local repo). Do not guess. CLI output counts equally with MCP. If the preferred source is unavailable, fall back and state the gap.
 
 **Fallback behavior**: If MCP is unavailable/auth fails, continue with local repo evidence and clearly state the gap.
 

@@ -14,7 +14,7 @@ Rules sync to `.cursor/rules/` from `templates/rules/`. They load **automaticall
 | `ai-guardrails.mdc` | Ground truth, minimal diffs, mandatory logging/comments on new code |
 | `observability.mdc` | Logs, metrics, traces, audit, redaction |
 | `token-efficiency.mdc` | Concise I/O, references over pastes |
-| `mcp-integrations.mdc` | MCP read-only default; approval for writes |
+| `mcp-integrations.mdc` | MCP safety + CLI-first token routing; approval for writes |
 | `resource-usage-report.mdc` | Agent prepends Resources used table (full enumeration; rules, skills, agents, hooks) |
 | `performance.mdc` | Profiling, complexity, N+1 (always applied) |
 
