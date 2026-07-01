@@ -45,6 +45,7 @@ FILE_SCOPED_RULES: tuple[RuleEntry, ...] = (
     RuleEntry("ai-safety.mdc", ("**/bots/**", "**/ai-runtime/**", "**/ai-gateway/**", "**/prompts/**")),
     RuleEntry("ai-pii.mdc", ("**/bots/**", "**/ai-gateway/**", "**/rag/**")),
     RuleEntry("rag-pipeline.mdc", ("**/rag/**", "**/retrieval/**", "**/embeddings/**", "**/vector/**")),
+    RuleEntry("llm-gateway.mdc", ("**/ai-gateway/**", "**/bots/**/gateway/**")),
 )
 
 # Distinctive phrases per skill — avoid bare terms shared across domains (e.g. "release", "cleanup").
@@ -318,6 +319,8 @@ PROMPT_RULE_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("architecture.mdc", ("architecture", "adr", "tradeoff", "system design")),
     ("code-review.mdc", ("code review", "pull request", " pr ", "review")),
     ("rag-pipeline.mdc", ("rag", "knowledge base", "vector", "embedding", "retrieval", "corpus")),
+    ("llm-gateway.mdc", ("llm gateway", "ai gateway", "bot gateway", "circuit breaker", "llm timeout")),
+    ("ai-safety.mdc", ("prompt injection", "jailbreak", "bot safety", "content policy")),
 )
 
 
