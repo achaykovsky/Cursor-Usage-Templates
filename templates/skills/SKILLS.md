@@ -42,7 +42,7 @@ Format: `skill-name` | trigger phrases | optional `@agent`
 | `add-error-handling-to-code` | add error handling, custom/specific exceptions | — |
 | `audit-codebase-cleanup` | dead code, duplication audit | `REVIEWER` |
 | `review-architecture-fit` | does this fit architecture | `ARCHITECT` |
-| `review-pull-request` | PR review, review this change | `REVIEWER` |
+| `review-pull-request` | PR review, address review comments, review this change | `REVIEWER` |
 
 ## config-workflows
 
