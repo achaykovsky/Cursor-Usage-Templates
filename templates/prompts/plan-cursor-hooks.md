@@ -39,9 +39,9 @@ Specifications for hooks to implement. Scripts save tokens; skills apply when ag
 | Name | Trigger | Script | Status |
 |------|---------|--------|--------|
 | **validate-git-commit** | `beforeShellExecution` | `validate-git-commands.ps1` | Enforces length (≤72), conventional format. Create `.cursor/allow-non-conventional-commit` to skip. |
-| **warn-force-push** | `beforeShellExecution` | `validate-git-commands.ps1` | Denies `git push --force` on main/master; allows `--force-with-lease`. |
+| **warn-force-push** | `beforeShellExecution` | `validate-git-commands.ps1` | Denies history rewrite: `rebase`, `reset --hard`, force push (all branches), amend on pushed HEAD, bad `gh pr merge` flags. |
 | **suggest-commit-split** | `stop` | `suggest-commit-on-stop.ps1` | Groups changed files by type (feat/docs/test/chore); suggests commit split. |
-| **block-git-reset-hard** | `beforeShellExecution` | `block-destructive-shell.ps1` | Blocks `git reset --hard origin`. |
+| **block-git-reset-hard** | `beforeShellExecution` | `validate-git-commands.ps1` | `git reset --hard` handled by `git_history_rewrite` in policy engine (not `block-destructive-shell`). |
 | **validate-pre-push** | `beforeShellExecution` | `validate-pre-push.ps1` | Runs `pytest` or `npm test` before push if pyproject.toml/package.json present. |
 
 ### Log Hooks
