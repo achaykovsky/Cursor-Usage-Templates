@@ -1,0 +1,17 @@
+# Bot manifests
+
+Runtime persona and channel config — **not** Cursor `@agent()` entries.
+
+| Path | Purpose |
+|------|---------|
+| [manifest.schema.json](manifest.schema.json) | Required fields: id, channels, persona, tools, data retention |
+| [examples/faq-bot.json](examples/faq-bot.json) | FAQ-style bot sample |
+| [examples/support-bot.json](examples/support-bot.json) | Support bot with handoff sample |
+
+## Validate
+
+```bash
+python templates/ai-runtime/validate_bot_runtime.py manifest <path.json>
+```
+
+**Authoring:** skill [design-customer-facing-agent](../../skills/SKILLS.md), @agent(BOT_DESIGNER). **Policy:** [policy/default.bot.policy.json](../policy/default.bot.policy.json).
