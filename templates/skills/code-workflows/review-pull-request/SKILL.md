@@ -1,11 +1,16 @@
 ---
 name: review-pull-request
-description: Performs end-to-end PR or repo review: diff analysis, checklist against project or team standards, structured feedback (CRITICAL, WARNING, GOOD), and follow-up verification. Use when the user asks for a PR or code review, "review all Python files," "clean-code standards," or when context includes staged or diff content.
+description: Performs end-to-end PR review or author feedback resolution: diff analysis, checklist, structured feedback (CRITICAL, WARNING, GOOD), triage/fix/reply/resolve review threads, and follow-up verification. Use for PR review, addressing reviewer comments on your PR, or when context includes staged or diff content.
 ---
 
 # Review Pull Request
 
-## Workflow
+## Routing: reviewer vs author
+
+- **Reviewer** (someone else's PR): sections **Reviewer workflow** and **Output Contract** below.
+- **Author** (your PR got comments): use **Address review feedback (author)** — fix, reply, resolve threads, re-request review.
+
+## Reviewer workflow
 
 1. **Gather context**
    - Obtain the full diff (staged, unstaged, or branch comparison). Use `git diff` or provided patch.
@@ -41,3 +46,16 @@ description: Performs end-to-end PR or repo review: diff analysis, checklist aga
 
 - If findings are primarily security-sensitive, run `security-scan-changes` as the primary in-template security review step.
 - For frontend-only deep quality checks, route execution to FE agents and keep this skill focused on cross-stack PR hygiene.
+
+## Address review feedback (author)
+
+After opening a PR and receiving review comments:
+
+1. **Fetch threads** — `gh pr view <n> --comments`, `gh api` review threads, or GitHub MCP `pull_request_read`.
+2. **Triage** — valid bug/security/contract → fix; nit → fix or reply with rationale; out of scope → reply and open a follow-up issue.
+3. **Fix** on the same branch; run the full test suite locally; push (triggers CI).
+4. **Reply on every thread** — cite file/commit or explain why not changing.
+5. **Resolve** each thread via GitHub UI/API after the fix is pushed.
+6. **Re-request review** when all threads are resolved and required checks are green.
+
+Do not merge until CI passes, threads are resolved, and approvals are satisfied. Follow `git-github-workflow.mdc` for merge method (merge commit only, keep branch).
