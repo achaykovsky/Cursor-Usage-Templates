@@ -34,7 +34,10 @@
     },
     "user-github": {
       "prefix_read": ["get_", "list_", "search_"],
-      "prefix_write": ["create_", "update_", "delete_", "merge_", "close_"]
+      "prefix_write": ["create_", "update_", "delete_", "merge_", "close_"],
+      "tools": {
+        "merge_pull_request": "write"
+      }
     },
     "user-jira": {
       "prefix_read": ["get_", "list_", "search_"],
@@ -53,6 +56,9 @@
     "git_add_or_commit": {
       "write_when": { "action": ["commit"] },
       "read_when": { "action": ["add"] }
+    },
+    "merge_pull_request": {
+      "deny_when": { "merge_method": ["squash", "rebase"] }
     }
   }
 }

@@ -17,6 +17,7 @@ Rules sync to `.cursor/rules/` from `templates/rules/`. They load **automaticall
 | `mcp-integrations.mdc` | MCP safety + CLI-first token routing; approval for writes |
 | `resource-usage-report.mdc` | Agent prepends Resources used table (full enumeration; rules, skills, agents, MCP, hooks) |
 | `performance.mdc` | Profiling, complexity, N+1 (always applied) |
+| `git-github-workflow.mdc` | Merge commits, append-only history, CI-before-merge, PR review resolution |
 
 ---
 
