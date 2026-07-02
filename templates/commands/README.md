@@ -96,7 +96,7 @@ Limit what `TemplatesToLocal` / `TemplatesToGlobal` syncs:
 |-------|--------|
 | *(default)* | `agents`, `rules`, `hooks`, `skills`, `catalogs` |
 | `hooks` | `hooks.json`, `hooks/scripts/*`, `hooks/policy/` only |
-| `hooks,rules` | hooks bundle + `rules/*.mdc` |
+| `hooks,rules` | hooks bundle + `templates/rules/*.mdc` |
 
 ```bash
 python templates/commands/sync-cursor.py --components hooks
