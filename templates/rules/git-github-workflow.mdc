@@ -1,0 +1,39 @@
+---
+description: Git and GitHub PR workflow — merge commits, append-only history, CI gates, review resolution
+alwaysApply: true
+---
+
+# Git & GitHub Workflow
+
+**Merge & branches**
+- PR merge: **merge commit only** (`gh pr merge --merge`, MCP `merge_method: "merge"`). Never squash or rebase at merge.
+- **Keep branches** after merge — never `--delete-branch` / `delete_branch: true`. Cleanup is manual and optional.
+- Sync with base: `git merge origin/<base>` or `gh pr update-branch` (merge). Never `git rebase` onto shared branches.
+
+**Append-only history**
+- No `rebase`, `reset --hard`, `filter-branch`/`filter-repo`, or `push --force` / `--force-with-lease` unless the user explicitly requests a documented one-off exception (override via `.cursor/hook-policy.json` `git_history_rewrite: ask`).
+- `git commit --amend`: only when HEAD is **unpushed** (branch ahead of remote, not up to date). Follow the user's committing-changes-with-git rule for amend eligibility.
+- Prefer shell `git` for push; do not use GitLens/GitKraken MCP `git_push` to bypass shell hooks.
+
+**Merge gates**
+- Before merge: verify **all** required CI checks pass (`gh pr checks --json name,state,bucket` or GitHub MCP `pull_request_read`). `FAILURE`, `PENDING`, or missing required checks → **block merge**.
+- Never admin merge, ruleset bypass, or `gh pr merge --admin`. Fix or revert — do not merge on red CI.
+- Run the **full** test suite locally before opening/updating a PR. `validate-pre-push` with `pre_push: deny` blocks push on failure; a bypassed push is not merge-ready.
+
+**PR review loop (author)**
+1. Fetch all review threads (`gh api`, `pull_request_read`).
+2. Triage: fix valid issues; reply with rationale for nits/out-of-scope.
+3. Push fixes; wait for CI green.
+4. **Reply on every thread** with what changed (file/commit) or why not.
+5. **Resolve** each thread after the fix is pushed.
+6. Re-request review when threads are resolved and checks pass.
+
+**Hygiene**
+- Small PRs; link issues; PR body includes a **Test plan** checklist.
+- Draft PR while WIP; conventional commits (hooks enforce format).
+- No self-approval; wait for CODEOWNERS/required reviewers.
+- Prefer `gh` for PR ops; MCP writes (merge, comment) need explicit user request per `suggest-commands-dont-run-destructive`.
+
+**Cross-refs**: `prepare-atomic-commit`, `review-pull-request`, `validate-pre-deploy`, [HOOKS_USAGE.md](../hooks/HOOKS_USAGE.md).
+
+**Limits**: GitHub admin bypass is not enforceable in Cursor — use ruleset `bypass_actors: []` + required checks. MCP merge requires a prior checks read. Regulated repos: set `policy_engine_error: deny` in `.cursor/hook-policy.json` (secure baseline).
