@@ -21,11 +21,11 @@
 
 | Path | Purpose |
 |------|---------|
-| [bots/](bots/) | Bot manifest schema + examples |
+| [bots/](bots/) | Bot manifest schema + examples — [bots/README.md](bots/README.md) |
 | [policy/](policy/) | Runtime deny/ask/allow policy (mirrors `hooks/policy/`) |
-| [guardrails/](guardrails/) | Input, output, and handoff policies |
-| [observability/](observability/) | Traces, audit schema, eval metrics |
-| [channels/](channels/) | Slack, web widget, API adapter notes |
+| [guardrails/](guardrails/) | Input, output, and handoff policies — [guardrails/README.md](guardrails/README.md) |
+| [observability/](observability/) | Traces, audit schema, eval metrics — [observability/README.md](observability/README.md) |
+| [channels/](channels/) | Slack, web widget, API adapter notes — [channels/README.md](channels/README.md) |
 | [rag/](rag/) | Corpus manifests, golden eval fixtures |
 
 ---
@@ -56,6 +56,33 @@ Skill: `orchestrate-ai-bot-delivery` routes steps. Agents: `BOT_DESIGNER`, `AI_P
 ## Policy vocabulary
 
 Reuse the same modes as Cursor hooks (`deny`, `ask`, `allow`, `advisory`, `log`). Runtime gateway middleware should load [policy/default.bot.policy.json](policy/default.bot.policy.json) and [policy/tool-risk-catalog.json](policy/tool-risk-catalog.json).
+
+---
+
+## Security & guardrails checklist
+
+| Control | Artifact |
+|---------|----------|
+| Input sanitization | [guardrails/input-sanitization.md](guardrails/input-sanitization.md), rule `ai-safety.mdc` |
+| Tool allowlist / risk tiers | [policy/tool-risk-catalog.json](policy/tool-risk-catalog.json), [policy/default.bot.policy.json](policy/default.bot.policy.json) |
+| Output policy | [guardrails/output-policy.md](guardrails/output-policy.md), rule `ai-customer-facing.mdc` |
+| Human handoff triggers | [guardrails/human-handoff.md](guardrails/human-handoff.md), skill `implement-human-handoff` |
+| Rate limits / abuse | skill `implement-ai-rate-limiting` |
+| Audit separation | [observability/conversation-audit.schema.json](observability/conversation-audit.schema.json), skill `design-ai-observability` |
+
+---
+
+## Validate locally
+
+```bash
+python templates/ai-runtime/validate_bot_runtime.py manifest <path.json>
+python templates/ai-runtime/validate_bot_runtime.py policy <path.json>
+python templates/ai-runtime/validate_bot_runtime.py audit-event <path.json>
+python templates/ai-runtime/validate_bot_runtime.py corpus <path.json>
+python templates/ai-runtime/validate_bot_runtime.py golden <path.json>
+```
+
+See also [rag/README.md](rag/README.md) and [policy/README.md](policy/README.md).
 
 ---
 
