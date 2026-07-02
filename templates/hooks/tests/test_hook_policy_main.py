@@ -96,33 +96,75 @@ def test_force_push_main_denied(tmp_path: Path) -> None:
     assert result["permission"] == "deny"
 
 
-def test_force_push_with_lease_allowed(tmp_path: Path) -> None:
-    """--force-with-lease is safer than bare --force and is allowed on protected branches."""
+def test_force_push_with_lease_denied(tmp_path: Path) -> None:
+    """Force-with-lease rewrites remote history — blocked by git_history_rewrite policy."""
     (tmp_path / ".git").mkdir()
     payload = _payload("git push --force-with-lease", cwd=str(tmp_path), workspace_roots=[str(tmp_path)])
-    with patch("subprocess.check_output", return_value="main\n"):
-        result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(tmp_path))
-    assert result["permission"] == "allow"
+    result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(tmp_path))
+    assert result["permission"] == "deny"
 
 
-def test_force_push_feature_branch_allowed(tmp_path: Path) -> None:
-    """Force push on non-default branches is permitted — common rebase workflow."""
+def test_force_push_feature_branch_denied(tmp_path: Path) -> None:
+    """Force push on any branch is blocked when git_history_rewrite is deny."""
     (tmp_path / ".git").mkdir()
     payload = _payload("git push --force", cwd=str(tmp_path), workspace_roots=[str(tmp_path)])
-    with patch("subprocess.check_output", return_value="feature/x\n"):
-        result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(tmp_path))
-    assert result["permission"] == "allow"
+    result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(tmp_path))
+    assert result["permission"] == "deny"
 
 
-def test_force_push_subprocess_failure_allows(tmp_path: Path) -> None:
-    """If branch detection fails, fail-open to allow — avoid blocking when git is unavailable."""
+def test_force_push_subprocess_failure_still_denied_by_pattern(tmp_path: Path) -> None:
+    """Force push is denied by regex even when branch detection is unavailable."""
     (tmp_path / ".git").mkdir()
     payload = _payload("git push --force", cwd=str(tmp_path), workspace_roots=[str(tmp_path)])
-    import subprocess
+    result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(tmp_path))
+    assert result["permission"] == "deny"
 
-    with patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "git")):
+
+def test_rebase_denied() -> None:
+    """Interactive or branch rebase rewrites history."""
+    payload = _payload("git rebase main")
+    result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(None))
+    assert result["permission"] == "deny"
+
+
+def test_gh_pr_merge_squash_denied() -> None:
+    payload = _payload("gh pr merge 42 --squash")
+    result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(None))
+    assert result["permission"] == "deny"
+
+
+def test_amend_allowed_when_ahead_only(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    payload = _payload(
+        'git commit --amend -m "feat: refine login"',
+        cwd=str(tmp_path),
+        workspace_roots=[str(tmp_path)],
+    )
+    with patch("subprocess.check_output", return_value="## feature/x...origin/feature/x [ahead 1]\n"):
         result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(tmp_path))
     assert result["permission"] == "allow"
+
+
+def test_amend_denied_when_up_to_date_with_remote(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    payload = _payload(
+        'git commit --amend -m "feat: refine login"',
+        cwd=str(tmp_path),
+        workspace_roots=[str(tmp_path)],
+    )
+    with patch("subprocess.check_output", return_value="## main...origin/main\n"):
+        result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(tmp_path))
+    assert result["permission"] == "deny"
+
+
+def test_mcp_merge_pull_request_squash_denied() -> None:
+    payload = {
+        "server": "user-github",
+        "tool_name": "merge_pull_request",
+        "arguments": {"owner": "o", "repo": "r", "pullNumber": 1, "merge_method": "squash"},
+    }
+    result = hook_policy.classify_mcp(payload, hook_policy.load_policy(None))
+    assert result["permission"] == "deny"
 
 
 def test_project_override_db_shell_off(tmp_path: Path) -> None:
@@ -284,7 +326,6 @@ def test_windows_cmd_exe_git_commit() -> None:
         "rm -rf /",
         "rm -rf $HOME",
         ":(){ :|:& };:",
-        "git reset --hard origin",
         'psql -c "DROP TABLE users"',
         "echo DELETE FROM users;",
     ],
@@ -295,6 +336,13 @@ def test_shell_destructive_denies_known_patterns(cmd: str) -> None:
     result = hook_policy.classify_shell_destructive(payload, hook_policy.load_policy(None))
     assert result["permission"] == "deny"
     assert result["user_message"] == hook_policy._DESTRUCTIVE_USER_MSG
+
+
+def test_git_reset_hard_denied_via_shell_git() -> None:
+    """git reset --hard is handled by git_history_rewrite in shell-git, not shell-destructive."""
+    payload = _payload("git reset --hard origin")
+    result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(None))
+    assert result["permission"] == "deny"
 
 
 def test_shell_destructive_allows_safe_command() -> None:

@@ -1,0 +1,1 @@
+{"domain": "shell-git", "payload": {"command": "git push --force origin feature/x", "workspace_roots": ["/proj"]}, "permission": "deny"}
