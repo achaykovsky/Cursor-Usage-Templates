@@ -7,6 +7,7 @@
     "mcp_unknown": "ask",
     "git_commit_format": "deny",
     "git_commit_unparsed": "allow",
+    "git_history_rewrite": "deny",
     "pre_push": "deny"
   },
   "shared_destructive_sql": {
@@ -82,8 +83,7 @@
     "deny": [
       { "id": "rm_rf_root", "pattern": "(?i)rm\\s+-rf\\s+/" },
       { "id": "rm_rf_home", "pattern": "(?i)rm\\s+-rf\\s+\\$" },
-      { "id": "fork_bomb", "pattern": ":\\s*\\(\\s*\\)\\s*\\{\\s*:\\s*\\|" },
-      { "id": "git_reset_hard_origin", "pattern": "(?i)git\\s+reset\\s+--hard\\s+origin" }
+      { "id": "fork_bomb", "pattern": ":\\s*\\(\\s*\\)\\s*\\{\\s*:\\s*\\|" }
     ]
   },
   "pre_push": {
@@ -96,7 +96,19 @@
     "conventional_commits": true,
     "max_subject_length": 72,
     "min_subject_length": 10,
-    "conventional_pattern": "^(feat|fix|chore|docs|refactor|test|style|perf|build|ci)(\\([a-z0-9-]+\\))?!?: .+"
+    "conventional_pattern": "^(feat|fix|chore|docs|refactor|test|style|perf|build|ci)(\\([a-z0-9-]+\\))?!?: .+",
+    "history_rewrite_deny": [
+      { "id": "rebase", "pattern": "(?i)\\bgit\\s+rebase\\b" },
+      { "id": "reset_hard", "pattern": "(?i)\\bgit\\s+reset\\s+--hard\\b" },
+      { "id": "amend_pushed", "pattern": "(?i)\\bgit\\s+commit\\b.*--amend\\b" },
+      { "id": "force_push", "pattern": "(?i)\\bgit\\s+push\\b.*--force(-with-lease)?\\b" },
+      { "id": "filter_history", "pattern": "(?i)\\bgit\\s+(filter-branch|filter-repo)\\b" }
+    ],
+    "gh_merge_deny_flags": [
+      { "id": "squash_merge", "pattern": "(?i)\\bgh\\s+pr\\s+merge\\b.*--squash\\b" },
+      { "id": "rebase_merge", "pattern": "(?i)\\bgh\\s+pr\\s+merge\\b.*--rebase\\b" },
+      { "id": "delete_branch", "pattern": "(?i)\\bgh\\s+pr\\s+merge\\b.*--delete-branch\\b" }
+    ]
   },
   "mcp": {
     "default_unknown_risk": "unknown",

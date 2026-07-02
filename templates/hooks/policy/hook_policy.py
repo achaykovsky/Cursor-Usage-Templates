@@ -611,6 +611,112 @@ def _extract_commit_message(cmd: str, argv: list[str]) -> str | None:
     return None
 
 
+def _git_history_rewrite_mode(policy: dict[str, Any]) -> str:
+    return str((policy.get("modes") or {}).get("git_history_rewrite", "deny"))
+
+
+def _history_rewrite_action(
+    mode: str,
+    user_msg: str,
+    agent_msg: str,
+    rule_id: str,
+) -> dict[str, Any]:
+    if mode in ("off", "allow"):
+        return _allow_shell()
+    if mode == "advisory":
+        _emit_log("warn", "policy_would_deny", domain="shell-git", rule_id=rule_id)
+        return _allow_shell()
+    if mode == "log":
+        _emit_log("info", "policy_would_deny", domain="shell-git", rule_id=rule_id)
+        return _allow_shell()
+    if mode == "ask":
+        return _ask_shell(user_msg, agent_msg)
+    return _deny_shell(user_msg, agent_msg)
+
+
+def _amend_rewrites_pushed_history(git_root: Path) -> bool:
+    """True when amend would rewrite a commit already reachable on the tracking branch."""
+    if not (git_root / ".git").is_dir():
+        return False
+    try:
+        status = subprocess.check_output(
+            ["git", "-C", str(git_root), "status", "-sb"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        # Fail closed: cannot verify unpushed-only amend eligibility.
+        return True
+    first_line = status.splitlines()[0] if status else ""
+    if "..." not in first_line:
+        return False
+    if "[ahead" in first_line and "[behind" not in first_line:
+        return False
+    return True
+
+
+def _match_policy_pattern_rules(cmd: str, rules: list[dict[str, Any]]) -> dict[str, Any] | None:
+    for rule in rules:
+        pat = rule.get("pattern")
+        if pat and re.search(pat, cmd):
+            return rule
+    return None
+
+
+def _classify_git_history_rewrite(
+    cmd: str, git_cfg: dict[str, Any], policy: dict[str, Any], git_root: Path | None
+) -> dict[str, Any] | None:
+    mode = _git_history_rewrite_mode(policy)
+    if mode in ("off", "allow"):
+        return None
+
+    for rule in git_cfg.get("gh_merge_deny_flags") or []:
+        pat = rule.get("pattern")
+        if pat and re.search(pat, cmd):
+            rule_id = str(rule.get("id", "gh_merge_flag"))
+            return _history_rewrite_action(
+                mode,
+                f"Blocked: {rule_id.replace('_', ' ')} is not allowed by git-github-workflow policy.",
+                "Use merge commit only; do not delete the branch. See git-github-workflow.mdc.",
+                rule_id,
+            )
+
+    matched = _match_policy_pattern_rules(cmd, git_cfg.get("history_rewrite_deny") or [])
+    if not matched:
+        return None
+
+    rule_id = str(matched.get("id", "history_rewrite"))
+    if rule_id == "amend_pushed":
+        if git_root and not _amend_rewrites_pushed_history(git_root):
+            return None
+        return _history_rewrite_action(
+            mode,
+            "Blocked: git commit --amend would rewrite history already on the remote.",
+            "Amend only when the branch is ahead (unpushed). Add a new commit otherwise.",
+            rule_id,
+        )
+
+    return _history_rewrite_action(
+        mode,
+        f"Blocked: {rule_id.replace('_', ' ')} rewrites git history.",
+        "Use merge commits and forward fixes. Override via modes.git_history_rewrite in hook-policy.json "
+        "only for documented emergencies.",
+        rule_id,
+    )
+
+
+def _mcp_tool_arguments_denied(tool: str, args: dict[str, Any], policy: dict[str, Any]) -> bool:
+    catalog = policy.get("_mcp_tools") or {}
+    deny_when = (catalog.get("tool_arguments") or {}).get(tool, {}).get("deny_when")
+    if not deny_when:
+        return False
+    for key, values in deny_when.items():
+        val = args.get(key)
+        if val is not None and str(val) in [str(v) for v in values]:
+            return True
+    return False
+
+
 def classify_shell_git(payload: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any]:
     logger.info("classify_shell_git_enter", extra={})
     cmd = _first(payload, ("command",))
@@ -626,6 +732,10 @@ def classify_shell_git(payload: dict[str, Any], policy: dict[str, Any]) -> dict[
 
     git_cfg = policy.get("git") or {}
     modes = policy.get("modes") or {}
+
+    history_block = _classify_git_history_rewrite(cmd, git_cfg, policy, git_root)
+    if history_block is not None:
+        return history_block
 
     msg = _extract_commit_message(cmd, argv)
     if msg is not None:
@@ -673,26 +783,6 @@ def classify_shell_git(payload: dict[str, Any], policy: dict[str, Any]) -> dict[
                 "Could not parse commit message for validation.",
                 "Use git commit -m \"type(scope): description\" or prepare-atomic-commit.",
             )
-
-    if re.search(r"\bgit\s+push\b", cmd):
-        has_force = bool(
-            re.search(r"(^|\s)--force(\s|$)", cmd) and not re.search(r"--force-with-lease", cmd)
-        )
-        if has_force and git_root and (git_root / ".git").is_dir():
-            try:
-                branch = subprocess.check_output(
-                    ["git", "-C", str(git_root), "branch", "--show-current"],
-                    text=True,
-                    stderr=subprocess.DEVNULL,
-                ).strip()
-            except (OSError, subprocess.CalledProcessError):
-                branch = ""
-            protected = set(git_cfg.get("protected_branches", ["main", "master"]))
-            if branch in protected:
-                return _deny_shell(
-                    f"Force push to {branch} is blocked. Use --force-with-lease if you must.",
-                    "Use suggest-commands-dont-run-destructive: suggest the command for the user to run.",
-                )
 
     logger.info("classify_shell_git_exit", extra={"decision": "allow"})
     return _allow_shell()
@@ -775,6 +865,16 @@ def classify_mcp(payload: dict[str, Any], policy: dict[str, Any]) -> dict[str, A
     args = payload.get("arguments") or payload.get("tool_input") or payload.get("args") or {}
     if not isinstance(args, dict):
         args = {}
+
+    if _mcp_tool_arguments_denied(tool, args, policy):
+        mode = _git_history_rewrite_mode(policy)
+        logger.info("classify_mcp_denied_args", extra={"tool": tool, "mode": mode})
+        return _history_rewrite_action(
+            mode,
+            f"MCP tool '{tool}' arguments violate git-github-workflow policy (e.g. squash/rebase merge).",
+            "Use merge_method merge only; verify CI checks before merge_pull_request.",
+            f"mcp_{tool}",
+        )
 
     risk = _mcp_risk_from_catalog(server, tool, args, policy)
     modes = policy.get("modes") or {}

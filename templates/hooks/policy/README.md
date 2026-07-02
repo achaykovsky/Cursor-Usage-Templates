@@ -24,6 +24,8 @@ Per-server `prefix_read` / `prefix_write` in `mcp_tools.json` are applied when a
 
 **`pre_push`:** `validate-pre-push` calls `python hook_policy.py pre-push`. Missing test runner (poetry/npm/pytest) → **ask** + stderr `pre_push_runner_missing`. Failed tests → **deny** by default; set `modes.pre_push` to `advisory` to warn-only.
 
+**`git_history_rewrite`:** `validate-git-commands` denies `rebase`, `reset --hard`, force push, amend on pushed HEAD, and disallowed `gh pr merge` flags. MCP `merge_pull_request` with `merge_method` squash/rebase is denied via `tool_arguments.deny_when`. Override with `modes.git_history_rewrite` (`ask` / `off` for emergencies only).
+
 ## Fail-open contract
 
 **Decision:** Hooks must not brick Cursor sessions when Python is missing, policy JSON is corrupt, or the classifier raises. **Stdout** always emits a valid hook response JSON object; on infrastructure or engine errors the default is `permission: allow` (exit 0).
