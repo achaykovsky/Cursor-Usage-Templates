@@ -14,4 +14,4 @@ Runtime persona and channel config — **not** Cursor `@agent()` entries.
 python templates/ai-runtime/validate_bot_runtime.py manifest <path.json>
 ```
 
-**Authoring:** skill `design-customer-facing-agent`, `@agent(BOT_DESIGNER)`. **Policy:** [policy/default.bot.policy.json](../policy/default.bot.policy.json).
+**Authoring:** skill [design-customer-facing-agent](../../skills/SKILLS.md), @agent(BOT_DESIGNER). **Policy:** [policy/default.bot.policy.json](../policy/default.bot.policy.json).

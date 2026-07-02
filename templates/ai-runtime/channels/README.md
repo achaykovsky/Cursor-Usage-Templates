@@ -1,6 +1,6 @@
 # Channel adapters
 
-Integration notes for customer-facing bot surfaces. Implement in app repos using skill `implement-bot-gateway`.
+Integration notes for customer-facing bot surfaces. Implement in app repos using skill [implement-bot-gateway](../../skills/SKILLS.md).
 
 | Channel | Doc |
 |---------|-----|

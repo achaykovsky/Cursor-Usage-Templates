@@ -8,4 +8,4 @@ Customer-facing safety policies for deployed bots (gateway middleware + prompt t
 | [output-policy.md](output-policy.md) | No secrets, stack traces, or internal IDs in channel copy |
 | [human-handoff.md](human-handoff.md) | Escalation triggers and operator handoff contract |
 
-**Rules:** `ai-customer-facing.mdc`, `ai-safety.mdc`. **Skills:** `add-prompt-injection-defenses`, `implement-human-handoff`.
+**Rules:** [ai-customer-facing.mdc](../../rules/ai-customer-facing.mdc), [ai-safety.mdc](../../rules/ai-safety.mdc). **Skills:** [add-prompt-injection-defenses](../../skills/SKILLS.md), [implement-human-handoff](../../skills/SKILLS.md).
