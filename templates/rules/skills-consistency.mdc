@@ -13,6 +13,12 @@ alwaysApply: false
 
 **Contracts over defaults**: For API behavior, prefer explicit project contract/policy over framework defaults.
 
+**Constraint formatting**: Do not chain independent requirements with semicolons. Use bullets or separate lines so agents can parse each requirement independently.
+
+**Semicolon exception**: Semicolons are acceptable only for tightly related sub-actions inside a single workflow step.
+
+**Canonical references**: Link named rules, skills, and catalogs to canonical files/indexes when available (`templates/rules/*.mdc`, `templates/skills/SKILLS.md`, section entry `README.md`).
+
 **Authoring path**: Edit `templates/skills/**/SKILL.md`; sync (or `sync-templates-to-local` hook) copies to `.cursor/skills/`.
 
 **No contradictory examples**: Do not include snippets that violate security/rule guidance (e.g., hardcoded secrets, unsafe defaults).

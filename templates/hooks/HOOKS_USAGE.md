@@ -127,15 +127,15 @@ Default `default.policy.json` stays fail-open on engine errors so personal/dev m
 
 ## Related skills (when hooks flag an issue)
 
-| Hook context | Skill |
-|--------------|-------|
-| Destructive shell | `suggest-commands-dont-run-destructive` |
-| Sensitive reads / output | `redact-sensitive-in-output`, `sensitive-data-handling` |
-| RAG corpus edits | `rag-pipeline` rule, `orchestrate-rag-delivery`, `sensitive-data-handling` |
-| Bot manifest / AI policy edits | `ai-customer-facing` rule, `evaluate-ai-safety-policy`, `orchestrate-ai-bot-delivery` |
-| Session end / commits | `prepare-atomic-commit` |
-| Pre-push / deploy | `validate-pre-deploy` |
-| Template edits | `skills-consistency` rule + `validate-template-consistency` hook + `sync-templates-to-local` (templates → `.cursor/`) |
+| Hook context | Rule | Skill |
+|--------------|------|-------|
+| Destructive shell | — | `suggest-commands-dont-run-destructive` |
+| Sensitive reads / output | — | `redact-sensitive-in-output`, `sensitive-data-handling` |
+| RAG corpus edits | [rag-pipeline.mdc](../rules/rag-pipeline.mdc) | `orchestrate-rag-delivery`, `sensitive-data-handling` |
+| Bot manifest / AI policy edits | [ai-customer-facing.mdc](../rules/ai-customer-facing.mdc) | `evaluate-ai-safety-policy`, `orchestrate-ai-bot-delivery` |
+| Session end / commits | — | `prepare-atomic-commit` |
+| Pre-push / deploy | — | `validate-pre-deploy` |
+| Template edits | [skills-consistency.mdc](../rules/skills-consistency.mdc) | `validate-template-consistency` hook, `sync-templates-to-local` (templates → `.cursor/`) |
 
 Hooks enforce; skills guide agent reasoning. See [USAGE.md](../USAGE.md).
 

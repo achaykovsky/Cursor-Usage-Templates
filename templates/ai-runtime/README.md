@@ -10,7 +10,7 @@
 
 | Layer | Who | Location | Purpose |
 |-------|-----|----------|---------|
-| **Authoring** | Engineers in Cursor | `templates/rules/`, `skills/`, `agents/`, `hooks/` | Build and operate bot services safely |
+| **Authoring** | Engineers in Cursor | [rules/RULES.md](../rules/RULES.md), [skills/SKILLS.md](../skills/SKILLS.md), [agents/subagents/AGENTS.md](../agents/subagents/AGENTS.md), [hooks/HOOKS_USAGE.md](../hooks/HOOKS_USAGE.md) | Build and operate bot services safely |
 | **Runtime** | End users / customers | `templates/ai-runtime/` | Deployed bots (Slack, web, API) with policy + observability |
 
 **Start building a bot:** paste [plan-ai-infrastructure.md](../prompts/plan-ai-infrastructure.md) or invoke skill `orchestrate-ai-bot-delivery`.
@@ -26,7 +26,7 @@
 | [guardrails/](guardrails/README.md) | Input, output, and handoff policies |
 | [observability/](observability/README.md) | Traces, audit schema, eval metrics |
 | [channels/](channels/README.md) | Slack, web widget, API adapter notes |
-| [rag/](rag/) | Corpus manifests, golden eval fixtures |
+| [rag/README.md](rag/README.md) | Corpus manifests, golden eval fixtures |
 
 ---
 
@@ -66,9 +66,9 @@ Reuse the same modes as Cursor hooks (`deny`, `ask`, `allow`, `advisory`, `log`)
 | Input sanitization | [guardrails/input-sanitization.md](guardrails/input-sanitization.md), rule [ai-safety.mdc](../rules/ai-safety.mdc) |
 | Tool allowlist / risk tiers | [policy/tool-risk-catalog.json](policy/tool-risk-catalog.json), [policy/default.bot.policy.json](policy/default.bot.policy.json) |
 | Output policy | [guardrails/output-policy.md](guardrails/output-policy.md), rule [ai-customer-facing.mdc](../rules/ai-customer-facing.mdc) |
-| Human handoff triggers | [guardrails/human-handoff.md](guardrails/human-handoff.md), skill [implement-human-handoff](../skills/SKILLS.md) |
-| Rate limits / abuse | skill [implement-ai-rate-limiting](../skills/SKILLS.md) |
-| Audit separation | [observability/conversation-audit.schema.json](observability/conversation-audit.schema.json), skill [design-ai-observability](../skills/SKILLS.md) |
+| Human handoff triggers | [guardrails/human-handoff.md](guardrails/human-handoff.md), skill [implement-human-handoff](../skills/ai-infra-workflows/implement-human-handoff/SKILL.md) |
+| Rate limits / abuse | skill [implement-ai-rate-limiting](../skills/ai-infra-workflows/implement-ai-rate-limiting/SKILL.md) |
+| Audit separation | [observability/conversation-audit.schema.json](observability/conversation-audit.schema.json), skill [design-ai-observability](../skills/ai-infra-workflows/design-ai-observability/SKILL.md) |
 
 ---
 

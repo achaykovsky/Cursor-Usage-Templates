@@ -10,7 +10,7 @@ Corpus manifests and eval fixtures for knowledge-base bots. Authoring: skill `or
 |------|---------|
 | [corpus.manifest.schema.json](corpus.manifest.schema.json) | Corpus id, sources, chunking, embedding, retrieval, freshness |
 | [eval/golden-questions.schema.json](eval/golden-questions.schema.json) | Offline retrieval eval fixtures |
-| [examples/](examples/) | Sample corpus manifests |
+| [examples/product-docs-corpus.json](examples/product-docs-corpus.json) | Sample corpus manifest |
 
 ## Validate
 
