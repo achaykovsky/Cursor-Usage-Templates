@@ -120,6 +120,12 @@ def test_force_push_subprocess_failure_still_denied_by_pattern(tmp_path: Path) -
     assert result["permission"] == "deny"
 
 
+def test_force_push_short_flag_denied() -> None:
+    payload = _payload("git push -f")
+    result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(None))
+    assert result["permission"] == "deny"
+
+
 def test_rebase_denied() -> None:
     """Interactive or branch rebase rewrites history."""
     payload = _payload("git rebase main")
@@ -129,6 +135,13 @@ def test_rebase_denied() -> None:
 
 def test_gh_pr_merge_squash_denied() -> None:
     payload = _payload("gh pr merge 42 --squash")
+    result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(None))
+    assert result["permission"] == "deny"
+
+
+@pytest.mark.parametrize("cmd", ["gh pr merge 42 -s", "gh pr merge 42 -r", "gh pr merge 42 -d"])
+def test_gh_pr_merge_short_flags_denied(cmd: str) -> None:
+    payload = _payload(cmd)
     result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(None))
     assert result["permission"] == "deny"
 
@@ -147,6 +160,32 @@ def test_amend_allowed_when_ahead_only(tmp_path: Path) -> None:
 
 def test_amend_denied_when_up_to_date_with_remote(tmp_path: Path) -> None:
     (tmp_path / ".git").mkdir()
+    payload = _payload(
+        'git commit --amend -m "feat: refine login"',
+        cwd=str(tmp_path),
+        workspace_roots=[str(tmp_path)],
+    )
+    with patch("subprocess.check_output", return_value="## main...origin/main\n"):
+        result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(tmp_path))
+    assert result["permission"] == "deny"
+
+
+def test_amend_denied_in_subdirectory_of_repo(tmp_path: Path) -> None:
+    (tmp_path / ".git").mkdir()
+    nested = tmp_path / "src" / "pkg"
+    nested.mkdir(parents=True)
+    payload = _payload(
+        'git commit --amend -m "feat: refine login"',
+        cwd=str(nested),
+        workspace_roots=[str(tmp_path)],
+    )
+    with patch("subprocess.check_output", return_value="## main...origin/main\n"):
+        result = hook_policy.classify_shell_git(payload, hook_policy.load_policy(tmp_path))
+    assert result["permission"] == "deny"
+
+
+def test_amend_denied_when_git_root_is_submodule_like_file(tmp_path: Path) -> None:
+    (tmp_path / ".git").write_text("gitdir: /tmp/somewhere", encoding="utf-8")
     payload = _payload(
         'git commit --amend -m "feat: refine login"',
         cwd=str(tmp_path),

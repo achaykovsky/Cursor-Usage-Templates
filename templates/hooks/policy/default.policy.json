@@ -101,13 +101,13 @@
       { "id": "rebase", "pattern": "(?i)\\bgit\\s+rebase\\b" },
       { "id": "reset_hard", "pattern": "(?i)\\bgit\\s+reset\\s+--hard\\b" },
       { "id": "amend_pushed", "pattern": "(?i)\\bgit\\s+commit\\b.*--amend\\b" },
-      { "id": "force_push", "pattern": "(?i)\\bgit\\s+push\\b.*--force(-with-lease)?\\b" },
+      { "id": "force_push", "pattern": "(?i)\\bgit\\s+push\\b.*((^|\\s)-f(\\s|$)|--force(-with-lease)?\\b)" },
       { "id": "filter_history", "pattern": "(?i)\\bgit\\s+(filter-branch|filter-repo)\\b" }
     ],
     "gh_merge_deny_flags": [
-      { "id": "squash_merge", "pattern": "(?i)\\bgh\\s+pr\\s+merge\\b.*--squash\\b" },
-      { "id": "rebase_merge", "pattern": "(?i)\\bgh\\s+pr\\s+merge\\b.*--rebase\\b" },
-      { "id": "delete_branch", "pattern": "(?i)\\bgh\\s+pr\\s+merge\\b.*--delete-branch\\b" }
+      { "id": "squash_merge", "pattern": "(?i)\\bgh\\s+pr\\s+merge\\b.*((^|\\s)-s(\\s|$)|--squash\\b)" },
+      { "id": "rebase_merge", "pattern": "(?i)\\bgh\\s+pr\\s+merge\\b.*((^|\\s)-r(\\s|$)|--rebase\\b)" },
+      { "id": "delete_branch", "pattern": "(?i)\\bgh\\s+pr\\s+merge\\b.*((^|\\s)-d(\\s|$)|--delete-branch\\b)" }
     ]
   },
   "mcp": {

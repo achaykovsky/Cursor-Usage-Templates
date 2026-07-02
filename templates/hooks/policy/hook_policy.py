@@ -636,8 +636,6 @@ def _history_rewrite_action(
 
 def _amend_rewrites_pushed_history(git_root: Path) -> bool:
     """True when amend would rewrite a commit already reachable on the tracking branch."""
-    if not (git_root / ".git").is_dir():
-        return False
     try:
         status = subprocess.check_output(
             ["git", "-C", str(git_root), "status", "-sb"],
