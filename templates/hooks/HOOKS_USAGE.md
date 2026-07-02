@@ -23,7 +23,7 @@ beforeSubmitPrompt → … agent work … → beforeReadFile / preToolUse / befo
 | `beforeReadFile` | `redact-sensitive-read` | `.env`, keys, `*.log` redacted before model |
 | `preToolUse` (Read) | `log-resource-usage` | Silent ledger update |
 | `preToolUse` (Write) | `block-secret-in-write` | **Deny** on hardcoded secrets in write content |
-| `beforeShellExecution` | `log-cursor-activity`, `validate-git-commands`, `validate-pre-push`, `block-destructive-shell`, `validate-db-shell-operations` | **Deny** on force-push main, destructive shell, bad commit msg; tests before push |
+| `beforeShellExecution` | `log-cursor-activity`, `validate-git-commands`, `validate-pre-push`, `block-destructive-shell`, `validate-db-shell-operations` | **Deny** on history rewrite, bad commit msg, destructive shell; tests before push |
 | `beforeMCPExecution` | `validate-mcp-operations` | **Confirm** on state-changing MCP tools |
 | `afterFileEdit` | `log-cursor-activity`, `format-after-edit`, `validate-template-consistency`, `scan-logs-in-edit`, `validate-bot-manifest`, `validate-ai-policy-schema`, `validate-rag-artifacts`, `sync-templates-to-local` | Auto-format; manifest/policy/RAG validation; log-secret and corpus-PII warnings |
 | `subagentStart` / `subagentStop` | `log-resource-usage` | Silent |
@@ -51,8 +51,11 @@ Prerequisites: Windows needs `pwsh`; Unix needs `bash`, `jq`, and `python3` for 
 
 | Blocked / gated | Cause | Fix |
 |-----------------|-------|-----|
-| `git push --force` to main/master | `validate-git-commands` | Use `--force-with-lease` or branch policy |
-| `rm -rf /`, `DROP TABLE`, hard reset | `block-destructive-shell` / `validate-db-shell-operations` | Narrow command; explicit approval for DB writes |
+| `git rebase`, `git reset --hard`, `git push --force` / `--force-with-lease` | `validate-git-commands` (`git_history_rewrite`) | Use merge commits and forward fixes; merge with base instead of rebase |
+| `git commit --amend` when HEAD is on remote | `validate-git-commands` | Amend only when branch is `[ahead]` only; otherwise add a new commit |
+| `gh pr merge --squash` / `--rebase` / `--delete-branch` | `validate-git-commands` | Use `gh pr merge --merge` and keep the branch |
+| MCP `merge_pull_request` with squash/rebase | `validate-mcp-operations` | Use `merge_method: merge` only |
+| `rm -rf /`, `DROP TABLE` | `block-destructive-shell` / `validate-db-shell-operations` | Narrow command; explicit approval for DB writes |
 | MCP write/deploy | `validate-mcp-operations` | Confirm in UI or rephrase as read-only |
 | Non-conventional commit | `validate-git-commands` | Fix message or `.cursor/allow-non-conventional-commit` |
 | Push without tests | `validate-pre-push` | Run tests locally; install missing runner (poetry/npm/pytest) |
@@ -77,7 +80,7 @@ DB shell, git, and MCP gates use a **shared policy engine** (not inline regex in
 | `.cursor/hooks/policy/mcp_tools.json` | Per-server MCP tool risk catalog |
 | `.cursor/hook-policy.json` | Optional project overrides (see `templates/hook-policy.example.json`) |
 
-**Modes** (`modes` in policy JSON): `off` | `log` | `allow` | `ask` | `deny` | `advisory` per domain (`db_shell`, `mcp_write`, `mcp_unknown`, `git_commit_format`, `pre_push`, …).
+**Modes** (`modes` in policy JSON): `off` | `log` | `allow` | `ask` | `deny` | `advisory` per domain (`db_shell`, `mcp_write`, `mcp_unknown`, `git_commit_format`, `git_history_rewrite`, `pre_push`, …).
 
 **`pre_push` modes:** `deny` (default) blocks push when tests fail; missing runner → **ask** (not silent allow). `advisory` logs `pre_push_runner_missing` / `pre_push_tests_failed` to stderr and allows push. `off` / `allow` skip the gate entirely.
 
@@ -105,6 +108,7 @@ Copy [`hook-policy.example.json`](../hook-policy.example.json) to `.cursor/hook-
     "mcp_write": "ask",
     "db_shell": "ask",
     "shell_destructive": "deny",
+    "git_history_rewrite": "deny",
     "pre_push": "deny"
   }
 }
@@ -112,7 +116,7 @@ Copy [`hook-policy.example.json`](../hook-policy.example.json) to `.cursor/hook-
 
 - **`policy_load_error: ask`** — corrupt policy JSON prompts before continuing (instead of silent allow).
 - **`policy_engine_error: deny`** — classifier exceptions block gated shell/MCP/pre-push actions until fixed.
-- Keep **`pre_push: deny`** unless CI owns test gates; use **`advisory`** only when the hook should warn without blocking.
+- Keep **`pre_push: deny`** and **`git_history_rewrite: deny`** when using [`git-github-workflow.mdc`](../rules/git-github-workflow.mdc). Use **`advisory`** / **`off`** only when CI fully owns gates and history policy is enforced on GitHub.
 
 Default `default.policy.json` stays fail-open on engine errors so personal/dev machines are not bricked; the secure baseline is opt-in via project override.
 
