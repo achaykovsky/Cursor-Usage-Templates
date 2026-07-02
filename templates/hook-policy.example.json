@@ -7,6 +7,7 @@
     "mcp_unknown": "ask",
     "git_commit_format": "deny",
     "git_commit_unparsed": "allow",
+    "git_history_rewrite": "deny",
     "pre_push": "deny",
     "policy_load_error": "allow",
     "policy_engine_error": "allow"
@@ -19,6 +20,7 @@
     "mcp_write": "ask",
     "db_shell": "ask",
     "shell_destructive": "deny",
+    "git_history_rewrite": "deny",
     "pre_push": "deny"
   }
 }
