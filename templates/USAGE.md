@@ -15,11 +15,11 @@
 
 | Doc | When to open |
 |-----|----------------|
-| [agents/AGENTS_USAGE.md](agents/AGENTS_USAGE.md) | `@agent(NAME)` invocation and workflows |
+| [agents/subagents/AGENTS_USAGE.md](agents/subagents/AGENTS_USAGE.md) | `@agent(NAME)` invocation and workflows |
 | [skills/SKILLS.md](skills/SKILLS.md) | Pick a workflow skill by task keywords |
 | [rules/RULES.md](rules/RULES.md) | Which rules apply to which files |
 | [hooks/HOOKS_USAGE.md](hooks/HOOKS_USAGE.md) | Hooks: blocks, gates, logs |
-| [prompts/](prompts/) | Paste prompts when routing is unclear |
+| [prompts/README.md](prompts/README.md) | Paste prompts when routing is unclear |
 
 ---
 
