@@ -1,6 +1,6 @@
 # Planning prompts index
 
-**Validated:** 2026-07-02 (analysis pass) | **Tests:** `392 passed` — `poetry run pytest templates/hooks/tests templates/commands/tests -q`
+**Validated:** 2026-07-03 (analysis pass) | **Tests:** `440 passed` — `poetry run pytest templates/hooks/tests templates/commands/tests -q`
 
 Paste prompts from this folder when routing is unclear. Open [USAGE.md](../USAGE.md) for the navigation hub.
 
@@ -12,23 +12,22 @@ Paste prompts from this folder when routing is unclear. Open [USAGE.md](../USAGE
 
 | Metric | Value |
 |--------|-------|
-| Plans tracked | **12** |
-| **Done** | **9** (75%) |
+| Plans tracked | **13** |
+| **Done** | **10** (77%) |
 | **Partial** | **3** (25%) |
 | **Open** (within partial plans) | **6** explicit `[ ]` items (+ partial `[~]` rows) |
 
 ```
-Done     ████████████████████████░░░  9/12 plans
-Partial  ░░░░░░░░░░░░░░░░░░░░░░░███  3/12 plans
+Done     █████████████████████████░░  10/13 plans
+Partial  ░░░░░░░░░░░░░░░░░░░░░░░███  3/13 plans
 ```
 
 ### At a glance
 
 | Status | Plans |
 |--------|-------|
-| [x] **Done** | session-map, agents-routing, skills-routing, model-routing, rules-audit, python-remediation (overview, foundation, sync-scripts) |
+| [x] **Done** | session-map, agents-routing, skills-routing, model-routing, rules-audit, python-remediation (overview, foundation, sync-scripts), plan-ai-infrastructure, plan-llm-system-design-review |
 | [~] **Partial** | cursor-hooks, cursor-activity-logging, python-remediation-hook-policy |
-| [x] **Done** | plan-ai-infrastructure (templates shipped) |
 | [ ] **Open** | *(no plan fully untouched)* |
 
 ---
@@ -60,12 +59,24 @@ Partial  ░░░░░░░░░░░░░░░░░░░░░░░�
 | [plan-python-remediation-hook-policy.md](plan-python-remediation-hook-policy.md) | Python | **[~] Partial** | MCP/cache/log done; test/coverage gaps |
 | [plan-python-remediation-sync-scripts.md](plan-python-remediation-sync-scripts.md) | Python | **[x] Done** | Dedup, dry-run, sync tests |
 | [plan-ai-infrastructure.md](plan-ai-infrastructure.md) | AI platform | **[x] Done** | `ai-runtime/`, `ai-infra-workflows/`, `rag-workflows/`, `langchain-workflows/`, 5 subagents, AI validation hooks; RAG track complete |
+| [plan-llm-system-design-review.md](plan-llm-system-design-review.md) | AI platform | **[x] Done** | `review-llm-system-design`, `AI_SYSTEM_REVIEWER`, `design-review/system-review-checklist.md` |
+
+---
+
+## AI platform — [x] Done (2/2)
+
+| Plan | Use when | Entry |
+|------|----------|-------|
+| [plan-ai-infrastructure.md](plan-ai-infrastructure.md) | Greenfield bot or AI platform | skill `orchestrate-ai-bot-delivery` |
+| [plan-llm-system-design-review.md](plan-llm-system-design-review.md) | Pre-launch or architecture review (not code/PR review) | skill `review-llm-system-design`, `@agent(AI_SYSTEM_REVIEWER)` |
+
+**Checklist:** [ai-runtime/design-review/system-review-checklist.md](../ai-runtime/design-review/system-review-checklist.md) (12 dimensions).
 
 ---
 
 ## Routing — [x] Done (5/5)
 
-Prompt + CLI deliverables complete. Tests: `test_routing.py` (15 cases).
+Prompt + CLI deliverables complete. Tests: `test_routing.py` (17 cases).
 
 | Plan | CLI | Python | Tests |
 |------|-----|--------|-------|
@@ -132,7 +143,7 @@ Prompt + CLI deliverables complete. Tests: `test_routing.py` (15 cases).
 ### [plan-python-remediation-overview.md](plan-python-remediation-overview.md) — [x] Done
 
 - [x] `requires-python = ">=3.10"` (`pyproject.toml`)
-- [x] `poetry run pytest templates/hooks/tests templates/commands/tests` — 392 passed
+- [x] `poetry run pytest templates/hooks/tests templates/commands/tests` — 440 passed
 - [x] Policy stderr + MCP unify + sync dedup + sync tests
 - [x] hook_policy: main, force-push, overrides, heredoc, modes, Windows shlex
 

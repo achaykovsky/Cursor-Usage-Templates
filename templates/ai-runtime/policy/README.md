@@ -24,3 +24,5 @@ Portable policy for customer-facing bots. Vocabulary mirrors Cursor hook policy 
 | `tool_unknown` → `ask` | `mcp_unknown` |
 
 Sync tool names into app repos; extend `tool-risk-catalog.json` per product.
+
+**System design review:** checklist dimensions 9 (tenant isolation), 10 (future tool calling), 8 (deterministic business logic) — [design-review/README.md](../design-review/README.md).

@@ -15,3 +15,5 @@ python templates/ai-runtime/validate_bot_runtime.py manifest <path.json>
 ```
 
 **Authoring:** skill [design-customer-facing-agent](../../skills/SKILLS.md), @agent(BOT_DESIGNER). **Policy:** [policy/default.bot.policy.json](../policy/default.bot.policy.json).
+
+**System design review:** checklist dimensions 2 (context explosion), 4 (prompt coupling) — [design-review/README.md](../design-review/README.md).

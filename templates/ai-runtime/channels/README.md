@@ -9,3 +9,5 @@ Integration notes for customer-facing bot surfaces. Implement in app repos using
 | HTTP API | [api.md](api.md) |
 
 **Agent:** `@agent(AI_PLATFORM)`. **Runtime policy:** [policy/default.bot.policy.json](../policy/default.bot.policy.json).
+
+**System design review:** checklist dimensions 11 (cost), 12 (latency) — [design-review/README.md](../design-review/README.md).

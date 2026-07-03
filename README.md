@@ -121,12 +121,13 @@ Frontend agents are FE-prefixed (`FE_*`) and backend agents are BE/domain-prefix
 | AI_SAFETY | ai_safety_engineer.md | Prompt injection, content policy, OWASP LLM |
 | AI_OBSERVABILITY | ai_observability_engineer.md | Traces, audit logs, evals, SLOs |
 | RAG_ENGINEER | rag_engineer.md | RAG ingest, index, retrieval, citations |
+| AI_SYSTEM_REVIEWER | llm_system_reviewer.md | LLM system design review (12-dimension checklist) |
 
 Customer-facing bot **personas** live in [`templates/ai-runtime/bots/examples/`](templates/ai-runtime/bots/examples/) as runtime manifests — not as `@agent()` entries.
 
 ## AI Runtime (customer-facing bots)
 
-Portable templates for deployed bots: [`templates/ai-runtime/README.md`](templates/ai-runtime/README.md). Planning prompt: [`templates/prompts/plan-ai-infrastructure.md`](templates/prompts/plan-ai-infrastructure.md). Entry skill: `orchestrate-ai-bot-delivery`.
+Portable templates for deployed bots: [`templates/ai-runtime/README.md`](templates/ai-runtime/README.md). Planning prompt: [`templates/prompts/plan-ai-infrastructure.md`](templates/prompts/plan-ai-infrastructure.md). Entry skill: `orchestrate-ai-bot-delivery`. System design review: skill `review-llm-system-design`, [`plan-llm-system-design-review.md`](templates/prompts/plan-llm-system-design-review.md).
 
 ## Rules
 
@@ -153,6 +154,8 @@ Policy:
 
 Catalog: [`templates/skills/SKILLS.md`](templates/skills/SKILLS.md). Policy: [`templates/USAGE.md`](templates/USAGE.md).
 
+**AI:** build with `orchestrate-ai-bot-delivery`; review with `review-llm-system-design` and `@agent(AI_SYSTEM_REVIEWER)` (see [design-review checklist](templates/ai-runtime/design-review/system-review-checklist.md)).
+
 ## Project Structure
 
 ```
@@ -175,9 +178,11 @@ templates/
 ├── ai-runtime/              # Customer bot runtime templates (not full .cursor sync)
 │   ├── README.md
 │   ├── bots/
+│   ├── design-review/       # LLM system design review checklist (12 dimensions)
 │   ├── policy/
 │   ├── guardrails/
 │   ├── observability/
+│   ├── rag/
 │   └── channels/
 ├── rules/                   # .cursor/rules/
 │   ├── RULES.md

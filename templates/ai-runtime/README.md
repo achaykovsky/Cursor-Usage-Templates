@@ -15,6 +15,8 @@
 
 **Start building a bot:** paste [plan-ai-infrastructure.md](../prompts/plan-ai-infrastructure.md) or invoke skill `orchestrate-ai-bot-delivery`.
 
+**Review an existing or planned LLM system:** paste [plan-llm-system-design-review.md](../prompts/plan-llm-system-design-review.md) or invoke skill `review-llm-system-design` with `@agent(AI_SYSTEM_REVIEWER)`.
+
 ---
 
 ## Layout
@@ -27,6 +29,7 @@
 | [observability/](observability/README.md) | Traces, audit schema, eval metrics |
 | [channels/](channels/README.md) | Slack, web widget, API adapter notes |
 | [rag/README.md](rag/README.md) | Corpus manifests, golden eval fixtures |
+| [design-review/](design-review/README.md) | LLM system design review checklist (12 dimensions) |
 
 ---
 
@@ -50,6 +53,20 @@ design-customer-facing-agent → evaluate-ai-safety-policy → implement-bot-gat
 ```
 
 Skill: `orchestrate-ai-bot-delivery` routes steps. Agents: `BOT_DESIGNER`, `AI_PLATFORM`, `AI_SAFETY`, `AI_OBSERVABILITY`.
+
+---
+
+## System design review
+
+Retrospective review of design docs **and** implementation — not code/PR review.
+
+```
+review-llm-system-design + @agent(AI_SYSTEM_REVIEWER) → design-review/system-review-checklist.md
+```
+
+**Dimensions:** hallucination risks, context explosion, retrieval quality, prompt coupling, observability, evaluation, confidence calculation, deterministic business logic, tenant isolation, future tool calling, cost, latency.
+
+**Prompt:** [plan-llm-system-design-review.md](../prompts/plan-llm-system-design-review.md)
 
 ---
 
@@ -82,7 +99,7 @@ python templates/ai-runtime/validate_bot_runtime.py corpus <path.json>
 python templates/ai-runtime/validate_bot_runtime.py golden <path.json>
 ```
 
-See also [rag/README.md](rag/README.md) and [policy/README.md](policy/README.md).
+See also [rag/README.md](rag/README.md), [policy/README.md](policy/README.md), and [design-review/README.md](design-review/README.md) (pre-launch system review).
 
 ---
 
