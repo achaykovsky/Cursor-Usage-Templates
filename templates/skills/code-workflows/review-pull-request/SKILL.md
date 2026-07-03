@@ -24,12 +24,14 @@ description: Performs end-to-end PR review or author feedback resolution: diff a
    - Error handling: specific exception/error types, narrow catches, preserved cause chains; flag generic `Exception`, broad `except Exception:`, swallowed errors.
    - Style: match project conventions (linter/formatter); flag only meaningful violations.
    - Tests: changes have corresponding tests; existing tests still pass.
+   - Documentation structure (when `.md`/`.mdc` changed): detect duplicate links in one table row, non-canonical references where entry docs exist, semicolon-packed independent constraints, and mixed-category table cells that should be split (for example, `Primary` vs `Fallback`).
 
 3. **Produce structured feedback**
    - **CRITICAL:** Must fix before merge (bugs, security, contract breaks).
    - **WARNING:** Should consider (readability, performance, robustness).
    - **GOOD:** Optional improvement.
    - Cite file and line or snippet; be specific and actionable.
+   - For documentation findings, prefer actionable **WARNING** items with concrete rewrite guidance (what to split, what to link, and where).
 
 4. **Summarize**
    - One short summary: overall assessment and top 1–3 items to address.

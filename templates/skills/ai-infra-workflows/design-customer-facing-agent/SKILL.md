@@ -8,7 +8,7 @@ description: Designs customer-facing bot specs — intents, conversation flows, 
 ## Workflow
 
 1. **Define goal** — primary user job (support, sales, onboarding, status).
-2. **Channels** — Slack, web widget, API; note auth per [ai-runtime/channels/](../../../ai-runtime/channels/).
+2. **Channels** — Slack, web widget, API; note auth per [ai-runtime/channels/README.md](../../../ai-runtime/channels/README.md).
 3. **Persona** — tone, boundaries, identity disclosure; document in bot manifest `persona`.
 4. **Flows** — happy path, error, empty, escalation; map to [human-handoff.md](../../../ai-runtime/guardrails/human-handoff.md) triggers.
 5. **Tools** — read vs write; align with `tool-risk-catalog.json`.
