@@ -33,6 +33,7 @@ Subagents live in `.cursor/agents/` and appear in **Settings > Subagents**. Invo
 | AI_SAFETY | ai_safety_engineer.md | claude-opus-4-8-thinking-high |
 | AI_OBSERVABILITY | ai_observability_engineer.md | claude-4.6-sonnet-medium-thinking |
 | RAG_ENGINEER | rag_engineer.md | composer-2.5-fast |
+| AI_SYSTEM_REVIEWER | llm_system_reviewer.md | claude-4.6-sonnet-medium-thinking |
 
 ## CORE SUBAGENTS
 
@@ -122,6 +123,9 @@ LLM traces, audit logs, evals, SLOs, incident correlation.
 
 ### RAG_ENGINEER (rag_engineer.md)
 Corpus ingest, chunking, embeddings, vector index, hybrid retrieval, citations. Escalates ETL to `DATA_ENGINEER`.
+
+### AI_SYSTEM_REVIEWER (llm_system_reviewer.md)
+LLM system design review (not code review). Twelve-dimension checklist: hallucination, context, retrieval, observability, tenant isolation, cost/latency. Escalates implementation to `AI_SAFETY`, `RAG_ENGINEER`, `AI_PLATFORM`, `AI_OBSERVABILITY`.
 
 ## RULES (TECHNICAL STANDARDS)
 

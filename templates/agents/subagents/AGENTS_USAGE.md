@@ -16,6 +16,7 @@ Subagents are in `.cursor/agents/` and visible in **Settings > Subagents**. Invo
 
 ```
 @agent(SECURITY) Check this endpoint for vulnerabilities
+@agent(AI_SYSTEM_REVIEWER) Review @templates/ai-runtime/ against the system design checklist
 ```
 
 ## Method 2: Composer
@@ -100,6 +101,11 @@ Use @agent(SECURITY) for security audits.
 6. `@agent(FE_TEST_ENGINEER)` Add regression tests
 7. `@agent(FE_PERFORMANCE_ENGINEER)` Profile and optimize critical routes
 8. If scope expands beyond frontend boundaries, escalate to `@agent(TESTER)` or `@agent(PERFORMANCE)`
+
+### LLM System Design Review
+1. `@agent(AI_SYSTEM_REVIEWER)` Review @templates/ai-runtime/ against the system design checklist
+2. Skill `review-llm-system-design` applies the 12-dimension checklist (hallucination, context, retrieval, tenant isolation, cost/latency, etc.)
+3. For fixes, chain remediation skills (`implement-retrieval-pipeline`, `design-ai-observability`, …) — not `review-pull-request` (that is code/PR review)
 
 ### Backend Delivery (BE Agents)
 1. `@agent(BACKEND_PYTHON)` Implement Python API/services

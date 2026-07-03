@@ -176,6 +176,7 @@ Format: `skill-name` | trigger phrases | optional `@agent`
 | `design-multi-agent-routing` | router bot, specialist delegation | `AI_PLATFORM` |
 | `implement-ai-rate-limiting` | rate limit, abuse, cost cap | `AI_PLATFORM` |
 | `monitor-ai-quality` | eval regression, drift, thumbs feedback | `AI_OBSERVABILITY` |
+| `review-llm-system-design` | llm system design review, bot architecture review, hallucination risks, tenant isolation | `AI_SYSTEM_REVIEWER` |
 
 ## rag-workflows
 

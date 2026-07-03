@@ -239,6 +239,20 @@ SKILL_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
         "monitor-ai-quality",
         ("ai quality", "eval regression", "bot drift", "thumbs feedback"),
     ),
+    (
+        "review-llm-system-design",
+        (
+            "llm system design review",
+            "llm architecture review",
+            "hallucination risks",
+            "context explosion",
+            "retrieval quality review",
+            "prompt coupling",
+            "confidence calculation",
+            "tenant isolation bot",
+            "bot architecture review",
+        ),
+    ),
     # rag-workflows
     (
         "orchestrate-rag-delivery",
@@ -291,6 +305,18 @@ AGENT_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("AI_SAFETY", ("prompt injection", "jailbreak", "llm security", "ai safety")),
     ("AI_OBSERVABILITY", ("llm trace", "bot audit", "ai eval", "bot slo")),
     ("RAG_ENGINEER", ("rag", "knowledge base", "vector search", "embedding index", "retrieval pipeline")),
+    (
+        "AI_SYSTEM_REVIEWER",
+        (
+            "llm system reviewer",
+            "ai system design review",
+            "llm system design review",
+            "bot architecture",
+            "llm system design",
+            "tenant isolation",
+            "hallucination risks",
+        ),
+    ),
 )
 
 MODEL_CATEGORY_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (

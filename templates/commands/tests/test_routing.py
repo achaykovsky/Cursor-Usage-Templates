@@ -97,6 +97,21 @@ def test_match_skills_error_handling_prompt() -> None:
     assert "add-error-handling-to-code" in matched
 
 
+def test_match_skills_llm_system_design_review_prompt() -> None:
+    """LLM system design review prompts must rank review-llm-system-design first."""
+    matched = rt.match_skills_from_prompt(
+        "llm system design review hallucination risks and tenant isolation"
+    )
+    assert "review-llm-system-design" in matched
+    assert matched[0] == "review-llm-system-design"
+
+
+def test_route_agent_llm_system_reviewer() -> None:
+    """Bot architecture review phrasing must route to AI_SYSTEM_REVIEWER."""
+    out = rt.route_agent("review bot architecture tenant isolation")
+    assert "AI_SYSTEM_REVIEWER" in out
+
+
 def test_skill_keywords_cover_catalog() -> None:
     """Every templates/skills/*/SKILL.md must have a SKILL_KEYWORDS entry."""
     from pathlib import Path

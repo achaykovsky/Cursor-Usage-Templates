@@ -13,7 +13,7 @@
 | [rules/*.mdc](rules/) + [rules/RULES.md](rules/RULES.md) | `.cursor/rules/` |
 | [skills/**/SKILL.md](skills/) + [skills/SKILLS.md](skills/SKILLS.md) | `.cursor/skills/` |
 | [hooks/README.md](hooks/README.md) + [hooks/HOOKS_USAGE.md](hooks/HOOKS_USAGE.md) | `.cursor/hooks/`, `.cursor/hooks.json`, `.cursor/hooks/policy/` |
-| [ai-runtime/README.md](ai-runtime/README.md) | *(repo-only — selective copy into app repos; not synced wholesale to `.cursor/`)* |
+| [ai-runtime/README.md](ai-runtime/README.md) (+ [design-review/](ai-runtime/design-review/README.md)) | *(repo-only — selective copy into app repos; not synced wholesale to `.cursor/`)* |
 | [prompts/README.md](prompts/README.md) | *(repo-only — not synced)* |
 | [commands/README.md](commands/README.md) | `~/.cursor/commands/` via `TemplatesToGlobal` only |
 

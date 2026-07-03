@@ -61,6 +61,7 @@
     "BOT_DESIGNER": "mid_tier",
     "AI_SAFETY": "frontier",
     "AI_OBSERVABILITY": "mid_tier",
+    "AI_SYSTEM_REVIEWER": "mid_tier",
     "RAG_ENGINEER": "lightweight"
   },
   "sources": [

@@ -28,3 +28,4 @@ python templates/ai-runtime/validate_bot_runtime.py golden <path.json>
 | Safety / PII | `ai-pii.mdc`, `evaluate-ai-safety-policy`, `sensitive-data-handling` |
 | Retrieval eval metrics | `monitor-ai-quality`, [eval-metrics.md](../observability/eval-metrics.md) |
 | Traces | [span-conventions.md](../observability/span-conventions.md) |
+| Pre-launch system review | [design-review/README.md](../design-review/README.md) — dimensions 1 (hallucination), 3 (retrieval quality) |
