@@ -24,7 +24,7 @@ Or paste [plan-llm-system-design-review.md](../../prompts/plan-llm-system-design
 
 ## Remediation
 
-The review produces findings only. Fixes route to existing skills (`implement-retrieval-pipeline`, `design-ai-observability`, `evaluate-ai-safety-policy`, etc.) — see the remediation map in the skill.
+The review produces findings only. Fixes route to existing skills (`design-prompt-evals`, `implement-prompt-eval-runner`, `implement-retrieval-pipeline`, `design-ai-observability`, `evaluate-ai-safety-policy`, etc.) — see the remediation map in the skill.
 
 ## Related runtime docs
 
@@ -35,6 +35,7 @@ The review produces findings only. Fixes route to existing skills (`implement-re
 | RAG | [rag/README.md](../rag/README.md) | 1, 3 |
 | Policy / tools | [policy/README.md](../policy/README.md) | 8, 9, 10 |
 | Observability | [observability/README.md](../observability/README.md) | 5, 6, 11, 12 |
+| Prompt evals | [eval/README.md](../eval/README.md) | 5 (offline regression, adversarial CI) |
 | Channels | [channels/README.md](../channels/README.md) | 11, 12 |
 
 **Hub:** [ai-runtime/README.md](../README.md)
