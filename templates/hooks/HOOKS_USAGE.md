@@ -25,7 +25,7 @@ beforeSubmitPrompt → … agent work … → beforeReadFile / preToolUse / befo
 | `preToolUse` (Write) | `block-secret-in-write` | **Deny** on hardcoded secrets in write content |
 | `beforeShellExecution` | `log-cursor-activity`, `validate-git-commands`, `validate-pre-push`, `block-destructive-shell`, `validate-db-shell-operations` | **Deny** on history rewrite, bad commit msg, destructive shell; tests before push |
 | `beforeMCPExecution` | `validate-mcp-operations` | **Confirm** on state-changing MCP tools |
-| `afterFileEdit` | `log-cursor-activity`, `format-after-edit`, `validate-template-consistency`, `scan-logs-in-edit`, `validate-bot-manifest`, `validate-ai-policy-schema`, `validate-rag-artifacts`, `sync-templates-to-local` | Auto-format; manifest/policy/RAG validation; log-secret and corpus-PII warnings |
+| `afterFileEdit` | `log-cursor-activity`, `format-after-edit`, `validate-template-consistency`, `scan-logs-in-edit`, `validate-bot-manifest`, `validate-ai-policy-schema`, `validate-rag-artifacts`, `validate-prompt-eval-artifacts`, `sync-templates-to-local` | Auto-format; manifest/policy/RAG/prompt-eval validation; log-secret and corpus-PII warnings |
 | `subagentStart` / `subagentStop` | `log-resource-usage` | Silent |
 | `preCompact` / `afterAgentResponse` | `log-resource-usage` | Silent; context/token ledger updates |
 | `stop` | `log-cursor-activity`, `log-resource-usage`, `suggest-commit-on-stop` | Commit suggestions in hooks channel |
@@ -66,6 +66,7 @@ Prerequisites: Windows needs `pwsh`; Unix needs `bash`, `jq`, and `python3` for 
 | Invalid bot manifest JSON | `validate-bot-manifest` | Fix schema errors in `**/bots/**/*.json` per `manifest.schema.json` |
 | Invalid AI policy JSON | `validate-ai-policy-schema` | Fix `default.bot.policy.json` or tool-risk catalog shape |
 | Invalid RAG corpus/golden JSON | `validate-rag-artifacts` | Run `validate_bot_runtime.py corpus|golden` on the file |
+| Invalid prompt eval / baseline JSON | `validate-prompt-eval-artifacts` | Run `validate_bot_runtime.py prompt-eval|eval-baseline|judge-calibration` on the file. Skips `fixtures/` (response maps, not suites). |
 
 ---
 
