@@ -63,6 +63,26 @@ python templates/ai-runtime/eval/llm_judge_calibration.py analyze \
   --json
 ```
 
+## Grader behavior (offline)
+
+| Assertion | Offline behavior |
+|-----------|------------------|
+| `must_contain`, `must_not_contain`, `regex`, `max_length`, `refusal`, `no_pii_patterns` | Case-insensitive substring / pattern checks on response text |
+| `json_schema` | Minimal structural check (parse JSON, `required` keys, top-level `type`) — no `jsonschema` dependency |
+| `tool_call` | Passes if **any** matching invocation (by `name`) satisfies `args_schema.required`; fails only when none do |
+| `llm_judge` | Skipped offline — wire live judge in gateway/CI; thresholds via `calibrate-llm-judge-eval` |
+
+For `tool_call` assertions, pass `tool_calls` to `grade_case()` / the grade API (list of `{name, args}` dicts). Response text alone is not enough.
+
+Reference assertions: [examples/property-assertions.json](examples/property-assertions.json).
+
+## Tests
+
+```bash
+py -3.13 -m pytest templates/commands/tests/test_prompt_eval_runner.py \
+  templates/commands/tests/test_llm_judge_calibration.py -q
+```
+
 ## Metrics
 
 Canonical catalog: [observability/eval-metrics.md](../observability/eval-metrics.md) (metrics, spans, CI gates, LangSmith).
