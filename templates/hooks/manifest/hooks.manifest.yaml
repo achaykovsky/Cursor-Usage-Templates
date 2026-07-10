@@ -35,6 +35,7 @@ hooks:
     - script: validate-bot-manifest
     - script: validate-ai-policy-schema
     - script: validate-rag-artifacts
+    - script: validate-prompt-eval-artifacts
     - script: sync-templates-to-local
   stop:
     - script: log-cursor-activity
