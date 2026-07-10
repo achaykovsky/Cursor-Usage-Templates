@@ -21,9 +21,10 @@ alwaysApply: false
 | `regex` | Structured fragments (URLs, IDs) |
 | `max_length` | Verbosity cap |
 | `json_schema` | Tool args or structured output |
-| `tool_call` | Expected tool name and arg shape |
+| `tool_call` | Expected tool name and arg shape — passes if any matching call has required args |
 | `refusal` | Must refuse (`expected: true`) or must answer (`expected: false`) |
 | `no_pii_patterns` | Block email/phone/SSN-like patterns in output |
+| `llm_judge` | Rubric + `min_score`; live only — offline runner skips |
 
 **LLM-judge**: Rubric in fixture; temperature 0; pin judge model. Policy: [eval-metrics.md](../ai-runtime/observability/eval-metrics.md) LLM-judge section.
 
