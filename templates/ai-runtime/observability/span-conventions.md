@@ -23,6 +23,10 @@ Propagate W3C `traceparent` across gateway, LLM provider, and tool calls.
 | `policy.block` | `rule_id`, `mode` |
 | `handoff.human` | `channel`, `outcome` |
 | `rate_limit.block` | `reason` |
+| `eval.run` | `suite_id`, `prompt_id`, `prompt_version`, `model`, `pass_rate`, `status` |
+| `eval.case` | `case_id`, `category`, `grader_type`, `passed`, `suite_id` |
+
+Span catalog and CI gates: [eval-metrics.md](eval-metrics.md).
 
 ## Redaction
 

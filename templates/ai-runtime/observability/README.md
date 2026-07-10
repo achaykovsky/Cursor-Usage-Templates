@@ -4,9 +4,10 @@ Traces, audit, and eval artifacts for customer bots.
 
 | Path | Purpose |
 |------|---------|
-| [span-conventions.md](span-conventions.md) | Span names for LLM, tools, retrieval, embedding |
+| [span-conventions.md](span-conventions.md) | Span names for LLM, tools, retrieval, embedding, eval |
 | [conversation-audit.schema.json](conversation-audit.schema.json) | Append-only audit event shape (IDs only — no full message bodies) |
-| [eval-metrics.md](eval-metrics.md) | Offline and online quality metrics |
+| [eval-metrics.md](eval-metrics.md) | Offline and online quality metrics, CI gates, LangSmith appendix |
+| [../eval/README.md](../eval/README.md) | Prompt eval suites, baselines, offline grader (`prompt_eval_runner.py`) |
 
 ## Validate
 
