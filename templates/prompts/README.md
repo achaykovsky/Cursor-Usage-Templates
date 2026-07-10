@@ -52,13 +52,13 @@ Partial  ░░░░░░░░░░░░░░░░░░░░░░░�
 | [plan-cursor-skills-routing.md](plan-cursor-skills-routing.md) | Routing | **[x] Done** | `route-skill.ps1` → `routing.py skill` |
 | [plan-cursor-model-routing.md](plan-cursor-model-routing.md) | Routing | **[x] Done** | `route-model.ps1` → `models-catalog.json` |
 | [plan-cursor-rules-audit.md](plan-cursor-rules-audit.md) | Routing | **[x] Done** | `route-rules.ps1` → `RULES.md` globs |
-| [plan-cursor-hooks.md](plan-cursor-hooks.md) | Hooks | **[~] Partial** | 18 wired scripts per manifest; `audit-log-patterns` still open |
+| [plan-cursor-hooks.md](plan-cursor-hooks.md) | Hooks | **[~] Partial** | 19 wired scripts per manifest; `audit-log-patterns` still open |
 | [plan-cursor-activity-logging.md](plan-cursor-activity-logging.md) | Observability | **[~] Partial** | Steps 1–5 + prompt redaction done; stop summary optional |
 | [plan-python-remediation-overview.md](plan-python-remediation-overview.md) | Hub | **[x] Done** | P0–P3 Python scope complete |
 | [plan-python-remediation-foundation.md](plan-python-remediation-foundation.md) | Python | **[x] Done** | pyproject, CI, fail-open stderr |
 | [plan-python-remediation-hook-policy.md](plan-python-remediation-hook-policy.md) | Python | **[~] Partial** | MCP/cache/log done; test/coverage gaps |
 | [plan-python-remediation-sync-scripts.md](plan-python-remediation-sync-scripts.md) | Python | **[x] Done** | Dedup, dry-run, sync tests |
-| [plan-ai-infrastructure.md](plan-ai-infrastructure.md) | AI platform | **[x] Done** | `ai-runtime/`, `ai-infra-workflows/`, `rag-workflows/`, `langchain-workflows/`, 5 subagents, AI validation hooks; RAG track complete |
+| [plan-ai-infrastructure.md](plan-ai-infrastructure.md) | AI platform | **[x] Done** | `ai-runtime/`, `ai-infra-workflows/`, `eval-workflows/`, `rag-workflows/`, `langchain-workflows/`, 5 subagents, AI validation hooks; RAG + prompt eval tracks |
 | [plan-llm-system-design-review.md](plan-llm-system-design-review.md) | AI platform | **[x] Done** | `review-llm-system-design`, `AI_SYSTEM_REVIEWER`, `design-review/system-review-checklist.md` |
 
 ---
@@ -76,7 +76,7 @@ Partial  ░░░░░░░░░░░░░░░░░░░░░░░�
 
 ## Routing — [x] Done (5/5)
 
-Prompt + CLI deliverables complete. Tests: `test_routing.py` (17 cases).
+Prompt + CLI deliverables complete. Tests: `test_routing.py` (22+ cases).
 
 | Plan | CLI | Python | Tests |
 |------|-----|--------|-------|
@@ -113,6 +113,7 @@ Prompt + CLI deliverables complete. Tests: `test_routing.py` (17 cases).
 | `validate-bot-manifest` | [x] | `validate-bot-manifest.ps1` / `.sh` |
 | `validate-ai-policy-schema` | [x] | `validate-ai-policy-schema.ps1` / `.sh` |
 | `validate-rag-artifacts` | [x] | `validate-rag-artifacts.ps1` / `.sh` |
+| `validate-prompt-eval-artifacts` | [x] | `validate-prompt-eval-artifacts.ps1` / `.sh` (skips `fixtures/`, `*.schema.json`) |
 | `audit-log-patterns` (stop) | [ ] | No script |
 | `redact-logs-before-read` (*.log) | [x] | `redact_sensitive.py` `is_log_path` |
 
