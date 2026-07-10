@@ -12,7 +12,7 @@ alwaysApply: false
 
 **Tools**: Allowlist only; map to risk tiers in `tool-risk-catalog.json`. Write/destructive tools require `ask` or `deny` — never silent execution.
 
-**Injection**: Log suspected injection; block or escalate per policy mode. Test with red-team cases when changing prompts or tools.
+**Injection**: Log suspected injection; block or escalate per policy mode. Test with red-team cases when changing prompts or tools. Adversarial fixtures live under `ai-runtime/eval/adversarial/` (see `prompt-evals.mdc`).
 
 **RAG**: Version corpora; sanitize retrieved chunks; no executable content in context. Corpus allowlist: see `rag-pipeline.mdc`.
 
