@@ -37,7 +37,7 @@ Canonical review sequence:
 
 List files/folders the reviewer should `@` reference:
 
-- `ai-runtime/` manifests, policy, guardrails, observability, RAG fixtures
+- `ai-runtime/` manifests, policy, guardrails, observability, RAG fixtures, prompt eval suites (`eval/`)
 - Gateway/retrieval code paths if implementation scope
 - ADRs/specs if design scope
 
@@ -47,7 +47,7 @@ Default order when cutting scope: hallucination → tenant isolation → determi
 
 ### 4. Rules note
 
-Cross-check: `llm-gateway`, `rag-pipeline`, `ai-safety`, `ai-customer-facing`, `security` (OWASP LLM).
+Cross-check: `llm-gateway`, `rag-pipeline`, `prompt-evals`, `ai-safety`, `ai-customer-facing`, `security` (OWASP LLM).
 
 ### 5. Escalation agents (implementation only — not for review turn)
 
@@ -56,7 +56,7 @@ Cross-check: `llm-gateway`, `rag-pipeline`, `ai-safety`, `ai-customer-facing`, `
 | Safety / injection / policy | `@agent(AI_SAFETY)` |
 | RAG ingest/retrieve | `@agent(RAG_ENGINEER)` |
 | Gateway / rate limits | `@agent(AI_PLATFORM)` |
-| Traces / evals / SLOs | `@agent(AI_OBSERVABILITY)` |
+| Traces / evals / SLOs | `@agent(AI_OBSERVABILITY)`; skills `design-prompt-evals`, `implement-prompt-eval-runner`, `monitor-ai-quality` |
 
 ### 6. Do not use
 

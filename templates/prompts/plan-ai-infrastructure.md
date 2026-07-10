@@ -41,7 +41,7 @@ List files to create under `ai-runtime/` or app repo:
 
 ### 3. Rules note
 
-Scoped rules: `ai-customer-facing`, `ai-safety`, `ai-pii`, `llm-gateway` + always-applied.
+Scoped rules: `ai-customer-facing`, `ai-safety`, `ai-pii`, `llm-gateway`, `prompt-evals` (when prompt eval track applies) + always-applied.
 
 ### 4. Agents note
 
@@ -96,7 +96,6 @@ Validate locally: `python templates/ai-runtime/validate_bot_runtime.py corpus|go
 ### RAG hooks (CI / template repo)
 
 - `validate-rag-artifacts` — schema validation on corpus/golden JSON edits
-- `validate-prompt-eval-artifacts` — schema validation on `ai-runtime/eval/` suite and baseline JSON edits
 - `scan-logs-in-edit` — corpus PII advisory scan on RAG JSON paths
 
 ---
@@ -128,6 +127,7 @@ python templates/ai-runtime/validate_bot_runtime.py prompt-eval <suite.json>
 python templates/ai-runtime/validate_bot_runtime.py eval-baseline <baseline.json>
 python templates/ai-runtime/validate_bot_runtime.py judge-calibration <calibration.json>
 python templates/ai-runtime/eval/prompt_eval_runner.py grade --suite <suite.json> --responses <responses.json> --baseline <baseline.json>
+python templates/ai-runtime/eval/llm_judge_calibration.py analyze <calibration.json> --json
 ```
 
 ### Eval rules and agents
@@ -137,4 +137,4 @@ python templates/ai-runtime/eval/prompt_eval_runner.py grade --suite <suite.json
 
 ### Eval hooks (CI / template repo)
 
-- `validate-prompt-eval-artifacts` — schema validation on `ai-runtime/eval/` JSON edits
+- `validate-prompt-eval-artifacts` — schema validation on `ai-runtime/eval/` suite, baseline, and calibration JSON edits (skips `fixtures/` response maps and `*.schema.json`)
