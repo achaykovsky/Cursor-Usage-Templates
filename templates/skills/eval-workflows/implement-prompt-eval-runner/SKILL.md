@@ -8,12 +8,14 @@ description: Implements prompt eval runners and CI gates — deterministic grade
 ## Workflow
 
 1. **Validate fixtures** — `python templates/ai-runtime/validate_bot_runtime.py prompt-eval <suite.json>` (hook: `validate-prompt-eval-artifacts`).
-2. **Grader module** — use [prompt_eval_runner.py](../../../ai-runtime/eval/prompt_eval_runner.py) for deterministic assertions (`must_contain`, `refusal`, `regex`, etc.).
-3. **Responses map** — JSON object `{ "case_id": "model output text" }` for offline/CI runs; live gateway jobs populate this after inference.
+2. **Grader module** — use [prompt_eval_runner.py](../../../ai-runtime/eval/prompt_eval_runner.py) for deterministic assertions (`must_contain`, `refusal`, `regex`, `tool_call`, etc.).
+3. **Responses map** — JSON object `{ "case_id": "model output text" }` for offline/CI runs; live gateway jobs populate this after inference. For `tool_call` assertions, also pass `tool_calls` (list of `{name, args}`) to `grade_case()` or your gateway adapter.
 4. **Grade** — `python templates/ai-runtime/eval/prompt_eval_runner.py grade --suite <suite.json> --responses <responses.json> --json`.
 5. **Baseline** — commit `eval/baselines/<suite>-baseline.json`; compare with `--baseline` and `--regression-tolerance` (default 0).
 6. **CI** — PR smoke + nightly full suite per [eval-metrics.md](../../../ai-runtime/observability/eval-metrics.md) CI gates.
 7. **LLM-judge** — live judge integration only; offline runner skips `llm_judge`. Thresholds: `calibrate-llm-judge-eval`.
+
+**`tool_call` grading:** assertion passes when **any** matching tool invocation satisfies `args_schema.required` (not only the first call).
 
 ## Output Contract
 
@@ -27,4 +29,5 @@ description: Implements prompt eval runners and CI gates — deterministic grade
 - Design suites first: `design-prompt-evals`.
 - Schema: [prompt-eval.schema.json](../../../ai-runtime/eval/prompt-eval.schema.json), [eval-baseline.schema.json](../../../ai-runtime/eval/eval-baseline.schema.json).
 - Pair with `@agent(BACKEND_PYTHON)` or `@agent(AI_OBSERVABILITY)` for CI wiring.
+- Tests: `templates/commands/tests/test_prompt_eval_runner.py`.
 - Metrics and spans: [eval-metrics.md](../../../ai-runtime/observability/eval-metrics.md).
