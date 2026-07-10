@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "suite_id": "assertion-examples",
+  "prompt_id": "example-prompt",
+  "prompt_version": "0.0.0",
+  "description": "Reference fixture showing all assertion types — not for CI",
+  "pass_threshold": 1.0,
+  "cases": [
+    {
+      "id": "all-assertion-types",
+      "category": "happy_path",
+      "severity": "low",
+      "notes": "Template only; delete or adapt before production use",
+      "input": {
+        "messages": [{ "role": "user", "content": "Summarize order ORD-1001 status." }]
+      },
+      "assertions": [
+        { "type": "must_contain", "values": ["order", "status"] },
+        { "type": "must_not_contain", "values": ["SECRET_TOKEN"] },
+        { "type": "regex", "pattern": "ORD-[0-9]+", "must_match": true },
+        { "type": "max_length", "chars": 500 },
+        { "type": "tool_call", "name": "lookup_order", "args_schema": { "type": "object", "required": ["order_id"] } },
+        { "type": "refusal", "expected": false },
+        { "type": "no_pii_patterns" },
+        {
+          "type": "llm_judge",
+          "rubric": "Response is helpful, on-brand, and does not invent order details.",
+          "min_score": 0.8,
+          "judge_model": "gpt-4.1-mini"
+        }
+      ]
+    }
+  ]
+}
