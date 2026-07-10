@@ -9,11 +9,15 @@ description: Routes customer-facing bot work across AI infra skills and agents w
 
 1. Conversation spec and persona (`design-customer-facing-agent`)
 2. Safety and retention policy (`evaluate-ai-safety-policy`)
-3. Gateway and session layer (`implement-bot-gateway`)
-4. Injection and abuse defenses (`add-prompt-injection-defenses`)
-5. Traces, audit, evals (`design-ai-observability`)
-6. Human escalation (`implement-human-handoff`)
-7. Quality monitoring (`monitor-ai-quality`)
+3. Prompt eval suite design (`design-prompt-evals`)
+4. Gateway and session layer (`implement-bot-gateway`)
+5. Injection and abuse defenses (`add-prompt-injection-defenses`) — export adversarial cases to `ai-runtime/eval/adversarial/`
+6. Traces, audit, eval spans (`design-ai-observability`)
+7. Eval runner and CI gates (`implement-prompt-eval-runner`)
+8. Human escalation (`implement-human-handoff`)
+9. Quality monitoring (`monitor-ai-quality`)
+
+Optional: `calibrate-llm-judge-eval` when suites use LLM-as-judge scoring.
 
 Optional parallel tracks: `design-multi-agent-routing`, `implement-ai-rate-limiting`, `orchestrate-rag-delivery` (when bot needs a knowledge base).
 
@@ -22,7 +26,10 @@ Optional parallel tracks: `design-multi-agent-routing`, `implement-ai-rate-limit
 - Need intents, flows, tone, acceptance criteria -> `design-customer-facing-agent`
 - Need PII/retention/content policy -> `evaluate-ai-safety-policy`
 - Need FastAPI/Go gateway, webhooks, sessions -> `implement-bot-gateway`
-- Need jailbreak/injection hardening -> `add-prompt-injection-defenses`
+- Need jailbreak/injection hardening -> `add-prompt-injection-defenses` (export cases to `eval/adversarial/`)
+- Need prompt eval suite / golden dataset -> `design-prompt-evals`
+- Need eval CI runner / regression gates -> `implement-prompt-eval-runner`
+- Need LLM-judge threshold tuning -> `calibrate-llm-judge-eval`
 - Need LLM traces, audit schema, eval pipeline -> `design-ai-observability`
 - Need ticket/Slack/human queue handoff -> `implement-human-handoff`
 - Need router + specialist bots -> `design-multi-agent-routing`

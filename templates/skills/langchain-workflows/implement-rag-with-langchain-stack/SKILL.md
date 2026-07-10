@@ -20,8 +20,7 @@ description: Optional LangChain/LangGraph/LangSmith implementation of RAG when t
 
 ## LangSmith (eval + traces)
 
-- Dataset from `ai-runtime/rag/eval/*.json` golden fixtures.
-- Trace `retrieval.query` and `llm.completion` spans; regression on corpus manifest changes.
+RAG ingest/retrieve only above. **Eval datasets, spans, regression gates, and judge calibration:** [eval-metrics.md](../../../ai-runtime/observability/eval-metrics.md) LangSmith section.
 
 ## Output Contract
 
@@ -33,3 +32,4 @@ description: Optional LangChain/LangGraph/LangSmith implementation of RAG when t
 
 - Pair with `@agent(RAG_ENGINEER)`.
 - Safety and PII rules unchanged: `ai-pii.mdc`, `evaluate-ai-safety-policy`.
+- Prompt eval path (neutral): `design-prompt-evals` + `implement-prompt-eval-runner`.
