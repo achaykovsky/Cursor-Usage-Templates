@@ -85,6 +85,9 @@
         "command": "bash \"$HOME/.cursor/hooks/scripts/validate-rag-artifacts.sh\""
       },
       {
+        "command": "bash \"$HOME/.cursor/hooks/scripts/validate-prompt-eval-artifacts.sh\""
+      },
+      {
         "command": "bash \"$HOME/.cursor/hooks/scripts/sync-templates-to-local.sh\""
       }
     ],
