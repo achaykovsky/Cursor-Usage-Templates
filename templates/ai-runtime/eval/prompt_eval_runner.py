@@ -126,29 +126,41 @@ def grade_assertion(
     if atype == "max_length":
         limit = assertion.get("chars", 0)
         if len(response_text) > limit:
-            return AssertionResult(atype, False, f"length {len(response_text)} exceeds {limit}")
+            return AssertionResult(
+                atype, False, f"length {len(response_text)} exceeds {limit}"
+            )
         return AssertionResult(atype, True, "ok")
 
     if atype == "refusal":
         expected = assertion.get("expected")
         is_refusal = _looks_like_refusal(response_text)
         if expected is True and not is_refusal:
-            return AssertionResult(atype, False, "expected refusal but response appears compliant")
+            return AssertionResult(
+                atype, False, "expected refusal but response appears compliant"
+            )
         if expected is False and is_refusal:
-            return AssertionResult(atype, False, "expected answer but response looks like refusal")
+            return AssertionResult(
+                atype, False, "expected answer but response looks like refusal"
+            )
         return AssertionResult(atype, True, "ok")
 
     if atype == "no_pii_patterns":
-        custom = assertion.get("patterns") or []
+        custom = assertion.get("patterns")
+        if not isinstance(custom, list):
+            custom = []
         patterns = list(DEFAULT_PII_PATTERNS)
         for raw in custom:
             try:
                 patterns.append(re.compile(raw))
             except re.error as exc:
-                return AssertionResult(atype, False, f"invalid custom PII pattern: {exc}")
+                return AssertionResult(
+                    atype, False, f"invalid custom PII pattern: {exc}"
+                )
         for pattern in patterns:
             if pattern.search(response_text):
-                return AssertionResult(atype, False, f"PII-like pattern matched: {pattern.pattern}")
+                return AssertionResult(
+                    atype, False, f"PII-like pattern matched: {pattern.pattern}"
+                )
         return AssertionResult(atype, True, "ok")
 
     if atype == "tool_call":
@@ -159,8 +171,8 @@ def grade_assertion(
             return AssertionResult(atype, False, f"tool call '{name}' not found")
         args_schema = assertion.get("args_schema")
         if args_schema and isinstance(args_schema, dict):
-            required = args_schema.get("required", [])
-            if required:
+            required = args_schema.get("required")
+            if isinstance(required, list) and required:
                 for call in matching:
                     args = call.get("args") or {}
                     missing = [k for k in required if k not in args]
@@ -177,18 +189,22 @@ def grade_assertion(
         # Minimal structural check without jsonschema dependency.
         schema = assertion.get("schema")
         if not isinstance(schema, dict):
-            return AssertionResult(atype, False, "json_schema assertion missing schema object")
+            return AssertionResult(
+                atype, False, "json_schema assertion missing schema object"
+            )
         try:
             parsed = json.loads(response_text)
         except json.JSONDecodeError:
             return AssertionResult(atype, False, "response is not valid JSON")
         if schema.get("type") == "object" and not isinstance(parsed, dict):
             return AssertionResult(atype, False, "expected JSON object")
-        required = schema.get("required", [])
-        if isinstance(parsed, dict):
+        required = schema.get("required")
+        if isinstance(required, list) and isinstance(parsed, dict):
             missing = [k for k in required if k not in parsed]
             if missing:
-                return AssertionResult(atype, False, f"JSON missing required keys: {missing}")
+                return AssertionResult(
+                    atype, False, f"JSON missing required keys: {missing}"
+                )
         return AssertionResult(atype, True, "ok")
 
     return AssertionResult(str(atype), False, f"unknown assertion type: {atype}")
@@ -204,7 +220,9 @@ def grade_case(
     results: list[AssertionResult] = []
     for assertion in case.get("assertions", []):
         if not isinstance(assertion, dict):
-            results.append(AssertionResult("invalid", False, "assertion must be an object"))
+            results.append(
+                AssertionResult("invalid", False, "assertion must be an object")
+            )
             continue
         results.append(grade_assertion(assertion, response_text, tool_calls=tool_calls))
 
@@ -230,7 +248,11 @@ def grade_suite(suite: dict[str, Any], responses: dict[str, str]) -> SuiteResult
                 CaseResult(
                     case_id=case_id,
                     passed=False,
-                    assertion_results=(AssertionResult("missing_response", False, "no response provided"),),
+                    assertion_results=(
+                        AssertionResult(
+                            "missing_response", False, "no response provided"
+                        ),
+                    ),
                 )
             )
             continue
@@ -238,13 +260,21 @@ def grade_suite(suite: dict[str, Any], responses: dict[str, str]) -> SuiteResult
         skipped += sum(1 for r in result.assertion_results if r.skipped)
         case_results.append(result)
 
-    graded_cases = [c for c in case_results if c.assertion_results and not all(a.skipped for a in c.assertion_results)]
+    graded_cases = [
+        c
+        for c in case_results
+        if c.assertion_results and not all(a.skipped for a in c.assertion_results)
+    ]
     pass_count = sum(1 for c in graded_cases if c.passed)
     pass_rate = pass_count / len(graded_cases) if graded_cases else 0.0
 
     logger.info(
         "grade_suite_complete",
-        extra={"suite_id": suite_id, "pass_rate": pass_rate, "case_count": len(case_results)},
+        extra={
+            "suite_id": suite_id,
+            "pass_rate": pass_rate,
+            "case_count": len(case_results),
+        },
     )
     return SuiteResult(
         suite_id=suite_id,
@@ -324,7 +354,9 @@ def main(argv: list[str] | None = None) -> int:
     grade_p.add_argument("--responses", required=True, type=Path)
     grade_p.add_argument("--baseline", type=Path, default=None)
     grade_p.add_argument("--regression-tolerance", type=float, default=0.0)
-    grade_p.add_argument("--json", action="store_true", help="Emit JSON report on stdout")
+    grade_p.add_argument(
+        "--json", action="store_true", help="Emit JSON report on stdout"
+    )
 
     args = parser.parse_args(argv)
 
@@ -332,15 +364,22 @@ def main(argv: list[str] | None = None) -> int:
         suite = _load_json(args.suite)
         responses = _load_json(args.responses)
         if not isinstance(responses, dict):
-            print("responses file must be a JSON object mapping case id to output text", file=sys.stderr)
+            print(
+                "responses file must be a JSON object mapping case id to output text",
+                file=sys.stderr,
+            )
             return 2
 
-        suite_result = grade_suite(suite, {str(k): str(v) for k, v in responses.items()})
+        suite_result = grade_suite(
+            suite, {str(k): str(v) for k, v in responses.items()}
+        )
         errors: list[str] = []
 
         if not suite_meets_threshold(suite, suite_result):
             threshold = suite.get("pass_threshold", 1.0)
-            errors.append(f"pass_rate {suite_result.pass_rate:.3f} below threshold {threshold}")
+            errors.append(
+                f"pass_rate {suite_result.pass_rate:.3f} below threshold {threshold}"
+            )
 
         if args.baseline:
             baseline = _load_json(args.baseline)
@@ -355,7 +394,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.json:
             print(json.dumps(_suite_result_to_report(suite_result), indent=2))
         else:
-            print(f"suite={suite_result.suite_id} pass_rate={suite_result.pass_rate:.3f}")
+            print(
+                f"suite={suite_result.suite_id} pass_rate={suite_result.pass_rate:.3f}"
+            )
 
         if errors:
             for err in errors:

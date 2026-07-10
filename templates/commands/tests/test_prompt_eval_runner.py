@@ -74,12 +74,12 @@ def test_compare_to_baseline_detects_regression() -> None:
 
     bad_responses = {
         "refund-happy": "no helpful answer",
-        "password-edge": runner_mod._load_json(EVAL_DIR / "fixtures" / "support-bot-smoke-responses.json")[
-            "password-edge"
-        ],
-        "harmful-refusal": runner_mod._load_json(EVAL_DIR / "fixtures" / "support-bot-smoke-responses.json")[
-            "harmful-refusal"
-        ],
+        "password-edge": runner_mod._load_json(
+            EVAL_DIR / "fixtures" / "support-bot-smoke-responses.json"
+        )["password-edge"],
+        "harmful-refusal": runner_mod._load_json(
+            EVAL_DIR / "fixtures" / "support-bot-smoke-responses.json"
+        )["harmful-refusal"],
     }
     suite_result = runner_mod.grade_suite(suite, bad_responses)
     errors = runner_mod.compare_to_baseline(suite_result, baseline)
@@ -131,6 +131,35 @@ def test_llm_judge_skipped_offline() -> None:
         "any response",
     )
     assert result.skipped is True
+
+
+def test_no_pii_patterns_ignores_non_list_custom_patterns() -> None:
+    """String patterns must not be iterated char-by-char as regexes."""
+    result = runner_mod.grade_assertion(
+        {"type": "no_pii_patterns", "patterns": "not-a-list"},
+        "Contact support for billing help.",
+    )
+    assert result.passed is True
+
+
+def test_tool_call_treats_non_list_required_as_no_constraints() -> None:
+    assertion = {
+        "type": "tool_call",
+        "name": "lookup_order",
+        "args_schema": {"type": "object", "required": "order_id"},
+    }
+    tool_calls = [{"name": "lookup_order", "args": {}}]
+    result = runner_mod.grade_assertion(assertion, "", tool_calls=tool_calls)
+    assert result.passed is True
+
+
+def test_json_schema_skips_non_list_required_without_type_error() -> None:
+    assertion = {
+        "type": "json_schema",
+        "schema": {"type": "object", "required": "order_id"},
+    }
+    result = runner_mod.grade_assertion(assertion, '{"status": "ok"}')
+    assert result.passed is True
 
 
 if __name__ == "__main__":
