@@ -160,11 +160,17 @@ def grade_assertion(
         args_schema = assertion.get("args_schema")
         if args_schema and isinstance(args_schema, dict):
             required = args_schema.get("required", [])
-            for call in matching:
-                args = call.get("args") or {}
-                missing = [k for k in required if k not in args]
-                if missing:
-                    return AssertionResult(atype, False, f"tool '{name}' missing args: {missing}")
+            if required:
+                for call in matching:
+                    args = call.get("args") or {}
+                    missing = [k for k in required if k not in args]
+                    if not missing:
+                        return AssertionResult(atype, True, "ok")
+                return AssertionResult(
+                    atype,
+                    False,
+                    f"tool '{name}' missing required args in all matching calls: {required}",
+                )
         return AssertionResult(atype, True, "ok")
 
     if atype == "json_schema":
