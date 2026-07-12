@@ -25,12 +25,19 @@ beforeSubmitPrompt → … agent work … → beforeReadFile / preToolUse / befo
 | `preToolUse` (Write) | `block-secret-in-write` | **Deny** on hardcoded secrets in write content |
 | `beforeShellExecution` | `log-cursor-activity`, `validate-git-commands`, `validate-pre-push`, `block-destructive-shell`, `validate-db-shell-operations` | **Deny** on history rewrite, bad commit msg, destructive shell; tests before push |
 | `beforeMCPExecution` | `validate-mcp-operations` | **Confirm** on state-changing MCP tools |
-| `afterFileEdit` | `log-cursor-activity`, `format-after-edit`, `validate-template-consistency`, `scan-logs-in-edit`, `validate-bot-manifest`, `validate-ai-policy-schema`, `validate-rag-artifacts`, `validate-prompt-eval-artifacts`, `sync-templates-to-local` | Auto-format; manifest/policy/RAG/prompt-eval validation; log-secret and corpus-PII warnings |
+| `afterFileEdit` | `log-cursor-activity`, `format-after-edit`, `validate-template-consistency`, `scan-logs-in-edit`, `validate-bot-manifest`, `validate-ai-policy-schema`, `validate-rag-artifacts`, `validate-prompt-eval-artifacts`, `sync-templates-to-local` | See **afterFileEdit effects** below |
 | `subagentStart` / `subagentStop` | `log-resource-usage` | Silent |
 | `preCompact` / `afterAgentResponse` | `log-resource-usage` | Silent; context/token ledger updates |
 | `stop` | `log-cursor-activity`, `log-resource-usage`, `suggest-commit-on-stop` | Commit suggestions in hooks channel |
 
 Unix variant: same scripts as `.sh` via `unix/hooks.json` when sync `--hooks-variant auto` on macOS/Linux.
+
+**afterFileEdit effects:**
+
+- **Format** — auto-format edited files
+- **Validation** — bot manifest, AI policy, RAG artifacts, prompt-eval artifacts
+- **Warnings** — log-secret and corpus-PII scans
+- **Sync** — `sync-templates-to-local` copies matching `templates/` edits into `.cursor/`
 
 ### Hooks-only install
 
@@ -43,7 +50,12 @@ unzip cursor-hooks-unix-vX.Y.Z.zip -d .cursor/    # macOS/Linux
 Expand-Archive cursor-hooks-windows-vX.Y.Z.zip -DestinationPath .cursor   # Windows
 ```
 
-Prerequisites: Windows needs `pwsh`; Unix needs `bash`, `jq`, and `python3` for policy hooks. See [`templates/commands/README.md`](../commands/README.md).
+**Prerequisites** (see [`templates/commands/README.md`](../commands/README.md)):
+
+| OS | Required |
+|----|----------|
+| Windows | `pwsh` (PowerShell 7+) |
+| macOS / Linux | `bash`, `jq`, `python3` (for policy hooks) |
 
 ---
 
@@ -83,7 +95,13 @@ DB shell, git, and MCP gates use a **shared policy engine** (not inline regex in
 
 **Modes** (`modes` in policy JSON): `off` | `log` | `allow` | `ask` | `deny` | `advisory` per domain (`db_shell`, `mcp_write`, `mcp_unknown`, `git_commit_format`, `git_history_rewrite`, `pre_push`, …).
 
-**`pre_push` modes:** `deny` (default) blocks push when tests fail; missing runner → **ask** (not silent allow). `advisory` logs `pre_push_runner_missing` / `pre_push_tests_failed` to stderr and allows push. `off` / `allow` skip the gate entirely.
+**`pre_push` modes:**
+
+| Mode | Behavior | When to use |
+|------|----------|-------------|
+| `deny` (default) | Blocks push when tests fail; missing runner → **ask** (not silent allow) | CI not fully owning gates |
+| `advisory` | Logs `pre_push_runner_missing` / `pre_push_tests_failed` to stderr; allows push | Local dev with optional test runs |
+| `off` / `allow` | Skips the gate entirely | CI fully owns pre-push validation |
 
 **Principles:**
 - **Deny** irreversible ops (`DROP DATABASE`, force-push to main)
@@ -94,7 +112,12 @@ DB shell, git, and MCP gates use a **shared policy engine** (not inline regex in
 **Tests:** `poetry install --with dev && poetry run pytest templates/hooks/tests -q`  
 (Alternative: `pip install -e ".[dev]"` then `pytest templates/hooks/tests -q`; or `python -m unittest discover -s templates/hooks/tests -p "test_*.py"`.)
 
-**Policy errors:** The engine **fails open** on stdout (`permission: allow`) when JSON is invalid or the engine errors, so hooks do not brick Cursor sessions. Structured audit events are written to **stderr** (JSON lines: `policy_load_failed`, `policy_engine_error`, `invalid_hook_payload`). Check Cursor hook debug output or redirect stderr when troubleshooting. Tighten behavior via `modes.policy_load_error` / `modes.policy_engine_error` in `.cursor/hook-policy.json` (`ask` | `deny`; default `allow`).
+**Policy errors (fail-open)**
+
+- **Default behavior** — engine returns `permission: allow` on stdout when JSON is invalid or the engine errors, so hooks do not brick Cursor sessions
+- **Stderr events** — structured audit lines: `policy_load_failed`, `policy_engine_error`, `invalid_hook_payload`
+- **Troubleshooting** — check Cursor hook debug output or redirect stderr
+- **Override keys** — `modes.policy_load_error` / `modes.policy_engine_error` in `.cursor/hook-policy.json` (`ask` | `deny`; default `allow`)
 
 ### Secure baseline (recommended for regulated / production repos)
 
@@ -150,7 +173,11 @@ Per-day folders under `logs/YYYY-MM-DD/` (project root, parallel to `src/` or `t
 - Prompt context: `cursor-prompt-context.jsonl`
 - Resource summaries (on stop): `cursor-resources.jsonl`
 
-Resource ledger (in-flight generation): `logs/resource-ledger/active.json` (rules/`skills_matched`/`skills_read`/spawned subagents/`mcp`/`hooks_executed` this generation; `hooks_configured` is the static manifest snapshot). `mcp` is populated by `validate-mcp-operations` on `beforeMCPExecution` (`server` + `tool` per call). Writes use an exclusive lock + atomic replace (`active.json.lock`, temp file) to avoid lost updates when multiple hook events fire in one generation.
+**Resource ledger** (in-flight generation): `logs/resource-ledger/active.json`
+
+- **Fields tracked** — rules, `skills_matched`, `skills_read`, spawned subagents, `mcp`, `hooks_executed` this generation (`hooks_configured` is the static manifest snapshot)
+- **MCP population** — `validate-mcp-operations` on `beforeMCPExecution` (`server` + `tool` per call)
+- **Concurrency** — exclusive lock + atomic replace (`active.json.lock`, temp file) to avoid lost updates when multiple hook events fire in one generation
 
 Legacy flat files (`cursor-*-YYYY-MM-DD.jsonl` directly under `logs/` or `.cursor/logs/`) are still read by `cursor_activity.py query` but new hook writes use date folders only.
 

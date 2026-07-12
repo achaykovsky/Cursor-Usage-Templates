@@ -1,6 +1,9 @@
 # AI Runtime Templates
 
-**Hub for customer-facing bots and deployed AI agents.** Authoring lives in Cursor (`templates/rules/`, `templates/skills/`, `templates/agents/`); runtime artifacts here ship into application repos.
+**Hub for customer-facing bots and deployed AI agents.**
+
+- **Authoring** lives in Cursor: `templates/rules/`, `templates/skills/`, `templates/agents/`
+- **Runtime artifacts** here ship into application repos
 
 **Not synced wholesale to `.cursor/`** — copy or scaffold selectively during bot implementation. See [USAGE.md](../USAGE.md) for the four-layer authoring model.
 
@@ -13,9 +16,12 @@
 | **Authoring** | Engineers in Cursor | [rules/RULES.md](../rules/RULES.md), [skills/SKILLS.md](../skills/SKILLS.md), [agents/subagents/AGENTS.md](../agents/subagents/AGENTS.md), [hooks/HOOKS_USAGE.md](../hooks/HOOKS_USAGE.md) | Build and operate bot services safely |
 | **Runtime** | End users / customers | `templates/ai-runtime/` | Deployed bots (Slack, web, API) with policy + observability |
 
-**Start building a bot:** paste [plan-ai-infrastructure.md](../prompts/plan-ai-infrastructure.md) or invoke skill `orchestrate-ai-bot-delivery`.
+**Get started:**
 
-**Review an existing or planned LLM system:** paste [plan-llm-system-design-review.md](../prompts/plan-llm-system-design-review.md) or invoke skill `review-llm-system-design` with `@agent(AI_SYSTEM_REVIEWER)`.
+| Goal | Entry |
+|------|-------|
+| Build a new bot | Paste [plan-ai-infrastructure.md](../prompts/plan-ai-infrastructure.md) or skill `orchestrate-ai-bot-delivery` |
+| Review an existing LLM system | Paste [plan-llm-system-design-review.md](../prompts/plan-llm-system-design-review.md) or skill `review-llm-system-design` + `@agent(AI_SYSTEM_REVIEWER)` |
 
 ---
 
@@ -65,7 +71,20 @@ Retrospective review of design docs **and** implementation — not code/PR revie
 review-llm-system-design + @agent(AI_SYSTEM_REVIEWER) → design-review/system-review-checklist.md
 ```
 
-**Dimensions:** hallucination risks, context explosion, retrieval quality, prompt coupling, observability, evaluation, confidence calculation, deterministic business logic, tenant isolation, future tool calling, cost, latency.
+**Dimensions** (12):
+
+- Hallucination risks
+- Context explosion
+- Retrieval quality
+- Prompt coupling
+- Observability
+- Evaluation
+- Confidence calculation
+- Deterministic business logic
+- Tenant isolation
+- Future tool calling
+- Cost
+- Latency
 
 **Prompt:** [plan-llm-system-design-review.md](../prompts/plan-llm-system-design-review.md)
 

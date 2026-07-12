@@ -1,6 +1,9 @@
 # Skills Catalog
 
-Skills sync to `.cursor/skills/**/SKILL.md` from `templates/skills/**/SKILL.md`. **Author under `templates/skills/`** — the agent **reads a skill when the task matches** its YAML `description` — you rarely need to paste skill bodies.
+Skills sync to `.cursor/skills/**/SKILL.md` from `templates/skills/**/SKILL.md`.
+
+- **Author under** `templates/skills/`
+- **Agent reads** a skill when the task matches its YAML `description` — you rarely need to paste skill bodies
 
 **Start:** [USAGE.md](../USAGE.md) intent table. **Multi-FE:** use `orchestrate-frontend-delivery` first.
 
@@ -167,7 +170,7 @@ Format: `skill-name` | trigger phrases | optional `@agent`
 | Skill | Triggers | Agent |
 |-------|----------|-------|
 | `design-prompt-evals` | prompt eval, golden dataset, eval suite, regression eval, benchmark prompts | `AI_OBSERVABILITY` |
-| `implement-prompt-eval-runner` | implement eval runner, CI eval job, ci eval, eval regression gate, pytest prompt eval, prompt eval runner | `BACKEND_PYTHON` / `AI_OBSERVABILITY` |
+| `implement-prompt-eval-runner` | implement eval runner, CI eval job, eval regression gate, pytest prompt eval | `BACKEND_PYTHON` / `AI_OBSERVABILITY` |
 | `calibrate-llm-judge-eval` | LLM judge, rubric eval, model-as-judge, faithfulness scorer, calibrate judge threshold | `AI_OBSERVABILITY` |
 
 ## ai-infra-workflows

@@ -1,6 +1,8 @@
 # Prompt Eval Fixtures
 
-Offline regression suites for **prompt-level** quality, safety, and integration checks. Distinct from RAG retrieval golden sets in [rag/eval/](../rag/eval/) — compose both when testing end-to-end bots.
+Offline regression suites for **prompt-level** quality, safety, and integration checks.
+
+Distinct from RAG retrieval golden sets in [rag/eval/](../rag/eval/) — compose both when testing end-to-end bots.
 
 ## Layout
 
@@ -72,7 +74,10 @@ python templates/ai-runtime/eval/llm_judge_calibration.py analyze \
 | `tool_call` | Passes if **any** matching invocation (by `name`) satisfies `args_schema.required`; fails only when none do |
 | `llm_judge` | Skipped offline — wire live judge in gateway/CI; thresholds via `calibrate-llm-judge-eval` |
 
-For `tool_call` assertions, pass `tool_calls` to `grade_case()` / the grade API (list of `{name, args}` dicts). Response text alone is not enough.
+For `tool_call` assertions:
+
+- Pass `tool_calls` to `grade_case()` / the grade API (list of `{name, args}` dicts)
+- Response text alone is not enough
 
 Reference assertions: [examples/property-assertions.json](examples/property-assertions.json).
 

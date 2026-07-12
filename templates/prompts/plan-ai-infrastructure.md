@@ -41,11 +41,22 @@ List files to create under `ai-runtime/` or app repo:
 
 ### 3. Rules note
 
-Scoped rules: `ai-customer-facing`, `ai-safety`, `ai-pii`, `llm-gateway`, `prompt-evals` (when prompt eval track applies) + always-applied.
+Scoped rules (plus always-applied):
+
+- `ai-customer-facing`
+- `ai-safety`
+- `ai-pii`
+- `llm-gateway`
+- `prompt-evals` (when prompt eval track applies)
 
 ### 4. Agents note
 
-Suggest `@agent(BOT_DESIGNER)`, `@agent(AI_PLATFORM)`, `@agent(AI_SAFETY)`, `@agent(AI_OBSERVABILITY)` per step.
+Suggest per step:
+
+- `@agent(BOT_DESIGNER)`
+- `@agent(AI_PLATFORM)`
+- `@agent(AI_SAFETY)`
+- `@agent(AI_OBSERVABILITY)`
 
 ### 5. Security and guardrails checklist
 
@@ -75,7 +86,13 @@ Canonical sequence:
 
 `design-rag-architecture` → `implement-rag-ingest-and-index` → `implement-retrieval-pipeline` → `monitor-ai-quality` → (`implement-bot-gateway` if bot-integrated)
 
-Delegate (do not duplicate): `DATA_ENGINEER` for ETL, `evaluate-ai-safety-policy`, `add-prompt-injection-defenses`, `design-ai-observability`, `sensitive-data-handling`.
+Delegate (do not duplicate):
+
+- `@agent(DATA_ENGINEER)` — ETL
+- `evaluate-ai-safety-policy`
+- `add-prompt-injection-defenses`
+- `design-ai-observability`
+- `sensitive-data-handling`
 
 ### RAG runtime artifacts
 
