@@ -17,3 +17,5 @@ alwaysApply: false
 **Linking & navigation**: Prefer concrete entry docs when available (`README.md`, `SKILLS.md`, `.mdc`) over folder-only links. In tables, do not repeat the same destination in both path and description columns.
 
 **Parser-friendly structure**: Use bullets for independent constraints (`Do not`, `Required`, `Verify`). Prefer explicit table columns for category comparisons (for example, `Primary` vs `Fallback`) instead of mixed cells. Avoid semicolon-chaining unrelated policy constraints in one sentence.
+
+**Readable layout**: Blank line between logical blocks (heading, paragraph, list, code). Break run-on paragraphs into bullets or subheadings. Nested content inside ordered-list items: **4-space indent** (GFM — 3 spaces breaks list nesting on GitHub). Overflow in table cells → extra columns or bullet list below the table. Multi-step mode/fallback prose → table plus numbered steps below.
