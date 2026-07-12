@@ -129,9 +129,9 @@ LLM system design review (not code review). Twelve-dimension checklist: hallucin
 
 ## RULES (TECHNICAL STANDARDS)
 
-Rules in `.cursor/rules/*.mdc` add technical depth and apply via globs. **Catalog:** [rules/RULES.md](../../rules/RULES.md). **Audit:** [prompts/plan-cursor-rules-audit.md](../../prompts/plan-cursor-rules-audit.md).
+Rules in `.cursor/rules/*.mdc` add technical depth and apply via globs. **Catalog:** [rules/RULES.md](../rules/RULES.md). **Audit:** `~/.cursor/commands/route-rules.ps1`.
 
-**Navigation hub:** [USAGE.md](../../USAGE.md).
+**Navigation hub:** [USAGE.md](../USAGE.md).
 
 ## POLICY PRECEDENCE
 
@@ -151,14 +151,7 @@ Tie-breaks:
 
 ## SYNC
 
-Author under `templates/agents/subagents/*.md` only. Run:
-
-```bash
-python templates/commands/sync-cursor.py              # full templates → .cursor/
-python templates/commands/sync-cursor.py --mode TemplatesToGlobal   # templates → ~/.cursor/
-```
-
-In **this repo**, `sync-templates-to-local` (`afterFileEdit`) copies agent changes into `.cursor/agents/` automatically. `templates/prompts/` stays repo-only. See `templates/README.md` and `templates/commands/README.md`.
+Author under `templates/agents/subagents/*.md` in **Cursor-Usage-Templates**, then publish to global and run `FromGlobal` in consumer projects. See `templates/MAINTAINER.md` in that repo.
 
 ## Note:
 Codex will review your results of the review for double-check.
