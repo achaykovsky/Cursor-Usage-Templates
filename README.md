@@ -16,11 +16,23 @@ python templates/commands/sync-cursor.py --mode TemplatesToGlobal
 
 ### B. Initialize any project from global
 
-```bash
-python %USERPROFILE%\cursor\Cursor-Usage-Templates\templates\commands\sync-cursor.py --mode FromGlobal --project-root .
+**Prerequisite:** run step A once so `~/.cursor/` (and `~/.cursor/commands/`) is populated.
+
+From the **new project root** (PowerShell):
+
+```powershell
+& "$env:USERPROFILE\.cursor\commands\sync-cursor.ps1" -Mode FromGlobal
+```
+
+**Python alternative** (if `python` is 3.10+ on `PATH`):
+
+```powershell
+python "$env:USERPROFILE\.cursor\commands\sync-cursor.py" --mode FromGlobal --project-root .
 ```
 
 Then open **`project/.cursor/USAGE.md`**.
+
+> Do **not** use `%USERPROFILE%` in PowerShell — it is not expanded. Use `$env:USERPROFILE` instead.
 
 ### C. Sync templates directly into a project (this repo)
 
@@ -50,9 +62,13 @@ Then open **`project/.cursor/USAGE.md`**.
 
     OS prerequisites (`pwsh`, `jq`, etc.): [`templates/commands/README.md`](templates/commands/README.md)
 
-3. **Other projects without a local `templates/` tree** — run from the central repo:
+3. **Other projects** — after step A, from the project root:
 
-    `& "$env:USERPROFILE\cursor\Cursor-Usage-Templates\templates\commands\sync-cursor.ps1" -Mode FromGlobal`
+    ```powershell
+    & "$env:USERPROFILE\.cursor\commands\sync-cursor.ps1" -Mode FromGlobal
+    ```
+
+    No local `templates/` tree or Cursor-Usage-Templates clone required in that project.
 
 4. **Copy base templates** into your Cursor instructions panel:
 
@@ -237,7 +253,7 @@ templates/
 
 - Run `python templates/commands/sync-cursor.py`
 - Ensure agent `*.md` files exist in `templates/agents/subagents/` (not only in `.cursor/agents/`)
-- For other projects: run `FromGlobal` after `TemplatesToGlobal` populated `~/.cursor/`
+- For other projects: `& "$env:USERPROFILE\.cursor\commands\sync-cursor.ps1" -Mode FromGlobal` (after `TemplatesToGlobal` populated `~/.cursor/`)
 
 **Template conflicts**
 

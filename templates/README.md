@@ -14,7 +14,8 @@
 | [skills/**/SKILL.md](skills/) + [skills/SKILLS.md](skills/SKILLS.md) | `.cursor/skills/` |
 | [hooks/README.md](hooks/README.md) + [hooks/HOOKS_USAGE.md](hooks/HOOKS_USAGE.md) | `.cursor/hooks/`, `.cursor/hooks.json`, `.cursor/hooks/policy/` |
 | [ai-runtime/README.md](ai-runtime/README.md) (+ [design-review/](ai-runtime/design-review/README.md)) | **Synced:** No · **Use:** selective copy into app repos |
-| [prompts/README.md](prompts/README.md) | *(repo-only — not synced)* |
+| [MAINTAINER.md](MAINTAINER.md) | *(repo-only — maintainer workflow + planning prompts)* |
+| [prompts/README.md](prompts/README.md) | *(repo-only — see MAINTAINER.md)* |
 | [commands/README.md](commands/README.md) | `~/.cursor/commands/` via `TemplatesToGlobal` only |
 
 Base instruction panels (manual copy to Cursor settings): `workspace.md`, `project.md`, `user.md`.
@@ -44,9 +45,10 @@ Pushes agents, rules, hooks, skills, routing catalogs (`USAGE.md`, `RULES.md`, `
 
 ### 2. Global → any project
 
-```bash
-python /path/to/Cursor-Usage-Templates/templates/commands/sync-cursor.py \
-  --mode FromGlobal --project-root /path/to/your-project
+From the **project root** (after step 1):
+
+```powershell
+& "$env:USERPROFILE\.cursor\commands\sync-cursor.ps1" -Mode FromGlobal
 ```
 
 Creates `your-project/.cursor/` including [`USAGE.md`](USAGE.md) — open that in the project after sync.
