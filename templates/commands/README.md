@@ -30,10 +30,10 @@ templates/  ──TemplatesToGlobal──►  ~/.cursor/  ──FromGlobal──
 
 **Entry points:**
 
-| Platform | Command |
-|----------|---------|
-| Any (recommended) | `python templates/commands/sync-cursor.py` |
-| Windows PowerShell | `.\templates\commands\sync-cursor.ps1` (delegates to the Python script; requires Python on `PATH`. Defaults `-ProjectRoot` to the current working directory.) |
+| Platform | Command | Requires | Default `-ProjectRoot` |
+|----------|---------|----------|------------------------|
+| Any (recommended) | `python templates/commands/sync-cursor.py` | Python 3.10+ on `PATH` | Parent of `templates/` |
+| Windows PowerShell | `.\templates\commands\sync-cursor.ps1` | Python 3.10+ on `PATH` (delegates to Python script) | Current working directory |
 
 ## Prerequisites by OS
 
@@ -47,13 +47,31 @@ templates/  ──TemplatesToGlobal──►  ~/.cursor/  ──FromGlobal──
 
 - **Python 3.10+** (e.g. `brew install python` or Xcode CLT).
 - **Sync / optional:** same Python for `sync-cursor.py`.
-- **Hooks (bash scripts):** `bash` (preinstalled), **`jq`** (`brew install jq`) for JSON hooks; **`python3`** for `redact-sensitive-read.sh` and **hook policy** (`validate-db-shell-operations`, `validate-git-commands`, `validate-mcp-operations`). After sync with the default **`--hooks-variant auto`**, the active config is **`unix/hooks.json` → `.cursor/hooks.json`** (bash commands).
+
+**Hooks (bash scripts):**
+
+| Tool | Install | Used by |
+|------|---------|---------|
+| `bash` | Preinstalled | Hook script runner |
+| `jq` | `brew install jq` | JSON hooks |
+| `python3` | Python 3.10+ | `redact-sensitive-read.sh`, hook policy engine |
+
+- Default **`--hooks-variant auto`** → active config is **`unix/hooks.json` → `.cursor/hooks.json`** (bash commands).
 - Make scripts executable if needed: `chmod +x .cursor/hooks/scripts/*.sh` (usually not required when invoking via `bash script.sh`).
 
 ### Linux
 
 - **Python 3.10+** (`python3` from distro packages).
-- **Hooks:** `bash`, **`jq`** (e.g. `apt install jq` / `dnf install jq`), **`python3`**. Default **`auto`** installs Unix/bash hook commands the same way as macOS.
+
+**Hooks:**
+
+| Tool | Install | Used by |
+|------|---------|---------|
+| `bash` | Preinstalled | Hook script runner |
+| `jq` | `apt install jq` / `dnf install jq` | JSON hooks |
+| `python3` | Python 3.10+ | Policy hooks, redaction |
+
+- Default **`auto`** installs Unix/bash hook commands the same way as macOS.
 
 ## Modes (`--mode` / `-Mode`)
 
@@ -103,7 +121,15 @@ python templates/commands/sync-cursor.py --components hooks
 python templates/commands/sync-cursor.py --components hooks,rules
 ```
 
-**`FromGlobal`:** Scripts are filtered by this variant (only `*.ps1` or `*.sh` from `hooks/scripts/`). If global has no scripts for the current OS, the sync copies **`hooks.json` from `templates/hooks/`** (when missing on the source) and **`hooks/scripts` from `templates/hooks/windows/` or `unix/`** so the destination still works. Run from a project that contains `templates/` when using that fallback.
+**`FromGlobal` hooks fallback**
+
+When global has no scripts for the current OS:
+
+1. Sync copies **`hooks.json` from `templates/hooks/`** (when missing on the source).
+2. Sync copies **`hooks/scripts` from `templates/hooks/windows/` or `unix/`** so the destination still works.
+3. Scripts are filtered by **`--hooks-variant`** (only `*.ps1` or `*.sh` from `hooks/scripts/`).
+
+Run from a project that contains `templates/` when using that fallback.
 
 ## What Each Mode Syncs
 
@@ -123,7 +149,13 @@ python templates/commands/sync-cursor.py --components hooks,rules
 
 ### `TemplatesToGlobal`
 
-Same sources as **`TemplatesToLocal`**, but destination is **`~/.cursor/`** instead of project `.cursor/`. Also copies top-level `templates/commands/*.{py,ps1,sh}` and `README.md` to **`~/.cursor/commands/`** (never `tests/`). Includes **`USAGE.md`** and other routing catalogs. Installs **`windows/hooks.global.json`** (Windows) or **`unix/hooks.global.json`** (macOS/Linux) with absolute hook script paths.
+Same sources as **`TemplatesToLocal`**, but destination is **`~/.cursor/`** instead of project `.cursor/`.
+
+**Additional vs TemplatesToLocal:**
+
+- Copies top-level `templates/commands/*.{py,ps1,sh}` and `README.md` to **`~/.cursor/commands/`** (never `tests/`)
+- Includes **`USAGE.md`** and other routing catalogs
+- Installs **`windows/hooks.global.json`** (Windows) or **`unix/hooks.global.json`** (macOS/Linux) with absolute hook script paths
 
 ### `FromGlobal`
 
@@ -137,9 +169,17 @@ Copies from **`~/.cursor/`** into project **`.cursor/`** only (global must have 
 | Skills | `skills/**/SKILL.md` (tree preserved) |
 | Routing catalogs | [`USAGE.md`](../USAGE.md), [`rules/RULES.md`](../rules/RULES.md), [`skills/SKILLS.md`](../skills/SKILLS.md), [`hooks/HOOKS_USAGE.md`](../hooks/HOOKS_USAGE.md), [`hooks/README.md`](../hooks/README.md) |
 
-For **`TemplatesToLocal`:** Existing `*.md` in `agents/`, `*.mdc` in `rules/`, stale `SKILL.md` trees under `skills/`, and hook scripts at the destination are cleared or pruned before copy.
+### Destination cleanup by mode
 
-For **`FromGlobal`**, existing `*.md` in `agents/`, `*.mdc` in `rules/`, and **all** `*.ps1` and `*.sh` in `hooks/scripts/` at the **destination** are cleared, then only scripts matching **`--hooks-variant`** (`*.ps1` or `*.sh`) are copied from global. If none match, the sync falls back to **`templates/hooks/windows/`** or **`templates/hooks/unix/`** when the command is run from a project that contains `templates/` (see **Hooks variant** above). **`hooks.json`** is copied from global when present; otherwise from `templates/hooks/` for the variant. **`FromGlobal`** also prunes stale skills under `skills/`.
+| Mode | Cleared before copy | Hook script selection | Fallback when global empty | Skills prune |
+|------|---------------------|----------------------|------------------------------|--------------|
+| **`TemplatesToLocal`** | Existing `*.md` in `agents/`, `*.mdc` in `rules/`, stale `SKILL.md` trees under `skills/`, hook scripts at destination | Per **`--hooks-variant`** | — | Yes |
+| **`FromGlobal`** | Existing `*.md` in `agents/`, `*.mdc` in `rules/`, **all** `*.ps1` and `*.sh` in `hooks/scripts/` at destination | Only scripts matching **`--hooks-variant`** (`*.ps1` or `*.sh`) from global | **`templates/hooks/windows/`** or **`unix/`** when run from a project with `templates/` | Yes |
+
+**`FromGlobal` hook details:**
+
+- **`hooks.json`** — copied from global when present; otherwise from `templates/hooks/` for the variant
+- See **FromGlobal hooks fallback** under Components when global has no OS-matching scripts
 
 ## Safety: Empty Sources
 
@@ -149,13 +189,23 @@ If a category has **no files** on the source side (missing folder, or folder wit
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `--project-root` / `-ProjectRoot` | Current working directory in `sync-cursor.ps1`; parent of `templates/` in `sync-cursor.py` | Root of the project whose `.cursor/` is read or written. |
-| `--mode` / `-Mode` | `TemplatesToLocal` | `TemplatesToLocal`, `TemplatesToGlobal`, or `FromGlobal`. |
-| `--hooks-variant` / `-HooksVariant` | `auto` | `auto`, `windows`, or `unix` — selects which script extension and hooks JSON to use. |
-| `--components` | *(all)* | Comma-separated: `agents`, `rules`, `hooks`, `skills`, `catalogs`. Example: `--components hooks`. |
-| `--trigger-file` | *(empty)* | Edited path under `templates/` (used by `sync-templates-to-local` hook). Infers `--components`; no-op for `templates/commands/` and `templates/prompts/`. |
+| `--project-root` / `-ProjectRoot` | See below | Root of the project whose `.cursor/` is read or written |
+| `--mode` / `-Mode` | `TemplatesToLocal` | `TemplatesToLocal`, `TemplatesToGlobal`, or `FromGlobal` |
+| `--hooks-variant` / `-HooksVariant` | `auto` | `auto`, `windows`, or `unix` — selects script extension and hooks JSON |
+| `--components` | *(all)* | Comma-separated: `agents`, `rules`, `hooks`, `skills`, `catalogs` |
+| `--trigger-file` | *(empty)* | Edited path under `templates/` (used by `sync-templates-to-local` hook) |
 
-**`-ProjectRoot`:** When you pass it explicitly, use the full project path you intend (the script does not resolve relative paths with `Resolve-Path`).
+**`-ProjectRoot` defaults:**
+
+- `sync-cursor.ps1` — current working directory
+- `sync-cursor.py` — parent of `templates/`
+
+When you pass `-ProjectRoot` explicitly, use the full project path (the script does not resolve relative paths with `Resolve-Path`).
+
+**`--trigger-file`:**
+
+- Infers `--components` from the edited path
+- No-op for `templates/commands/` and `templates/prompts/`
 
 ## Auto-sync on template edits (this repo)
 

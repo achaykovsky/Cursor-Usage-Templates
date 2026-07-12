@@ -1,6 +1,11 @@
 # RAG Runtime Templates
 
-Corpus manifests and eval fixtures for knowledge-base bots. Authoring: skill `orchestrate-rag-delivery` and `@agent(RAG_ENGINEER)`.
+Corpus manifests and eval fixtures for knowledge-base bots.
+
+**Authoring:**
+
+- Skill: `orchestrate-rag-delivery`
+- Agent: `@agent(RAG_ENGINEER)`
 
 **Bot integration:** wire `search_knowledge_base` via skill `implement-bot-gateway` (extended) and [tool-risk-catalog.json](../policy/tool-risk-catalog.json).
 
@@ -27,6 +32,7 @@ python templates/ai-runtime/validate_bot_runtime.py golden <path.json>
 | Embed batching | `design-batching-strategy` |
 | Safety / PII | `ai-pii.mdc`, `evaluate-ai-safety-policy`, `sensitive-data-handling` |
 | Retrieval eval metrics | `monitor-ai-quality`, [eval-metrics.md](../observability/eval-metrics.md) |
-| Prompt-level generation/adversarial evals | [eval/README.md](../eval/README.md) — compose with golden retrieval for E2E |
+| Prompt-level generation/adversarial evals | [eval/README.md](../eval/README.md) |
+| E2E (retrieval + generation) | Compose golden retrieval with prompt eval suites |
 | Traces | [span-conventions.md](../observability/span-conventions.md) |
-| Pre-launch system review | [design-review/README.md](../design-review/README.md) — dimensions 1 (hallucination), 3 (retrieval quality) |
+| Pre-launch system review | [design-review/README.md](../design-review/README.md) — dimensions 1, 3 |

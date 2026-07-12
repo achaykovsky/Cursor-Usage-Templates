@@ -15,7 +15,7 @@ Rules sync to `.cursor/rules/` from `templates/rules/`. They load **automaticall
 | `observability.mdc` | Logs, metrics, traces, audit, redaction |
 | `token-efficiency.mdc` | Concise I/O, references over pastes |
 | `mcp-integrations.mdc` | MCP safety + CLI-first token routing; approval for writes |
-| `resource-usage-report.mdc` | Agent prepends Resources used table (full enumeration; rules, skills, agents, MCP, hooks) |
+| `resource-usage-report.mdc` | Agent prepends **Resources used** table enumerating: rules, skills, agents, MCP, hooks |
 | `performance.mdc` | Profiling, complexity, N+1 (always applied) |
 | `git-github-workflow.mdc` | Merge commits, append-only history, CI-before-merge, PR review resolution |
 
@@ -56,13 +56,15 @@ Rules sync to `.cursor/rules/` from `templates/rules/`. They load **automaticall
 
 ## Overlap notes (efficient routing)
 
-- **Python API file** → `python-backend` + `architecture` + `clean-code` + `performance` + always-applied.
-- **TSX component** → `frontend` + `architecture` + `clean-code` + `performance` + always-applied.
-- **OpenAPI / router** → `api-contract` + language rule for implementation files.
-- **Editing a skill** → `skills-consistency` only (plus always-applied).
-- **Bot manifest / ai-runtime JSON** → `ai-customer-facing` + `ai-safety` + `python-backend` (for `.py`) + always-applied.
-- **RAG corpus / retrieval code** → `rag-pipeline` + `ai-pii` + `data-pipelines` (ETL) + always-applied.
-- **Prompt eval fixtures** → `prompt-evals` + `ai-safety` + `ai-customer-facing` (bots) + always-applied.
+| Scenario | Rules that apply |
+|----------|------------------|
+| Python API file | `python-backend`, `architecture`, `clean-code`, `performance` + always-applied |
+| TSX component | `frontend`, `architecture`, `clean-code`, `performance` + always-applied |
+| OpenAPI / router | `api-contract` + language rule for implementation files |
+| Editing a skill | `skills-consistency` only (+ always-applied) |
+| Bot manifest / ai-runtime JSON | `ai-customer-facing`, `ai-safety`, `python-backend` (for `.py`) + always-applied |
+| RAG corpus / retrieval code | `rag-pipeline`, `ai-pii`, `data-pipelines` (ETL) + always-applied |
+| Prompt eval fixtures | `prompt-evals`, `ai-safety`, `ai-customer-facing` (bots) + always-applied |
 
 When unsure which rules apply to a path, paste [plan-cursor-rules-audit.md](../prompts/plan-cursor-rules-audit.md) with file list — do not paste this whole file.
 

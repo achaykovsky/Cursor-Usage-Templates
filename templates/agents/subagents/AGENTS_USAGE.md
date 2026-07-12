@@ -105,7 +105,13 @@ Use @agent(SECURITY) for security audits.
 ### LLM System Design Review
 1. `@agent(AI_SYSTEM_REVIEWER)` Review @templates/ai-runtime/ against the system design checklist
 2. Skill `review-llm-system-design` applies the 12-dimension checklist (hallucination, context, retrieval, tenant isolation, cost/latency, etc.)
-3. For fixes, chain remediation skills (`implement-retrieval-pipeline`, `design-ai-observability`, …) — not `review-pull-request` (that is code/PR review)
+3. **Remediation skills** (for fixes):
+
+   - `implement-retrieval-pipeline`
+   - `design-ai-observability`
+   - (chain others as needed)
+
+   **Not for:** `review-pull-request` (that is code/PR review)
 
 ### Backend Delivery (BE Agents)
 1. `@agent(BACKEND_PYTHON)` Implement Python API/services
@@ -127,5 +133,7 @@ Use multiple subagents in sequence:
 ## Tips
 
 - **Be specific**: "@agent(REVIEWER) Review this auth function for SQL injection" is better than "review this"
-- **Subagent + Rules**: Subagents provide role/prompt; rules (`.cursor/rules/*.mdc`) add technical standards when editing matching files
+- **Subagent + Rules**
+  - Subagents provide role and prompt tone
+  - Rules (`.cursor/rules/*.mdc`) add technical standards when editing matching files
 - **Sync**: Run `python templates/commands/sync-cursor.py` to update `.cursor/agents/` and `.cursor/rules/`

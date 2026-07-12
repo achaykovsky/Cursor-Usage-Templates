@@ -43,11 +43,25 @@ List files/folders the reviewer should `@` reference:
 
 ### 3. Dimension priority (if time-boxed)
 
-Default order when cutting scope: hallucination → tenant isolation → deterministic business logic → retrieval quality → observability/eval → remaining dimensions.
+Default order when cutting scope:
+
+1. Hallucination
+2. Tenant isolation
+3. Deterministic business logic
+4. Retrieval quality
+5. Observability / eval
+6. Remaining dimensions
 
 ### 4. Rules note
 
-Cross-check: `llm-gateway`, `rag-pipeline`, `prompt-evals`, `ai-safety`, `ai-customer-facing`, `security` (OWASP LLM).
+Cross-check:
+
+- `llm-gateway`
+- `rag-pipeline`
+- `prompt-evals`
+- `ai-safety`
+- `ai-customer-facing`
+- `security` (OWASP LLM)
 
 ### 5. Escalation agents (implementation only — not for review turn)
 
@@ -56,7 +70,8 @@ Cross-check: `llm-gateway`, `rag-pipeline`, `prompt-evals`, `ai-safety`, `ai-cus
 | Safety / injection / policy | `@agent(AI_SAFETY)` |
 | RAG ingest/retrieve | `@agent(RAG_ENGINEER)` |
 | Gateway / rate limits | `@agent(AI_PLATFORM)` |
-| Traces / evals / SLOs | `@agent(AI_OBSERVABILITY)`; skills `design-prompt-evals`, `implement-prompt-eval-runner`, `monitor-ai-quality` |
+| Traces / evals / SLOs | `@agent(AI_OBSERVABILITY)` |
+| Prompt eval skills | `design-prompt-evals`, `implement-prompt-eval-runner`, `monitor-ai-quality` |
 
 ### 6. Do not use
 

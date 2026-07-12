@@ -68,10 +68,14 @@ What do you need?
 | DB | `@agent(DATABASE_SQL)` / `DATABASE_NOSQL` | sql/nosql rules on edit |
 | Customer bot / AI platform | `orchestrate-ai-bot-delivery` | `BOT_DESIGNER`, `AI_PLATFORM`, `AI_SAFETY`, `AI_OBSERVABILITY` |
 | RAG / knowledge base | `orchestrate-rag-delivery` | `RAG_ENGINEER`; escalate `DATA_ENGINEER`, `AI_SAFETY` |
-| Prompt eval / regression | `design-prompt-evals` | `implement-prompt-eval-runner`; `calibrate-llm-judge-eval` if using LLM judge; `@agent(AI_OBSERVABILITY)` |
-| LLM system design review | `review-llm-system-design` | `@agent(AI_SYSTEM_REVIEWER)`; not `review-pull-request` |
+| Prompt eval / regression | `design-prompt-evals` | `implement-prompt-eval-runner` → `calibrate-llm-judge-eval` (if LLM judge) → `@agent(AI_OBSERVABILITY)` |
+| LLM system design review | `review-llm-system-design` | `@agent(AI_SYSTEM_REVIEWER)` — not `review-pull-request` |
 
-**One agent per turn** unless sequencing. **Reference files** (`@path`), don't paste catalogs. **AI runtime hub:** [ai-runtime/README.md](ai-runtime/README.md).
+**Prompting rules:**
+
+- **One agent per turn** unless sequencing
+- **Reference files** (`@path`) — do not paste catalogs
+- **AI runtime hub:** [ai-runtime/README.md](ai-runtime/README.md)
 
 ---
 
@@ -118,13 +122,13 @@ Paste prompts when you prefer in-chat reasoning:
 
 ## Template repo maintenance
 
+**Edit only under `templates/`** — never publish from `project/.cursor/`.
+
 Source lives under `templates/` in **Cursor-Usage-Templates** (single source of truth). Edit there, then:
 
 1. `python templates/commands/sync-cursor.py --mode TemplatesToGlobal` — publish to `~/.cursor/`
 2. `python templates/commands/sync-cursor.py` — refresh this repo’s `.cursor/` from templates (also automatic on `templates/` edits via hook)
 3. In other projects: `FromGlobal --project-root <project>` — pull global into `project/.cursor/`
-
-Edit only under `templates/` — never publish from `project/.cursor/`.
 
 See `templates/README.md` and `templates/commands/README.md` in the Cursor-Usage-Templates repo.
 

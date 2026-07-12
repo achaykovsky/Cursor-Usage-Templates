@@ -6,7 +6,11 @@ Pre-launch and periodic review of customer-facing LLM systems — **not** code/P
 |-----|---------|
 | [system-review-checklist.md](system-review-checklist.md) | 12-dimension checklist: questions, pass criteria, failure modes |
 
-**Skill:** `review-llm-system-design` | **Agent:** `@agent(AI_SYSTEM_REVIEWER)` | **Prompt:** [plan-llm-system-design-review.md](../../prompts/plan-llm-system-design-review.md)
+**Skill:** `review-llm-system-design`
+
+**Agent:** `@agent(AI_SYSTEM_REVIEWER)`
+
+**Prompt:** [plan-llm-system-design-review.md](../../prompts/plan-llm-system-design-review.md)
 
 ## When to use
 
@@ -24,7 +28,15 @@ Or paste [plan-llm-system-design-review.md](../../prompts/plan-llm-system-design
 
 ## Remediation
 
-The review produces findings only. Fixes route to existing skills (`design-prompt-evals`, `implement-prompt-eval-runner`, `implement-retrieval-pipeline`, `design-ai-observability`, `evaluate-ai-safety-policy`, etc.) — see the remediation map in the skill.
+The review produces findings only. Route fixes to existing skills:
+
+- `design-prompt-evals`
+- `implement-prompt-eval-runner`
+- `implement-retrieval-pipeline`
+- `design-ai-observability`
+- `evaluate-ai-safety-policy`
+
+See the remediation map in the skill for the full list.
 
 ## Related runtime docs
 

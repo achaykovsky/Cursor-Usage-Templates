@@ -27,10 +27,28 @@ Then open **`project/.cursor/USAGE.md`**.
 1. **Edit under `templates/`** — in this repo, the `sync-templates-to-local` hook (`afterFileEdit`) copies changed components into `.cursor/` automatically for trying.
    
 2. **Manual refresh** (first sync, hooks off, or full rebuild):
+
    ```bash
    python templates/commands/sync-cursor.py
    ```
-   On Windows: `.\templates\commands\sync-cursor.ps1` (same script). Copies agents, rules, hooks, skills, and routing catalogs from `templates/` to `.cursor/`. **Hooks:** default `--hooks-variant auto` (PowerShell on Windows, bash on macOS/Linux). See `templates/commands/README.md` for `pwsh`, `jq`, etc.
+
+   **Windows alternative:**
+
+   ```powershell
+   .\templates\commands\sync-cursor.ps1
+   ```
+
+   Same script — copies from `templates/` to `.cursor/`:
+
+   - Agents, rules, hooks, skills
+   - Routing catalogs (`USAGE.md`, `RULES.md`, `SKILLS.md`, `HOOKS_USAGE.md`)
+
+   **Hooks variant:** default `--hooks-variant auto`
+
+   - Windows → PowerShell (`*.ps1`)
+   - macOS/Linux → bash (`*.sh`)
+
+   OS prerequisites (`pwsh`, `jq`, etc.): [`templates/commands/README.md`](templates/commands/README.md)
    
 3. **Other projects without a local `templates/` tree** — run from the central repo:
    `& "$env:USERPROFILE\cursor\Cursor-Usage-Templates\templates\commands\sync-cursor.ps1" -Mode FromGlobal`
@@ -62,7 +80,11 @@ Then open **`project/.cursor/USAGE.md`**.
 
 **Not synced:** `templates/prompts/` (repo-only planning prompts), `tests/`, logs, `__pycache__`, `.pytest_cache`.
 
-See `templates/commands/README.md` for global use (submodule, symlink, `--project-root`), `--components hooks`, and OS-specific hook dependencies.
+**See also** ([`templates/commands/README.md`](templates/commands/README.md)):
+
+- **Global use** — submodule, symlink, `--project-root`
+- **Partial sync** — `--components hooks` (hooks-only install)
+- **OS prerequisites** — `pwsh`, `jq`, Python versions
 
 **Hooks-only releases:** GitHub tags `hooks-v*` publish `cursor-hooks-windows-v*.zip` and `cursor-hooks-unix-v*.zip`. Extract into `.cursor/` or use `sync-cursor.py --components hooks`.
 
@@ -127,7 +149,12 @@ Customer-facing bot **personas** live in [`templates/ai-runtime/bots/examples/`]
 
 ## AI Runtime (customer-facing bots)
 
-Portable templates for deployed bots: [`templates/ai-runtime/README.md`](templates/ai-runtime/README.md). Planning prompt: [`templates/prompts/plan-ai-infrastructure.md`](templates/prompts/plan-ai-infrastructure.md). Entry skill: `orchestrate-ai-bot-delivery`. System design review: skill `review-llm-system-design`, [`plan-llm-system-design-review.md`](templates/prompts/plan-llm-system-design-review.md).
+Portable templates for deployed bots:
+
+- **Hub:** [`templates/ai-runtime/README.md`](templates/ai-runtime/README.md)
+- **Planning prompt:** [`templates/prompts/plan-ai-infrastructure.md`](templates/prompts/plan-ai-infrastructure.md)
+- **Build:** skill `orchestrate-ai-bot-delivery`
+- **System design review:** skill `review-llm-system-design` + [`plan-llm-system-design-review.md`](templates/prompts/plan-llm-system-design-review.md)
 
 ## Rules
 
@@ -203,6 +230,14 @@ templates/
 
 ## Troubleshooting
 
-**Subagents not recognized:** Run `python templates/commands/sync-cursor.py`. Ensure agent `*.md` files exist in `templates/agents/subagents/` (not only in `.cursor/agents/`). For other projects, run `FromGlobal` after `TemplatesToGlobal` populated `~/.cursor/`.
+**Subagents not recognized**
 
-**Template conflicts:** `user.md` = global; `project.md` = project-only; `workspace.md` = org-wide.
+- Run `python templates/commands/sync-cursor.py`
+- Ensure agent `*.md` files exist in `templates/agents/subagents/` (not only in `.cursor/agents/`)
+- For other projects: run `FromGlobal` after `TemplatesToGlobal` populated `~/.cursor/`
+
+**Template conflicts**
+
+- `user.md` — global (personal preferences)
+- `project.md` — project-only
+- `workspace.md` — org-wide

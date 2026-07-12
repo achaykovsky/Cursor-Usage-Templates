@@ -12,7 +12,24 @@ Use this prompt in Cursor Chat or Composer to generate a structured implementati
 
 ## Implemented Hooks (Scripts)
 
-This repo includes `templates/hooks/` with ready-to-use scripts. Run `python templates/commands/sync-cursor.py` (or `.\templates\commands\sync-cursor.ps1` on Windows) to copy to `.cursor/`. Scripts live in **`templates/hooks/windows/`** (`*.ps1`) and **`templates/hooks/unix/`** (`*.sh`); sync copies only the OS-appropriate set into flat `.cursor/hooks/scripts/` (see `templates/commands/README.md`).
+This repo includes `templates/hooks/` with ready-to-use scripts.
+
+**Sync to `.cursor/`:**
+
+```bash
+python templates/commands/sync-cursor.py
+```
+
+```powershell
+.\templates\commands\sync-cursor.ps1
+```
+
+**Script layout:**
+
+- `templates/hooks/windows/` — `*.ps1`
+- `templates/hooks/unix/` — `*.sh`
+
+Sync copies only the OS-appropriate set into flat `.cursor/hooks/scripts/`. See [`templates/commands/README.md`](../commands/README.md).
 
 | Hook | Script | Skill mapping | Purpose |
 |------|--------|---------------|---------|
@@ -22,9 +39,16 @@ This repo includes `templates/hooks/` with ready-to-use scripts. Run `python tem
 | `stop` | `suggest-commit-on-stop.ps1` | `prepare-atomic-commit` | Output git status/diff and suggested commit groups; user runs skill for full analysis. |
 | `beforeShellExecution` | `validate-git-commands.ps1` | `prepare-atomic-commit` | Validate commit message (conventional); deny force-push on main/master. |
 | `beforeShellExecution` | `validate-pre-push.ps1` | `validate-pre-deploy` | Run pytest/npm test before push if configured. |
-| `beforeSubmitPrompt`, `beforeShellExecution`, `afterFileEdit`, `stop` | `log-cursor-activity.ps1` / `log-cursor-activity.sh` | — | Structured JSONL per event (`conversation_id`, `generation_id`, edit summaries) to `project/logs/YYYY-MM-DD/cursor-activity.jsonl`. Query: `templates/commands/query-cursor-logs.ps1`. Never writes to `~/.cursor`. |
+| `beforeSubmitPrompt`, `beforeShellExecution`, `afterFileEdit`, `stop` | `log-cursor-activity.ps1` / `.sh` | — | See **Activity logging** below |
 
-**Note:** Hooks do not receive LLM responses—only user prompts, edits, commands, and session status. Logs may contain sensitive data; `.cursor/` is gitignored.
+**Note:** Hooks do not receive LLM responses — only user prompts, edits, commands, and session status. Logs may contain sensitive data; `.cursor/` is gitignored.
+
+**Activity logging** (`log-cursor-activity`):
+
+- Structured JSONL per event (`conversation_id`, `generation_id`, edit summaries)
+- Path: `project/logs/YYYY-MM-DD/cursor-activity.jsonl`
+- Query: `templates/commands/query-cursor-logs.ps1`
+- Never writes to `~/.cursor`
 
 **Dependencies:** `pwsh`, `black`/`prettier`/`gofmt` (optional, for format-after-edit).
 

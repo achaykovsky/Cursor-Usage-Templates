@@ -15,6 +15,8 @@ Traces, audit, and eval artifacts for customer bots.
 python templates/ai-runtime/validate_bot_runtime.py audit-event <path.json>
 ```
 
-**Skill:** [design-ai-observability](../../skills/SKILLS.md). **Agent:** @agent(AI_OBSERVABILITY).
+**Skill:** `design-ai-observability` ([SKILLS.md](../../skills/SKILLS.md))
 
-**System design review:** checklist dimensions 5 (observability), 6 (evaluation), 11 (cost), 12 (latency) — [design-review/README.md](../design-review/README.md).
+**Agent:** `@agent(AI_OBSERVABILITY)`
+
+**System design review** (dimensions 5, 6, 11, 12): [design-review/README.md](../design-review/README.md)
