@@ -28,41 +28,44 @@ Then open **`project/.cursor/USAGE.md`**.
    
 2. **Manual refresh** (first sync, hooks off, or full rebuild):
 
-   ```bash
-   python templates/commands/sync-cursor.py
-   ```
+    ```bash
+    python templates/commands/sync-cursor.py
+    ```
 
-   **Windows alternative:**
+    **Windows alternative:**
 
-   ```powershell
-   .\templates\commands\sync-cursor.ps1
-   ```
+    ```powershell
+    .\templates\commands\sync-cursor.ps1
+    ```
 
-   Same script — copies from `templates/` to `.cursor/`:
+    Same script — copies from `templates/` to `.cursor/`:
 
-   - Agents, rules, hooks, skills
-   - Routing catalogs (`USAGE.md`, `RULES.md`, `SKILLS.md`, `HOOKS_USAGE.md`)
+    - Agents, rules, hooks, skills
+    - Routing catalogs (`USAGE.md`, `RULES.md`, `SKILLS.md`, `HOOKS_USAGE.md`)
 
-   **Hooks variant:** default `--hooks-variant auto`
+    **Hooks variant:** default `--hooks-variant auto`
 
-   - Windows → PowerShell (`*.ps1`)
-   - macOS/Linux → bash (`*.sh`)
+    - Windows → PowerShell (`*.ps1`)
+    - macOS/Linux → bash (`*.sh`)
 
-   OS prerequisites (`pwsh`, `jq`, etc.): [`templates/commands/README.md`](templates/commands/README.md)
-   
+    OS prerequisites (`pwsh`, `jq`, etc.): [`templates/commands/README.md`](templates/commands/README.md)
+
 3. **Other projects without a local `templates/` tree** — run from the central repo:
-   `& "$env:USERPROFILE\cursor\Cursor-Usage-Templates\templates\commands\sync-cursor.ps1" -Mode FromGlobal`
-   
+
+    `& "$env:USERPROFILE\cursor\Cursor-Usage-Templates\templates\commands\sync-cursor.ps1" -Mode FromGlobal`
+
 4. **Copy base templates** into your Cursor instructions panel:
-   - `templates/workspace.md` – organization-wide rules
-   - `templates/project.md` – project-specific objectives
-   - `templates/user.md` – personal preferences
+
+    - `templates/workspace.md` – organization-wide rules
+    - `templates/project.md` – project-specific objectives
+    - `templates/user.md` – personal preferences
 
 5. **Invoke subagents** in Chat or Composer via `@agent(NAME)`:
-   ```
-   @agent(REVIEWER) review this function
-   @agent(PM) break down this feature into tasks
-   ```
+
+    ```
+    @agent(REVIEWER) review this function
+    @agent(PM) break down this feature into tasks
+    ```
 
 6. **Replace placeholders** in templates with concrete details.
 
