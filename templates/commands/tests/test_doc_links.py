@@ -140,6 +140,70 @@ def _collect_links() -> list[tuple[Path, str, str]]:
     return links
 
 
+def _is_gfm_separator_row(line: str) -> bool:
+    """True for alignment rows like |---|---| (not prose cells starting with '| ')."""
+    stripped = line.strip()
+    return (
+        stripped.startswith("|")
+        and stripped.endswith("|")
+        and stripped.count("-") >= 3
+    )
+
+
+def _find_intra_table_blank_line(text: str) -> str | None:
+    """Return a snippet if a blank line splits header/separator/data within one GFM table."""
+    lines = text.splitlines()
+    in_table = False
+    prev_kind = ""
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        is_pipe_row = stripped.startswith("|") and stripped.endswith("|")
+        if not is_pipe_row:
+            in_table = False
+            continue
+        is_separator = _is_gfm_separator_row(stripped)
+        if not in_table:
+            in_table = True
+            prev_kind = "header"
+            continue
+        if i > 0 and not lines[i - 1].strip():
+            prev_idx = i - 2
+            while prev_idx >= 0 and not lines[prev_idx].strip():
+                prev_idx -= 1
+            if prev_idx < 0:
+                continue
+            prev = lines[prev_idx].strip()
+            if not (prev.startswith("|") and prev.endswith("|")):
+                continue
+            prev_sep = _is_gfm_separator_row(prev)
+            if prev_kind == "header" and is_separator:
+                return f"{prev}\n\n{stripped}"
+            if prev_sep and not is_separator:
+                return f"{prev}\n\n{stripped}"
+            if prev_kind == "data" and not is_separator:
+                return f"{prev}\n\n{stripped}"
+        if is_separator:
+            prev_kind = "separator"
+        else:
+            prev_kind = "data"
+    return None
+
+
+def _collect_broken_table_docs() -> list[Path]:
+    """Markdown sources that must not have blank lines between GFM table rows."""
+    return _iter_doc_files()
+
+
+@pytest.mark.parametrize("doc", _collect_broken_table_docs(), ids=lambda p: str(p.relative_to(ROOT)))
+def test_gfm_tables_have_contiguous_rows(doc: Path) -> None:
+    """Blank lines between table rows break GFM rendering (pipes show as plain text)."""
+    text = doc.read_text(encoding="utf-8", errors="replace")
+    snippet = _find_intra_table_blank_line(text)
+    assert snippet is None, (
+        f"{doc.relative_to(ROOT)}: blank line between GFM table rows near:\n{snippet!r}"
+    )
+
+
 @pytest.mark.parametrize("source,markdown,target", _collect_links(), ids=lambda value: str(value))
 def test_relative_markdown_link(source: Path, markdown: str, target: str) -> None:
     """Each relative link must resolve inside the repo and point at a valid anchor when present."""
