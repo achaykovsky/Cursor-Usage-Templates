@@ -73,11 +73,11 @@ Script rules:
 
 ## Routing boundaries
 
-- **Model vs agent vs skill** — This skill picks **model tier/slug** only. Domain ownership → `plan-cursor-agents-routing.md`; workflow steps → `plan-cursor-skills-routing.md`.
+- **Model vs agent vs skill** — This skill picks **model tier/slug** only. Domain ownership → `route-agent.ps1`; workflow steps → `route-skill.ps1`.
 - **Token pressure** — Pair with `save-tokens-in-context` when context is large; tier down only if quality risk is acceptable.
 - **Unavailable slug** — Do not substitute a non-allowlisted model; report and use closest tier primary.
 
 ## Additional resources
 
 - Task signal examples and agent mapping: [reference.md](reference.md)
-- Quick paste prompt: [plan-cursor-model-routing.md](../../../prompts/plan-cursor-model-routing.md)
+- Quick CLI: `~/.cursor/commands/route-model.ps1`

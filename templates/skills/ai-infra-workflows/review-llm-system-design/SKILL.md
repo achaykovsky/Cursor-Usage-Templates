@@ -26,8 +26,8 @@ Pair with `@agent(AI_SYSTEM_REVIEWER)` for review tone and 12-dimension structur
    - Use `@path` references — do not invent missing artifacts; list gaps as findings.
 
 3. **Apply checklist**
-   - Read [system-review-checklist.md](../../../ai-runtime/design-review/system-review-checklist.md).
-   - Evaluate all **12 dimensions** in order; cite evidence per dimension.
+   - Evaluate all **12 dimensions** (see Remediation map below for dimension names and follow-up skills).
+   - Cite evidence per dimension.
 
 4. **Cross-check rules**
    - `llm-gateway.mdc`, `rag-pipeline.mdc`, `ai-safety.mdc`, `ai-customer-facing.mdc`, `security.mdc` (OWASP LLM section).
@@ -66,4 +66,4 @@ Pair with `@agent(AI_SYSTEM_REVIEWER)` for review tone and 12-dimension structur
 ## Notes
 
 - Pair with `@agent(AI_SYSTEM_REVIEWER)`; spawn `@agent(RAG_ENGINEER)`, `@agent(AI_SAFETY)`, `@agent(AI_PLATFORM)`, or `@agent(AI_OBSERVABILITY)` only when user requests implementation of fixes.
-- Planning prompt when routing is unclear: [plan-llm-system-design-review.md](../../../prompts/plan-llm-system-design-review.md).
+- When routing is unclear, start from [USAGE.md](../../../USAGE.md) or run `~/.cursor/commands/route-session.ps1`.

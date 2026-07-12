@@ -215,7 +215,7 @@ Format: `skill-name` | trigger phrases | optional `@agent`
 | Backend/DB/infra perf | `PERFORMANCE` |
 | Security/compliance | `SECURITY` |
 
-Unsure? Paste [plan-cursor-skills-routing.md](../prompts/plan-cursor-skills-routing.md) with your task one-liner — not this file.
+Unsure? Run `~/.cursor/commands/route-skill.ps1` with your task one-liner, or see [USAGE.md](../USAGE.md) — do not paste this whole file.
 
 ## Note
 Codex will review your results for double-check.
