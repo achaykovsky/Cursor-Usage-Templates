@@ -25,13 +25,14 @@ description: After code or config changes, finds affected docs (README, ADRs, co
    - If docs contain runnable examples (code blocks, curl, commands): check that they still match the codebase and run (or note any required env/setup). Fix or remove broken examples.
 
 5. **Doc hygiene checks**
+   - Verify GFM tables have no blank lines between rows (header, `|---|---|`, and data rows must be contiguous).
    - Verify tables do not repeat the same link target twice in one row.
    - Verify relative links resolve to canonical targets when available (entry `README.md`, `templates/rules/*.mdc`, `templates/skills/SKILLS.md`).
    - Verify numbered lists are monotonic and no step numbers are duplicated.
    - Verify summary counters and percentages match source totals.
    - Split semicolon-chained independent constraints into bullets or dedicated table columns.
    - When editing or prettifying layout, apply **documentation.mdc** readable-layout rules:
-     - Blank lines between logical blocks
+     - Blank lines between logical blocks (not between table rows — a table is one block)
      - 4-space indent for nested content under ordered-list items
      - Dense table cells → split columns or bullets below the table
      - Mode/fallback prose walls → table + numbered steps
