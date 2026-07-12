@@ -30,6 +30,12 @@ description: After code or config changes, finds affected docs (README, ADRs, co
    - Verify numbered lists are monotonic and no step numbers are duplicated.
    - Verify summary counters and percentages match source totals.
    - Split semicolon-chained independent constraints into bullets or dedicated table columns.
+   - When editing or prettifying layout, apply **documentation.mdc** readable-layout rules:
+     - Blank lines between logical blocks
+     - 4-space indent for nested content under ordered-list items
+     - Dense table cells → split columns or bullets below the table
+     - Mode/fallback prose walls → table + numbered steps
+     - Routing escalation → `→` chains or split columns (not semicolon chains)
 
 6. **Summarize**
    - List the files you changed or flagged and what was updated (e.g. "README: install command and env vars; docs/api.md: endpoint path and response example").
