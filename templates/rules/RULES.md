@@ -66,7 +66,7 @@ Rules sync to `.cursor/rules/` from `templates/rules/`. They load **automaticall
 | RAG corpus / retrieval code | `rag-pipeline`, `ai-pii`, `data-pipelines` (ETL) + always-applied |
 | Prompt eval fixtures | `prompt-evals`, `ai-safety`, `ai-customer-facing` (bots) + always-applied |
 
-When unsure which rules apply to a path, paste [plan-cursor-rules-audit.md](../prompts/plan-cursor-rules-audit.md) with file list — do not paste this whole file.
+When unsure which rules apply to a path, run `~/.cursor/commands/route-rules.ps1` with your file list — do not paste this whole file.
 
 ---
 
