@@ -3,6 +3,9 @@
 Broken doc links fail silently for readers; this parametrized suite catches
 missing files and stale anchors before sync or publish. External URLs are
 skipped because they require network checks outside pytest scope.
+
+Synced outputs (``.cursor/`` after ``FromGlobal``) flatten ``agents/subagents/*.md``
+to ``agents/*.md``; those sources are validated in ``test_synced_output_relative_link``.
 """
 
 from __future__ import annotations
@@ -22,10 +25,14 @@ import pytest
 from _commands_bootstrap import run_test_file
 
 ROOT = Path(__file__).resolve().parents[3]
-DOC_ROOTS = (ROOT / "templates", ROOT / "README.md")
+TEMPLATES = ROOT / "templates"
+CURSOR = ROOT / ".cursor"
+DOC_ROOTS = (TEMPLATES, ROOT / "README.md")
 LINK_RE = re.compile(r"\[([^\]]*)\]\(([^)]+)\)")
 # Skip schemes that are not repo-relative paths
 SKIP_PREFIXES = ("http://", "https://", "mailto:", "#", "data:")
+# Agent subagent sources flatten on sync — link bases differ from templates/ layout
+SYNC_FLATTEN_SUBAGENTS = "agents/subagents"
 
 
 def _slugify(text: str) -> str:
@@ -57,9 +64,67 @@ def _iter_doc_files() -> list[Path]:
         if root.is_file():
             files.append(root)
         else:
-            files.extend(sorted(root.rglob("*.md")))
+            for path in sorted(root.rglob("*.md")):
+                if SYNC_FLATTEN_SUBAGENTS in path.as_posix():
+                    continue
+                files.append(path)
             files.extend(sorted(root.rglob("*.mdc")))
     return files
+
+
+def _template_to_cursor_rel(template_path: Path) -> Path:
+    """Map a templates/ source path to its .cursor/ path after sync."""
+    rel = template_path.relative_to(TEMPLATES)
+    parts = rel.parts
+    if len(parts) >= 2 and parts[0] == "agents" and parts[1] == "subagents":
+        return Path("agents") / Path(*parts[2:])
+    return rel
+
+
+def _cursor_to_template_rel(cursor_rel: Path) -> Path:
+    """Map a .cursor/ relative path back to templates/ source when synced."""
+    parts = cursor_rel.parts
+    if parts and parts[0] == "agents":
+        return Path("agents", "subagents", *parts[1:])
+    return cursor_rel
+
+
+def _iter_synced_doc_sources() -> list[tuple[Path, Path]]:
+    """(template_source, link_resolve_base_under_.cursor) for synced markdown."""
+    pairs: list[tuple[Path, Path]] = []
+    catalog_files = (
+        "USAGE.md",
+        "rules/RULES.md",
+        "skills/SKILLS.md",
+        "hooks/HOOKS_USAGE.md",
+    )
+    for rel in catalog_files:
+        src = TEMPLATES / rel
+        if src.is_file():
+            pairs.append((src, CURSOR / Path(rel).parent))
+    subagents = TEMPLATES / "agents" / "subagents"
+    if subagents.is_dir():
+        for src in sorted(subagents.glob("*.md")):
+            pairs.append((src, CURSOR / "agents"))
+    skills_root = TEMPLATES / "skills"
+    if skills_root.is_dir():
+        for src in sorted(skills_root.rglob("SKILL.md")):
+            rel = src.relative_to(skills_root)
+            pairs.append((src, CURSOR / "skills" / rel.parent))
+    return pairs
+
+
+def _collect_synced_links() -> list[tuple[Path, Path, str, str]]:
+    """Links in synced sources resolved from post-sync .cursor/ bases."""
+    links: list[tuple[Path, Path, str, str]] = []
+    for source, link_base in _iter_synced_doc_sources():
+        text = source.read_text(encoding="utf-8", errors="replace")
+        for match in LINK_RE.finditer(text):
+            target = match.group(2).strip()
+            if not target or target.startswith(SKIP_PREFIXES):
+                continue
+            links.append((source, link_base, match.group(0), target))
+    return links
 
 
 def _collect_links() -> list[tuple[Path, str, str]]:
@@ -108,6 +173,54 @@ def test_relative_markdown_link(source: Path, markdown: str, target: str) -> Non
         headers = _headers(resolved)
         assert anchor in headers or _slugify(anchor) in headers, (
             f"{source.relative_to(ROOT)}: {markdown} — bad anchor in {resolved.relative_to(ROOT)}"
+        )
+
+
+@pytest.mark.parametrize(
+    "source,link_base,markdown,target",
+    _collect_synced_links(),
+    ids=lambda value: str(value),
+)
+def test_synced_output_relative_link(
+    source: Path, link_base: Path, markdown: str, target: str
+) -> None:
+    """Links in synced markdown must resolve under .cursor/ after FromGlobal layout."""
+    anchor = ""
+    path_part = target
+    if "#" in path_part:
+        path_part, anchor = path_part.split("#", 1)
+        path_part = path_part.strip()
+        anchor = unquote(anchor).lower()
+
+    cursor_dest = _template_to_cursor_rel(source)
+    resolve_from = link_base if path_part else CURSOR / cursor_dest.parent
+
+    if not path_part:
+        headers = _headers(TEMPLATES / _cursor_to_template_rel(cursor_dest))
+        assert anchor in headers or _slugify(anchor) in headers, (
+            f"{source.relative_to(ROOT)} (as .cursor/{cursor_dest}): {markdown} — missing anchor #{anchor}"
+        )
+        return
+
+    resolved_cursor = (resolve_from / path_part).resolve()
+    try:
+        cursor_rel = resolved_cursor.relative_to(CURSOR)
+    except ValueError as exc:
+        raise AssertionError(
+            f"{source.relative_to(ROOT)} (as .cursor/{cursor_dest}): {markdown} — "
+            f"link escapes .cursor/ ({resolved_cursor})"
+        ) from exc
+
+    template_rel = _cursor_to_template_rel(cursor_rel)
+    template_target = TEMPLATES / template_rel
+    assert template_target.is_file(), (
+        f"{source.relative_to(ROOT)} (as .cursor/{cursor_dest}): {markdown} — "
+        f"missing synced target templates/{template_rel.as_posix()}"
+    )
+    if anchor:
+        headers = _headers(template_target)
+        assert anchor in headers or _slugify(anchor) in headers, (
+            f"{source.relative_to(ROOT)}: {markdown} — bad anchor in templates/{template_rel.as_posix()}"
         )
 
 
