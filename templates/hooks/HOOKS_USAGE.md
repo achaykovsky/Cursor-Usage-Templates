@@ -1,8 +1,8 @@
 # Hooks — User Guide
 
-Hooks run **automatically** at Cursor lifecycle events. You do not invoke them in chat. Sync: `python templates/commands/sync-cursor.py`.
+Hooks run **automatically** at Cursor lifecycle events. You do not invoke them in chat. Refresh hooks: `& "$env:USERPROFILE\.cursor\commands\sync-cursor.ps1" -Mode FromGlobal`.
 
-Technical sync details: [README.md](README.md) in this folder. Planning new hooks: [plan-cursor-hooks.md](../prompts/plan-cursor-hooks.md).
+Technical sync details: [README.md](README.md) in this folder. To author new hooks, edit `templates/hooks/` in **Cursor-Usage-Templates** (see `templates/MAINTAINER.md` there).
 
 ---
 
