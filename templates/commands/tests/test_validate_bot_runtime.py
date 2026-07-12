@@ -30,7 +30,9 @@ def _load_module(name: str, path: Path):
     return mod
 
 
-validate_mod = _load_module("validate_bot_runtime", AI_RUNTIME / "validate_bot_runtime.py")
+validate_mod = _load_module(
+    "validate_bot_runtime", AI_RUNTIME / "validate_bot_runtime.py"
+)
 
 
 @pytest.fixture
@@ -92,6 +94,46 @@ def test_validate_golden_empty_questions() -> None:
     data = {"schema_version": 1, "corpus_id": "product-docs", "questions": []}
     errors = validate_mod.validate_golden(data)
     assert any("questions must be non-empty" in e for e in errors)
+
+
+def test_validate_support_bot_smoke_prompt_eval() -> None:
+    path = AI_RUNTIME / "eval" / "generation" / "support-bot-smoke.json"
+    assert validate_mod.validate_prompt_eval_file(path) == []
+
+
+def test_validate_support_bot_smoke_baseline() -> None:
+    path = AI_RUNTIME / "eval" / "baselines" / "support-bot-smoke-baseline.json"
+    assert validate_mod.validate_eval_baseline_file(path) == []
+
+
+def test_validate_injection_smoke_prompt_eval() -> None:
+    path = AI_RUNTIME / "eval" / "adversarial" / "injection-smoke.json"
+    assert validate_mod.validate_prompt_eval_file(path) == []
+
+
+def test_validate_judge_calibration_fixture() -> None:
+    path = AI_RUNTIME / "eval" / "calibration" / "support-helpfulness-v1.json"
+    assert validate_mod.validate_judge_calibration_file(path) == []
+
+
+def test_judge_calibration_validator_is_cached() -> None:
+    validate_mod._judge_calibration_validator.cache_clear()
+    validate_mod._judge_calibration_validator()
+    validate_mod._judge_calibration_validator()
+    info = validate_mod._judge_calibration_validator.cache_info()
+    assert info.hits == 1
+    assert info.misses == 1
+
+
+def test_validate_prompt_eval_missing_cases() -> None:
+    data = {
+        "schema_version": 1,
+        "suite_id": "test-suite",
+        "prompt_id": "p1",
+        "cases": [],
+    }
+    errors = validate_mod.validate_prompt_eval(data)
+    assert any("cases must be non-empty" in e for e in errors)
 
 
 if __name__ == "__main__":

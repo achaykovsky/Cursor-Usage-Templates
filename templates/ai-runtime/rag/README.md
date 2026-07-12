@@ -27,5 +27,6 @@ python templates/ai-runtime/validate_bot_runtime.py golden <path.json>
 | Embed batching | `design-batching-strategy` |
 | Safety / PII | `ai-pii.mdc`, `evaluate-ai-safety-policy`, `sensitive-data-handling` |
 | Retrieval eval metrics | `monitor-ai-quality`, [eval-metrics.md](../observability/eval-metrics.md) |
+| Prompt-level generation/adversarial evals | [eval/README.md](../eval/README.md) — compose with golden retrieval for E2E |
 | Traces | [span-conventions.md](../observability/span-conventions.md) |
 | Pre-launch system review | [design-review/README.md](../design-review/README.md) — dimensions 1 (hallucination), 3 (retrieval quality) |

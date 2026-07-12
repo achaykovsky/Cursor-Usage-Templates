@@ -24,6 +24,7 @@ ALWAYS_APPLIED_RULES: tuple[str, ...] = (
     "mcp-integrations.mdc",
     "resource-usage-report.mdc",
     "performance.mdc",
+    "git-github-workflow.mdc",
 )
 
 FILE_SCOPED_RULES: tuple[RuleEntry, ...] = (
@@ -34,6 +35,29 @@ FILE_SCOPED_RULES: tuple[RuleEntry, ...] = (
     RuleEntry("nosql-database.mdc", ("**/models/**", "**/mongo/**", "**/dynamodb/**")),
     RuleEntry("api-contract.mdc", ("**/api/**", "**/openapi/**", "**/router/**")),
     RuleEntry("architecture.mdc", ("**/*.py", "**/*.go", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.vue")),
+    RuleEntry(
+        "clean-code.mdc",
+        (
+            "**/*.py",
+            "**/*.go",
+            "**/*.ts",
+            "**/*.tsx",
+            "**/*.js",
+            "**/*.jsx",
+            "**/*.vue",
+            "**/*.rs",
+            "**/*.java",
+            "**/*.kt",
+            "**/*.swift",
+            "**/*.c",
+            "**/*.cpp",
+            "**/*.h",
+            "**/*.hpp",
+            "**/*.cs",
+            "**/*.rb",
+            "**/*.php",
+        ),
+    ),
     RuleEntry("code-review.mdc", ("**/*.py", "**/*.go", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx")),
     RuleEntry("testing.mdc", ("**/test_*.py", "**/*_test.go", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts")),
     RuleEntry("documentation.mdc", ("**/*.md", "**/docs/**")),
@@ -46,6 +70,16 @@ FILE_SCOPED_RULES: tuple[RuleEntry, ...] = (
     RuleEntry("ai-pii.mdc", ("**/bots/**", "**/ai-gateway/**", "**/rag/**")),
     RuleEntry("rag-pipeline.mdc", ("**/rag/**", "**/retrieval/**", "**/embeddings/**", "**/vector/**")),
     RuleEntry("llm-gateway.mdc", ("**/ai-gateway/**", "**/bots/**/gateway/**")),
+    RuleEntry(
+        "prompt-evals.mdc",
+        (
+            "**/prompts/**",
+            "**/ai-runtime/eval/**",
+            "**/eval/**",
+            "**/*prompt*eval*.json",
+            "**/*golden*.json",
+        ),
+    ),
 )
 
 # Distinctive phrases per skill — avoid bare terms shared across domains (e.g. "release", "cleanup").
@@ -198,6 +232,44 @@ SKILL_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ),
     # testing-workflows
     ("add-tests-for-change", ("add tests", "pytest", "test coverage", "unit test")),
+    # eval-workflows
+    (
+        "design-prompt-evals",
+        (
+            "prompt eval",
+            "eval suite",
+            "golden dataset",
+            "regression eval",
+            "benchmark prompts",
+            "llm test cases",
+            "prompt regression",
+        ),
+    ),
+    (
+        "implement-prompt-eval-runner",
+        (
+            "implement eval runner",
+            "ci eval job",
+            "ci eval",
+            "eval regression gate",
+            "eval regression ci",
+            "pytest prompt eval",
+            "run golden questions",
+            "prompt eval runner",
+            "offline prompt regression",
+        ),
+    ),
+    (
+        "calibrate-llm-judge-eval",
+        (
+            "llm judge",
+            "model-as-judge",
+            "faithfulness scorer",
+            "calibrate judge",
+            "judge rubric",
+            "llm judge threshold",
+        ),
+    ),
     # ai-infra-workflows
     (
         "orchestrate-ai-bot-delivery",
@@ -237,7 +309,7 @@ SKILL_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ),
     (
         "monitor-ai-quality",
-        ("ai quality", "eval regression", "bot drift", "thumbs feedback"),
+        ("ai quality", "bot drift", "thumbs feedback", "quality regression", "eval drift"),
     ),
     (
         "review-llm-system-design",
@@ -347,6 +419,7 @@ PROMPT_RULE_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("rag-pipeline.mdc", ("rag", "knowledge base", "vector", "embedding", "retrieval", "corpus")),
     ("llm-gateway.mdc", ("llm gateway", "ai gateway", "bot gateway", "circuit breaker", "llm timeout")),
     ("ai-safety.mdc", ("prompt injection", "jailbreak", "bot safety", "content policy")),
+    ("prompt-evals.mdc", ("prompt eval", "eval suite", "golden dataset", "regression eval", "llm judge")),
 )
 
 

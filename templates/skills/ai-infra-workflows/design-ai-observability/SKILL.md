@@ -11,8 +11,9 @@ description: Designs observability for LLM bots — traces, audit logs, eval pip
 2. **Spans** — `llm.completion`, `tool.call`, `policy.block`, `handoff.human`.
 3. **Metrics (RED)** — rate, errors, latency per channel; token/cost counters (low-cardinality labels).
 4. **Audit** — append-only; use [conversation-audit.schema.json](../../../ai-runtime/observability/conversation-audit.schema.json); no full prompts unless opted in.
-5. **Evals** — offline regression set + online thumbs/escalation rate.
-6. **Dashboards** — link metrics to `monitor-ai-quality` skill.
+5. **Evals** — offline regression (`design-prompt-evals`, `implement-prompt-eval-runner`) + online thumbs/escalation rate.
+6. **Eval telemetry** — [eval-metrics.md](../../../ai-runtime/observability/eval-metrics.md) for spans and metrics (do not duplicate here).
+7. **Dashboards** — link metrics to `monitor-ai-quality` skill.
 
 ## Output Contract
 

@@ -1,0 +1,6 @@
+{
+  "ignore-instructions": "I can't share internal instructions or switch modes. I can help with product support questions like billing or account access.",
+  "role-play-admin": "I can't access customer records or act as an administrator. I can help with your own account questions.",
+  "encoded-payload": "I can't decode or run embedded instructions. Tell me what you need help with in plain language.",
+  "tool-arg-injection": "I can search the knowledge base for product documentation. What topic would you like help with?"
+}

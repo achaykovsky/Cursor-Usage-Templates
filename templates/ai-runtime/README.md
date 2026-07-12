@@ -29,6 +29,7 @@
 | [observability/](observability/README.md) | Traces, audit schema, eval metrics |
 | [channels/](channels/README.md) | Slack, web widget, API adapter notes |
 | [rag/README.md](rag/README.md) | Corpus manifests, golden eval fixtures |
+| [eval/README.md](eval/README.md) | Prompt eval suites, assertion schema, smoke fixtures |
 | [design-review/](design-review/README.md) | LLM system design review checklist (12 dimensions) |
 
 ---
@@ -47,9 +48,9 @@ Skill: `orchestrate-rag-delivery`. Agent: `RAG_ENGINEER`.
 ## Canonical build sequence
 
 ```
-design-customer-facing-agent → evaluate-ai-safety-policy → implement-bot-gateway
-→ add-prompt-injection-defenses → design-ai-observability → implement-human-handoff
-→ monitor-ai-quality
+design-customer-facing-agent → evaluate-ai-safety-policy → design-prompt-evals
+→ implement-bot-gateway → add-prompt-injection-defenses → design-ai-observability
+→ implement-prompt-eval-runner → implement-human-handoff → monitor-ai-quality
 ```
 
 Skill: `orchestrate-ai-bot-delivery` routes steps. Agents: `BOT_DESIGNER`, `AI_PLATFORM`, `AI_SAFETY`, `AI_OBSERVABILITY`.
@@ -97,6 +98,9 @@ python templates/ai-runtime/validate_bot_runtime.py policy <path.json>
 python templates/ai-runtime/validate_bot_runtime.py audit-event <path.json>
 python templates/ai-runtime/validate_bot_runtime.py corpus <path.json>
 python templates/ai-runtime/validate_bot_runtime.py golden <path.json>
+python templates/ai-runtime/validate_bot_runtime.py prompt-eval <path.json>
+python templates/ai-runtime/validate_bot_runtime.py eval-baseline <path.json>
+python templates/ai-runtime/validate_bot_runtime.py judge-calibration <path.json>
 ```
 
 See also [rag/README.md](rag/README.md), [policy/README.md](policy/README.md), and [design-review/README.md](design-review/README.md) (pre-launch system review).

@@ -38,7 +38,7 @@ Canonical 12-dimension checklist for `review-llm-system-design` and `@agent(AI_S
 
 ### Remediation skills
 
-`implement-retrieval-pipeline`, `monitor-ai-quality`, `add-prompt-injection-defenses`
+`implement-retrieval-pipeline`, `design-prompt-evals`, `calibrate-llm-judge-eval`, `monitor-ai-quality`, `add-prompt-injection-defenses`
 
 ---
 
@@ -183,24 +183,28 @@ Canonical 12-dimension checklist for `review-llm-system-design` and `@agent(AI_S
 
 ### Pass criteria
 
-- Golden JSON validated (`validate_bot_runtime.py golden`)
+- Golden JSON validated (`validate_bot_runtime.py golden` for RAG; `prompt-eval` for generation/adversarial suites)
+- Prompt eval baselines committed; CI regression via `implement-prompt-eval-runner`
+- LLM-judge thresholds calibrated (`calibrate-llm-judge-eval`) when used
 - Eval pipeline referenced in observability design
 - Drift alerts on refusal/escalation spikes
 
 ### Common failure modes
 
 - Manual spot-check only before launch
-- No eval after retrieval or model swap
+- No eval after retrieval, prompt, or model swap
 - Metrics measure latency but not answer quality
+- Adversarial cases missing from CI
 
 ### Artifacts
 
 - [observability/eval-metrics.md](../observability/eval-metrics.md)
+- [eval/README.md](../eval/README.md) (prompt suites, adversarial, calibration)
 - [rag/eval/](../rag/) golden fixtures
 
 ### Remediation skills
 
-`monitor-ai-quality`, `design-ai-observability`
+`design-prompt-evals`, `implement-prompt-eval-runner`, `calibrate-llm-judge-eval`, `monitor-ai-quality`, `design-ai-observability`, `add-prompt-injection-defenses`
 
 ---
 

@@ -85,6 +85,9 @@
         "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/validate-rag-artifacts.ps1"
       },
       {
+        "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/validate-prompt-eval-artifacts.ps1"
+      },
+      {
         "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/scripts/sync-templates-to-local.ps1"
       }
     ],

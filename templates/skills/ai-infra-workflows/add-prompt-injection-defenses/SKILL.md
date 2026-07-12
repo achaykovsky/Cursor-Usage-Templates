@@ -13,6 +13,7 @@ description: Adds prompt injection and jailbreak defenses for customer-facing bo
 4. **Retrieval** — sanitize RAG chunks; no executable content in context.
 5. **Detection** — log suspected injection; policy mode `ask` or `deny` per severity.
 6. **Tests** — red-team cases (ignore instructions, role-play admin, encoded payloads).
+7. **Export** — add cases to `ai-runtime/eval/adversarial/<bot>-injection.json`; see [adversarial/README.md](../../../ai-runtime/eval/adversarial/README.md). Validate with `validate_bot_runtime.py prompt-eval`.
 
 ## Output Contract
 
@@ -23,4 +24,4 @@ description: Adds prompt injection and jailbreak defenses for customer-facing bo
 ## Notes
 
 - Follow [input-sanitization.md](../../../ai-runtime/guardrails/input-sanitization.md).
-- Pair with `@agent(AI_SAFETY)`.
+- Pair with `@agent(AI_SAFETY)` and `design-prompt-evals` for adversarial suite coverage.

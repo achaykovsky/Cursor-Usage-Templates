@@ -71,6 +71,39 @@ def test_route_rules_always_applied() -> None:
     out = rt.route_rules([])
     # Assert
     assert "security.mdc" in out
+    assert "git-github-workflow.mdc" in out
+
+
+def test_rules_catalog_cover_routing() -> None:
+    """Every templates/rules/*.mdc must appear in ALWAYS_APPLIED_RULES or FILE_SCOPED_RULES."""
+    from pathlib import Path
+
+    from routing._keywords import ALWAYS_APPLIED_RULES, FILE_SCOPED_RULES
+
+    rules_dir = Path(__file__).resolve().parents[2] / "rules"
+    always_applied: set[str] = set()
+    file_scoped: set[str] = set()
+
+    for path in sorted(rules_dir.glob("*.mdc")):
+        text = path.read_text(encoding="utf-8")
+        if "alwaysApply: true" in text:
+            always_applied.add(path.name)
+        elif "alwaysApply: false" in text:
+            file_scoped.add(path.name)
+        else:
+            raise AssertionError(f"{path.name} missing alwaysApply frontmatter")
+
+    routed_always = set(ALWAYS_APPLIED_RULES)
+    routed_scoped = {entry.name for entry in FILE_SCOPED_RULES}
+
+    assert always_applied == routed_always
+    assert file_scoped == routed_scoped
+
+
+def test_rules_for_paths_includes_clean_code_on_python() -> None:
+    """Python paths must include clean-code.mdc via FILE_SCOPED_RULES."""
+    scoped = rt.rules_for_paths(["src/service/handler.py"])
+    assert "clean-code.mdc" in scoped["src/service/handler.py"]
 
 
 def test_match_skills_cleanup_review_prompt() -> None:
@@ -95,6 +128,32 @@ def test_match_skills_error_handling_prompt() -> None:
     """Error-handling prompts must match add-error-handling-to-code."""
     matched = rt.match_skills_from_prompt("add specific exception handling with custom domain errors")
     assert "add-error-handling-to-code" in matched
+
+
+def test_match_skills_calibrate_judge_prompt() -> None:
+    """LLM judge calibration prompts must route to calibrate-llm-judge-eval."""
+    matched = rt.match_skills_from_prompt("calibrate llm judge threshold for faithfulness scorer rubric")
+    assert "calibrate-llm-judge-eval" in matched
+
+
+def test_match_skills_eval_regression_ci_routes_to_runner() -> None:
+    """CI eval regression phrasing must route to implement-prompt-eval-runner."""
+    matched = rt.match_skills_from_prompt("wire ci eval regression gate with pytest offline runner")
+    assert "implement-prompt-eval-runner" in matched
+    assert matched[0] == "implement-prompt-eval-runner"
+
+
+def test_match_skills_prompt_eval_runner_prompt() -> None:
+    """Eval runner implementation prompts must route to implement-prompt-eval-runner."""
+    matched = rt.match_skills_from_prompt("implement eval runner for pytest prompt eval CI job")
+    assert "implement-prompt-eval-runner" in matched
+
+
+def test_match_skills_prompt_eval_prompt() -> None:
+    """Prompt eval authoring must route to design-prompt-evals."""
+    matched = rt.match_skills_from_prompt("create prompt eval suite with golden dataset for regression")
+    assert "design-prompt-evals" in matched
+    assert matched[0] == "design-prompt-evals"
 
 
 def test_match_skills_llm_system_design_review_prompt() -> None:

@@ -50,6 +50,7 @@ Rules sync to `.cursor/rules/` from `templates/rules/`. They load **automaticall
 | `ai-pii.mdc` | `**/bots/**`, `**/ai-gateway/**`, `**/rag/**` | PII minimization, retention, RAG corpus controls |
 | `llm-gateway.mdc` | `**/ai-gateway/**`, `**/bots/**/gateway/**` | Timeouts, retries, circuit breakers, structured errors |
 | `rag-pipeline.mdc` | `**/rag/**`, `**/retrieval/**`, `**/embeddings/**`, `**/vector/**` | Ingest, chunk metadata, hybrid retrieval, cite-or-abstain |
+| `prompt-evals.mdc` | `**/prompts/**`, `**/ai-runtime/eval/**`, `**/eval/**`, prompt/golden eval JSON | Fixture shape, assertions, versioning, CI gates |
 
 ---
 
@@ -61,6 +62,7 @@ Rules sync to `.cursor/rules/` from `templates/rules/`. They load **automaticall
 - **Editing a skill** → `skills-consistency` only (plus always-applied).
 - **Bot manifest / ai-runtime JSON** → `ai-customer-facing` + `ai-safety` + `python-backend` (for `.py`) + always-applied.
 - **RAG corpus / retrieval code** → `rag-pipeline` + `ai-pii` + `data-pipelines` (ETL) + always-applied.
+- **Prompt eval fixtures** → `prompt-evals` + `ai-safety` + `ai-customer-facing` (bots) + always-applied.
 
 When unsure which rules apply to a path, paste [plan-cursor-rules-audit.md](../prompts/plan-cursor-rules-audit.md) with file list — do not paste this whole file.
 

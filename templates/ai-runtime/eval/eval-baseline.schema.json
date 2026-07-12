@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PromptEvalBaseline",
+  "type": "object",
+  "required": ["schema_version", "suite_id", "prompt_id", "recorded_at", "pass_rate", "case_results"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "suite_id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{2,63}$" },
+    "prompt_id": { "type": "string", "maxLength": 128 },
+    "prompt_version": { "type": "string", "maxLength": 64 },
+    "model": { "type": "string", "maxLength": 128 },
+    "recorded_at": { "type": "string", "maxLength": 64 },
+    "pass_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "case_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "passed"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "maxLength": 64 },
+          "passed": { "type": "boolean" },
+          "grader_type": { "type": "string", "maxLength": 64 }
+        }
+      }
+    }
+  }
+}

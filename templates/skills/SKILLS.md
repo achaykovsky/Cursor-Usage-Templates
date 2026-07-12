@@ -162,6 +162,14 @@ Format: `skill-name` | trigger phrases | optional `@agent`
 | `add-tests-for-change` | add tests after change | `TESTER` |
 | `reproduce-and-document-failure` | paste error, reproduce bug | `INCIDENT` |
 
+## eval-workflows
+
+| Skill | Triggers | Agent |
+|-------|----------|-------|
+| `design-prompt-evals` | prompt eval, golden dataset, eval suite, regression eval, benchmark prompts | `AI_OBSERVABILITY` |
+| `implement-prompt-eval-runner` | implement eval runner, CI eval job, ci eval, eval regression gate, pytest prompt eval, prompt eval runner | `BACKEND_PYTHON` / `AI_OBSERVABILITY` |
+| `calibrate-llm-judge-eval` | LLM judge, rubric eval, model-as-judge, faithfulness scorer, calibrate judge threshold | `AI_OBSERVABILITY` |
+
 ## ai-infra-workflows
 
 | Skill | Triggers | Agent |
@@ -175,7 +183,7 @@ Format: `skill-name` | trigger phrases | optional `@agent`
 | `evaluate-ai-safety-policy` | content policy, PII in context, retention | `AI_SAFETY` |
 | `design-multi-agent-routing` | router bot, specialist delegation | `AI_PLATFORM` |
 | `implement-ai-rate-limiting` | rate limit, abuse, cost cap | `AI_PLATFORM` |
-| `monitor-ai-quality` | eval regression, drift, thumbs feedback | `AI_OBSERVABILITY` |
+| `monitor-ai-quality` | eval drift, quality regression, thumbs feedback | `AI_OBSERVABILITY` |
 | `review-llm-system-design` | llm system design review, bot architecture review, hallucination risks, tenant isolation | `AI_SYSTEM_REVIEWER` |
 
 ## rag-workflows

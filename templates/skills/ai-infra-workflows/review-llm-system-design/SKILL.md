@@ -43,12 +43,12 @@ Pair with `@agent(AI_SYSTEM_REVIEWER)` for review tone and 12-dimension structur
 
 | Dimension | Primary remediation skills |
 |-----------|---------------------------|
-| Hallucination risks | `implement-retrieval-pipeline`, `monitor-ai-quality`, `add-prompt-injection-defenses` |
+| Hallucination risks | `implement-retrieval-pipeline`, `design-prompt-evals`, `calibrate-llm-judge-eval`, `monitor-ai-quality`, `add-prompt-injection-defenses` |
 | Context explosion | `design-multi-agent-routing`, `implement-retrieval-pipeline` |
 | Retrieval quality | `design-rag-architecture`, `implement-rag-ingest-and-index`, `implement-retrieval-pipeline`, `monitor-ai-quality` |
 | Prompt coupling | `design-customer-facing-agent`, `add-prompt-injection-defenses` |
 | Observability | `design-ai-observability` |
-| Evaluation | `monitor-ai-quality`, `design-ai-observability` |
+| Evaluation | `design-prompt-evals`, `implement-prompt-eval-runner`, `calibrate-llm-judge-eval`, `monitor-ai-quality`, `design-ai-observability`, `add-prompt-injection-defenses` |
 | Confidence calculation | `design-multi-agent-routing`, `implement-human-handoff` |
 | Deterministic business logic | `implement-bot-gateway`, `evaluate-ai-safety-policy`; escalate `@agent(ARCHITECT)` |
 | Tenant isolation | `design-rag-architecture`, `implement-bot-gateway`, `implement-ai-rate-limiting` |

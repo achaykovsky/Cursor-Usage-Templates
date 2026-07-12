@@ -1,0 +1,37 @@
+---
+description: Prompt eval fixtures — case design, assertions, versioning, CI gates, no PII in golden data
+globs: **/prompts/**,**/ai-runtime/eval/**,**/eval/**,**/*prompt*eval*.json,**/*golden*.json
+alwaysApply: false
+---
+
+# Prompt Eval Standards
+
+**Fixture location**: `ai-runtime/eval/` (generation, adversarial) or `ai-runtime/rag/eval/` (retrieval). Schema: [prompt-eval.schema.json](../ai-runtime/eval/prompt-eval.schema.json).
+
+**Required case fields**: `id`, `category`, `input`, `assertions`. Optional: `severity`, `tags`, `prompt_version`.
+
+**Categories**: `happy_path`, `edge_case`, `refusal`, `adversarial`, `tool_use`, `multi_turn`. Cover each category in smoke suites; critical paths need `severity: critical`.
+
+**Assertion allowlist** (prefer property-based over exact full-response match):
+
+| Type | Use |
+|------|-----|
+| `must_contain` | Required phrases or concepts |
+| `must_not_contain` | Forbidden leakage (internal IDs, secrets, policy internals) |
+| `regex` | Structured fragments (URLs, IDs) |
+| `max_length` | Verbosity cap |
+| `json_schema` | Tool args or structured output |
+| `tool_call` | Expected tool name and arg shape — passes if any matching call has required args |
+| `refusal` | Must refuse (`expected: true`) or must answer (`expected: false`) |
+| `no_pii_patterns` | Block email/phone/SSN-like patterns in output |
+| `llm_judge` | Rubric + `min_score`; live only — offline runner skips |
+
+**LLM-judge**: Rubric in fixture; temperature 0; pin judge model. Policy: [eval-metrics.md](../ai-runtime/observability/eval-metrics.md) LLM-judge section.
+
+**Version pinning**: Record `prompt_id`, `prompt_version`, `model`, `temperature` (0 in CI), `corpus_version` when RAG is involved. Prompt change without eval update blocks merge.
+
+**Baselines**: Commit baseline pass rate; CI fails on regression beyond documented tolerance. Max one retry for judge-based cases.
+
+**PII**: No real secrets or regulated PII in fixtures — synthetic IDs only. Follow `ai-pii.mdc` and `redact-sensitive-in-output` skill.
+
+**Cross-refs**: `ai-safety.mdc` (adversarial suite), `rag-pipeline.mdc` (retrieval golden), `testing.mdc` (runner tests), skill `design-prompt-evals`, [eval-metrics.md](../ai-runtime/observability/eval-metrics.md).

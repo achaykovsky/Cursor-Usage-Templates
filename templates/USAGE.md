@@ -68,6 +68,7 @@ What do you need?
 | DB | `@agent(DATABASE_SQL)` / `DATABASE_NOSQL` | sql/nosql rules on edit |
 | Customer bot / AI platform | `orchestrate-ai-bot-delivery` | `BOT_DESIGNER`, `AI_PLATFORM`, `AI_SAFETY`, `AI_OBSERVABILITY` |
 | RAG / knowledge base | `orchestrate-rag-delivery` | `RAG_ENGINEER`; escalate `DATA_ENGINEER`, `AI_SAFETY` |
+| Prompt eval / regression | `design-prompt-evals` | `implement-prompt-eval-runner`; `calibrate-llm-judge-eval` if using LLM judge; `@agent(AI_OBSERVABILITY)` |
 | LLM system design review | `review-llm-system-design` | `@agent(AI_SYSTEM_REVIEWER)`; not `review-pull-request` |
 
 **One agent per turn** unless sequencing. **Reference files** (`@path`), don't paste catalogs. **AI runtime hub:** [ai-runtime/README.md](ai-runtime/README.md).

@@ -63,6 +63,16 @@ if __name__ == "__main__":
 
 **Full suite**: `py -3.13 -m pytest templates/hooks/tests templates/commands/tests -q`
 
+## LLM eval tests (template repo)
+
+Prompt eval runner and calibration modules live under `templates/ai-runtime/eval/`. When changing graders or fixtures:
+
+- `templates/commands/tests/test_prompt_eval_runner.py` — assertion grading, baseline compare, `tool_call` multi-invocation
+- `templates/commands/tests/test_llm_judge_calibration.py` — calibration validate/analyze
+- `templates/commands/tests/test_validate_bot_runtime.py` — `prompt-eval`, `eval-baseline`, `judge-calibration` schema paths
+
+Run after edits: `py -3.13 -m pytest templates/commands/tests/test_prompt_eval_runner.py templates/commands/tests/test_llm_judge_calibration.py -q`
+
 ```python
 # ✅ Clear, one concern
 def test_create_user_with_invalid_email_raises_validation_error():
