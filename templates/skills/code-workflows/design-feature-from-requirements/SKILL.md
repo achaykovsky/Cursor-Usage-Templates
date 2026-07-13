@@ -7,6 +7,8 @@ description: Turns user stories or requirements into a concrete design: componen
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check existing query keys, stores, and cache helpers.
+
 1. **Clarify requirements**
    - Extract acceptance criteria, inputs, outputs, and constraints from the user story, ticket, or spec.
    - Identify unknowns or ambiguities; ask or state assumptions.

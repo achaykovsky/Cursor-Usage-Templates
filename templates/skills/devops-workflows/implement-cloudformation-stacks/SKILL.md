@@ -7,6 +7,8 @@ description: Implements CloudFormation templates with parameter validation, stac
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check existing CloudFormation stacks.
+
 1. **Define template contracts**
    - Implement parameters with clear types/constraints and safe defaults.
    - Keep outputs intentional and stable for consumers.

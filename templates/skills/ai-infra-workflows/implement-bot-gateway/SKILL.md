@@ -7,6 +7,8 @@ description: Implements LLM bot gateway — FastAPI or Go service, webhooks, ses
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check `templates/ai-runtime/` and existing gateway routes.
+
 1. **Session model** — `conversation_id`, `user_id_hash`, channel, TTL.
 2. **Ingress** — validate signatures (Slack), API keys, OAuth per channel doc.
 3. **Pipeline** — sanitize input -> policy check -> LLM -> output policy -> respond.

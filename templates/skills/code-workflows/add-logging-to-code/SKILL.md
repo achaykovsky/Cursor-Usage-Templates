@@ -7,6 +7,8 @@ description: Adds structured code-path logging (entry/exit, errors, key decision
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check project logger and existing structured fields.
+
 1. **Identify log points**
    - **Entry:** Log function/handler entry with key identifiers (request_id, correlation_id if present) and non-sensitive inputs.
    - **Exit:** Log success with outcome or result summary (no full payloads).

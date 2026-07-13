@@ -7,6 +7,8 @@ description: Implements Terraform modules and root stacks with safe variable con
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check existing Terraform modules and stacks.
+
 1. **Set module contract**
    - Define required/optional variables with strict types and validation.
    - Define outputs only for values needed by consumers.

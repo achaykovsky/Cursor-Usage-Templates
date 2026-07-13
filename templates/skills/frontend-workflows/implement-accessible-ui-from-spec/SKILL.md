@@ -7,6 +7,8 @@ description: Implements frontend UI from UX or design-system specs with semantic
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check design-system components and page patterns first.
+
 1. **Parse implementation inputs**
    - Extract required UI states, interactions, constraints, and acceptance criteria from spec/ticket.
    - Identify missing inputs (breakpoints, disabled/error behavior, loading skeletons). If missing, state assumptions.

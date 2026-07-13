@@ -7,9 +7,11 @@ description: From spec, OpenAPI, or contract: implements or extends endpoints, r
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). If extending, skip greenfield scaffold steps.
+
 1. **Gather contract**
    - Obtain the spec (OpenAPI, prose, or existing routes). Identify method, path, request body/query/headers, response shape, and status codes.
-   - Locate existing API layer in the repo (routers, handlers, controllers) and match naming and structure.
+   - Locate existing API layer in the repo (routers, handlers, controllers) and match naming and structure (discover step above).
 
 2. **Implement or extend**
    - Add or update the route/handler. Implement request parsing, validation (against types or schema), and response serialization.

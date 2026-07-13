@@ -7,6 +7,8 @@ description: Designs frontend state boundaries and caching strategy (local state
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check existing query keys, stores, and cache helpers.
+
 1. **Partition state responsibilities**
    - Separate local UI state, derived state, and server state.
    - Remove duplicated state where derivation is reliable.

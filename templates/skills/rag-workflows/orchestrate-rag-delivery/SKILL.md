@@ -7,6 +7,7 @@ description: Routes RAG and knowledge-base work across rag-workflows skills with
 
 ## Canonical Sequence
 
+0. Discover existing capability (`discover-before-implement`) — corpus manifests, index, retrieval handlers
 1. Corpus and index design (`design-rag-architecture`)
 2. Ingest, chunk, embed, index (`implement-rag-ingest-and-index`)
 3. Query, rerank, cite (`implement-retrieval-pipeline`)

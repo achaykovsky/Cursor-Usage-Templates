@@ -7,9 +7,10 @@ description: Implements CI/CD workflows in repository CI systems with determinis
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Reuse existing cache, artifact, and secret patterns (do not duplicate CI conventions).
+
 1. **Detect CI platform and project conventions**
    - Identify platform (`.github/workflows`, GitLab CI, Azure Pipelines, etc.).
-   - Reuse existing cache, artifact, and secret patterns.
 
 2. **Implement deterministic CI**
    - Pin runtime/tool versions and dependency restore strategy.

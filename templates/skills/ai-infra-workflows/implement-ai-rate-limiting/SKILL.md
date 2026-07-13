@@ -7,6 +7,8 @@ description: Implements rate limits, abuse controls, and cost caps for LLM bots.
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check existing gateway rate-limit middleware.
+
 1. **Dimensions** — per user, per IP, per API key, per conversation.
 2. **Limits** — requests/minute, tokens/day, concurrent sessions.
 3. **Storage** — Redis or similar; fail closed or open per policy.

@@ -7,6 +7,8 @@ description: Scaffolds a FastAPI REST API project with recommended structure, ro
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). If the repo already has an API layout, extend it; scaffold only on greenfield.
+
 1. **Confirm scope** – Single module vs multi-resource API. Default: multi-resource with routers.
 2. **Create directory structure** – Use the standard layout in `reference.md`.
 3. **Add dependencies** – FastAPI, uvicorn, SQLAlchemy (if DB), python-dotenv.
