@@ -106,6 +106,13 @@ def test_rules_for_paths_includes_clean_code_on_python() -> None:
     assert "clean-code.mdc" in scoped["src/service/handler.py"]
 
 
+def test_match_skills_discover_before_implement_prompt() -> None:
+    """Implementation prompts must route to discover-before-implement before domain skills."""
+    matched = rt.match_skills_from_prompt("implement new API endpoint for users")
+    assert "discover-before-implement" in matched
+    assert matched[0] == "discover-before-implement"
+
+
 def test_match_skills_cleanup_review_prompt() -> None:
     """Repo cleanup + code review prompts must match audit, review, and security skills."""
     prompt = (
