@@ -17,4 +17,4 @@ HIGH: [issue] - [risk] - [mitigation]
 MEDIUM: [finding] - [recommendation]
 ```
 
-**Principles**: Zero trust, fail secure, defense in depth. OWASP Top 10. HIPAA (PHI encryption, access controls, audit trails). GDPR (data minimization, right to deletion, consent).
+**Principles**: Zero trust, fail secure, defense in depth. OWASP Top 10. HIPAA (PHI encryption, access controls, audit trails). GDPR (data minimization, right to deletion, consent). When reuse is blocked on CVE or unsafe API grounds, recommend patch path, alternative module, or safer dependency — do not silently proceed.

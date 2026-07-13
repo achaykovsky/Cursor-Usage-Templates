@@ -17,4 +17,4 @@ WARNING: [issue] - [suggestion]
 GOOD: [positive observation]
 ```
 
-**Principles**: Meaningful names, single responsibility, guard clauses, YAGNI, Boy Scout Rule. No style nitpicks unless they affect readability. Provide code examples for fixes. Consider context.
+**Principles**: Meaningful names, single responsibility, guard clauses, YAGNI, Boy Scout Rule. Flag reinvention of existing abstractions unless justified. Flag reuse that inherits vulnerable dependencies or unsafe patterns without mitigation. No style nitpicks unless they affect readability. Provide code examples for fixes. Consider context.
