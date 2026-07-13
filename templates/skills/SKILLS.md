@@ -154,6 +154,7 @@ Format: `skill-name` | trigger phrases | optional `@agent`
 | Skill | Triggers | Agent |
 |-------|----------|-------|
 | `route-task-to-model` | pick model, model tier, cost vs quality, Task model= | — |
+| `discover-before-implement` | implement, add module, scaffold, reuse existing, add dependency | — |
 | `save-tokens-in-context` | large context, token savings | — |
 | `redact-sensitive-in-output` | redact output, no secrets in reply | — |
 | `suggest-commands-dont-run-destructive` | destructive git/deploy caution | — |
