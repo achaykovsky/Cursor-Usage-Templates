@@ -14,7 +14,7 @@ alwaysApply: false
 
 **Control flow**: Guard clauses and early returns over deep nesting. Prefer polymorphism or lookup maps over long `if/elif` chains when behavior varies by type.
 
-**DRY**: Do not copy-paste logic. Extract shared behavior at the second justified reuse; do not abstract prematurely for one call site.
+**DRY**: Do not copy-paste logic. Reuse existing helpers, services, and components across the repo before adding parallel implementations. Extract shared behavior at the second justified reuse; do not abstract prematurely for one call site.
 
 **Constants**: No magic numbers or unexplained string literals — use named constants or enums at module/package scope.
 

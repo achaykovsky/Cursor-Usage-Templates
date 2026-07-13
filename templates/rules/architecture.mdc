@@ -8,6 +8,8 @@ alwaysApply: false
 
 **Layered structure**: Domain (entities, value objects) → Application (use cases, services) → Infrastructure (DB, HTTP, external APIs) → Presentation (controllers, DTOs).
 
+**New modules**: Require a stated boundary. Prefer extending application/service layers over new top-level packages when capability already exists nearby.
+
 **Repository pattern**: Abstract data access behind interface. Return domain objects, not ORM models. Enables testing with in-memory impl.
 
 **Service layer**: Business logic in services, not controllers. Services orchestrate repositories. One service per use case or aggregate.

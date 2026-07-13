@@ -7,6 +7,8 @@ alwaysApply: true
 
 **Ground truth**: Do not invent APIs, modules, paths, or files. If something is not in repo context or docs, say so and **ask** for the missing interface, contract, or file path instead of guessing.
 
+**Reuse before create**: Before adding modules, endpoints, components, hooks, skills, or utilities, search the repo for existing equivalents (grep/Glob, README, `templates/`, shared libs, design system). Prefer extend, configure, or wrap. Validate reuse candidates for security (dependency CVEs via **discover-before-implement** and **assess-and-update-dependencies**; unsafe patterns via **security-scan-changes** when touchpoints exist). **CRITICAL** CVEs block reuse without a fix path; **HIGH** CVEs require stated mitigation. Create new surface only when no safe fit exists or extension is higher risk — state what you searched and why create won.
+
 **Behavior**: Preserve existing behavior unless the user explicitly asks to redesign or change semantics. Do not refactor or "clean up" unrelated code while doing a targeted task.
 
 **Edits**: Prefer **minimal diffs**—touch only what the request requires. Avoid drive-by renames, formatting sweeps, or broad rewrites.
