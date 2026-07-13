@@ -30,6 +30,11 @@ Output **only**:
 ### Routing rules
 
 - One **primary** skill per phase; chain only when output of step N feeds step N+1.
+- Implement / add / scaffold: `discover-before-implement` → primary domain skill (e.g. `implement-or-extend-api-surface`, `implement-accessible-ui-from-spec`).
+- Design then implement: `design-feature-from-requirements` → `discover-before-implement` → domain implement skill.
+- Reuse implicates packages (existing or new): `discover-before-implement` → `assess-and-update-dependencies` → domain skill.
+- Reuse implicates auth/input/crypto/secrets/external I/O: `discover-before-implement` → `security-scan-changes` → domain skill (when touchpoints are non-trivial).
+- Blocked on CRITICAL CVE / unsafe API: escalate `@agent(SECURITY)` before `create` alternative.
 - API evolution: `check-api-backward-compatibility` before `handle-breaking-change`.
 - Bug: `reproduce-and-document-failure` → `fix-bug-systematically` → `add-tests-for-change`.
 - Release: `validate-pre-deploy` before `prepare-release` unless only versioning.
