@@ -7,6 +7,8 @@ description: Identifies code paths touched by a change, finds test gaps, adds or
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Locate existing tests for touched code (see step 2).
+
 1. **Identify touched code paths**
    - From the diff or change description: list modified or new functions, modules, and entry points (e.g. API routes, CLI commands).
    - Note branches: new conditionals, error paths, edge cases (empty input, null, bounds).

@@ -7,6 +7,7 @@ description: Routes customer-facing bot work across AI infra skills and agents w
 
 ## Canonical Sequence
 
+0. Discover existing capability (`discover-before-implement`) — `templates/ai-runtime/`, gateway/session/policy artifacts
 1. Conversation spec and persona (`design-customer-facing-agent`)
 2. Safety and retention policy (`evaluate-ai-safety-policy`)
 3. Prompt eval suite design (`design-prompt-evals`)

@@ -7,6 +7,8 @@ description: Implements prompt eval runners and CI gates — deterministic grade
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check existing eval runners and CI jobs.
+
 1. **Validate fixtures** — `python templates/ai-runtime/validate_bot_runtime.py prompt-eval <suite.json>` (hook: `validate-prompt-eval-artifacts`).
 2. **Grader module** — use [prompt_eval_runner.py](../../../ai-runtime/eval/prompt_eval_runner.py) for deterministic assertions (`must_contain`, `refusal`, `regex`, `tool_call`, etc.).
 3. **Responses map** — JSON object `{ "case_id": "model output text" }` for offline/CI runs; live gateway jobs populate this after inference. For `tool_call` assertions, also pass `tool_calls` (list of `{name, args}`) to `grade_case()` or your gateway adapter.

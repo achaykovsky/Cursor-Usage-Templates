@@ -7,6 +7,8 @@ description: Adds specific raises, narrow catches, exception chaining, and domai
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check existing domain error types and handlers.
+
 1. **Choose specific types**
    - **Python:** Prefer stdlib types that match the failure (`ValueError`, `TypeError`, `FileNotFoundError`) or a small domain hierarchy (`UserNotFoundError`, `PaymentDeclinedError`). Avoid bare `Exception("failed")` unless re-wrapping at a true boundary.
    - **Go:** Return sentinel or typed errors (`var ErrNotFound = errors.New("not found")`, custom struct with `Error() string`). Wrap with context via `fmt.Errorf("load user %q: %w", id, err)` — never drop the cause.

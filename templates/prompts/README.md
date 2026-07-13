@@ -19,23 +19,23 @@ Backed by `routing.py`, `cursor_activity.py`.
 
 | Metric | Value |
 |--------|-------|
-| Plans tracked | **13** |
-| **Done** | **10** (77%) |
-| **Partial** | **3** (25%) |
+| Plans tracked | **14** |
+| **Done** | **11** (79%) |
+| **Partial** | **3** (21%) |
+| **Open** | **0** |
 | **Open** (within partial plans) | **6** explicit `[ ]` items (+ partial `[~]` rows) |
 
 ```
-Done     █████████████████████████░░  10/13 plans
-Partial  ░░░░░░░░░░░░░░░░░░░░░░░███  3/13 plans
+Done     ███████████████████████████  11/14 plans
+Partial  ░░░░░░░░░░░░░░░░░░░░░░░███  3/14 plans
 ```
 
 ### At a glance
 
 | Status | Plans |
 |--------|-------|
-| [x] **Done** | session-map, agents-routing, skills-routing, model-routing, rules-audit, python-remediation (overview, foundation, sync-scripts), plan-ai-infrastructure, plan-llm-system-design-review |
+| [x] **Done** | session-map, agents-routing, skills-routing, model-routing, rules-audit, python-remediation (overview, foundation, sync-scripts), plan-ai-infrastructure, plan-llm-system-design-review, reuse-before-implement |
 | [~] **Partial** | cursor-hooks, cursor-activity-logging, python-remediation-hook-policy |
-| [ ] **Open** | *(no plan fully untouched)* |
 
 ---
 
@@ -67,6 +67,7 @@ Partial  ░░░░░░░░░░░░░░░░░░░░░░░�
 | [plan-python-remediation-sync-scripts.md](plan-python-remediation-sync-scripts.md) | Python | **[x] Done** | Dedup, dry-run, sync tests |
 | [plan-ai-infrastructure.md](plan-ai-infrastructure.md) | AI platform | **[x] Done** | See **AI platform** section below |
 | [plan-llm-system-design-review.md](plan-llm-system-design-review.md) | AI platform | **[x] Done** | `review-llm-system-design`, `AI_SYSTEM_REVIEWER`, design-review checklist |
+| [plan-reuse-before-implement.md](plan-reuse-before-implement.md) | Agents / skills / rules | **[x] Done** | `discover-before-implement` skill, ai-guardrails, Step 0 on 20 skills, 14 agents, rules, routing |
 
 ---
 
@@ -219,6 +220,23 @@ Prompt + CLI deliverables complete. Tests: `test_routing.py` (22+ cases).
 - Does **not** copy `templates/prompts/` → `.cursor/prompts/` (repo-only authoring)
 - **`templates/` is the only sync source** — nothing is copied from project `.cursor/`
 - Modes: `TemplatesToLocal`, `TemplatesToGlobal`, `FromGlobal` (no `ToGlobal`)
+
+---
+
+## Reuse before implement — [x] Done
+
+**Deliverables** ([plan-reuse-before-implement.md](plan-reuse-before-implement.md)):
+
+- `discover-before-implement` skill with dep/CVE validation (CRITICAL blocks, HIGH requires mitigation)
+- `ai-guardrails.mdc` reuse bullet
+- Step 0 on 20 implementation skills + 3 orchestrators
+- Agent principles (11 impl + 3 review + SECURITY escalation)
+- `clean-code`, `code-review`, `architecture` rules
+- Skills-routing prompt chains + `test_match_skills_discover_before_implement_prompt`
+
+| Plan | Use when | Entry |
+|------|----------|-------|
+| [plan-reuse-before-implement.md](plan-reuse-before-implement.md) | Discover → extend → create before implementing | skill `discover-before-implement` |
 
 ---
 

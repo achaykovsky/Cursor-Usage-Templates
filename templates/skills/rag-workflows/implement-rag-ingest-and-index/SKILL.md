@@ -7,6 +7,8 @@ description: Implements RAG ingest and index pipeline — document loaders, chun
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check corpus manifests and existing ingest jobs.
+
 1. **Loaders** — markdown/HTML/PDF/API per corpus manifest `sources`; preserve `source_id` + version.
 2. **Clean** — strip scripts; normalize whitespace; no executable payloads in stored chunks.
 3. **Chunk** — apply manifest `chunking`; attach metadata for citation.

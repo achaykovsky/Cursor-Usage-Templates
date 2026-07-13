@@ -7,6 +7,8 @@ description: Adds or updates frontend tests for changed behavior using RTL/Vites
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Locate existing FE test files and patterns.
+
 1. **Identify changed FE behaviors**
    - List affected interactions, visual states, and data-state transitions.
    - Prioritize user-visible and failure-prone paths first.

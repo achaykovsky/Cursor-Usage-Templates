@@ -7,6 +7,8 @@ description: Implements human escalation for bots — queues, tickets, Slack thr
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check existing handoff adapters.
+
 1. **Triggers** — implement [human-handoff.md](../../../ai-runtime/guardrails/human-handoff.md) table in gateway.
 2. **Payload** — redacted summary, `conversation_id`, priority, policy trigger.
 3. **Channel** — Zendesk, Jira, Slack channel, email — per bot manifest `escalation`.

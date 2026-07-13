@@ -7,6 +7,8 @@ description: Implements RAG retrieval — query processing, hybrid search, reran
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check existing RAG handlers and `search_knowledge_base` wiring.
+
 1. **Query** — optional rewrite; cap length; log `retrieval.query` span.
 2. **Recall** — vector + optional BM25 per manifest `retrieval.hybrid`; apply metadata filters.
 3. **Rerank** — if `retrieval.rerank`; log `retrieval.rerank` span.

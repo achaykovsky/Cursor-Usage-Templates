@@ -7,6 +7,7 @@ description: Routes frontend work across FE skills and agents with a consistent 
 
 ## Canonical FE Sequence
 
+0. Discover existing capability (`discover-before-implement`) — DS components, page layouts, state hooks when implementation is in scope
 1. UX intent and flow constraints (`design-ux-flow-spec`)
 2. Design-system contract and compatibility (`evolve-design-system-without-breaking-ui`)
 3. UI implementation (`implement-accessible-ui-from-spec`)

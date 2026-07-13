@@ -7,6 +7,8 @@ description: Scaffolds a Flask REST API project with recommended structure, app 
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). If the repo already has an API layout, extend it; scaffold only on greenfield.
+
 1. **Confirm scope** – Single module vs multi-resource API. Default: multi-resource with blueprints.
 2. **Create directory structure** – Use the standard layout in `reference.md`.
 3. **Add dependencies** – Flask, Flask-SQLAlchemy (if DB), marshmallow or Pydantic for validation.

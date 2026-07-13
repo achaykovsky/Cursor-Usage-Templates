@@ -7,6 +7,8 @@ description: Reproduces, isolates, hypothesizes, fixes, and verifies bugs with t
 
 ## Workflow
 
+0. **Discover existing capability** — Run **discover-before-implement** (shared-practices). Check for existing fix patterns or duplicate bug sites.
+
 1. **Reproduce** (skip if already documented)
    - If a minimal repro, steps, and environment are already documented (e.g. from **reproduce-and-document-failure**), confirm it still fails and proceed to isolate.
    - Otherwise: from the user's description or error, identify steps, inputs, and environment; run the code or tests to reproduce. Document exact steps and outcome.
